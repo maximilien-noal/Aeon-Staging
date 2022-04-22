@@ -1,12 +1,22 @@
 ﻿using System;
+using System.Runtime.Versioning;
 using System.Threading;
 using TinyAudio;
 
 namespace Aeon.Emulator.Sound
 {
+    [SupportedOSPlatform("windows")]
     internal static class Audio
     {
-        public static AudioPlayer CreatePlayer(bool useCallback = false) => WasapiAudioPlayer.Create(TimeSpan.FromSeconds(0.25), useCallback);
+        public static AudioPlayer? CreatePlayer(bool useCallback = false)
+        {
+            if (OperatingSystem.IsWindows())
+            {
+                return WasapiAudioPlayer.Create(TimeSpan.FromSeconds(0.25), useCallback);                
+            }
+
+            return null;
+        }
 
         public static void WriteFullBuffer(AudioPlayer player, ReadOnlySpan<float> buffer)
         {

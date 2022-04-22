@@ -28,7 +28,7 @@ namespace Aeon.Emulator.Sound.PCSpeaker
         /// <summary>
         /// Occurs when the value has changed.
         /// </summary>
-        public event EventHandler ValueChanged;
+        public event EventHandler? ValueChanged;
 
         public static implicit operator ushort(LatchedUInt16 value) => value == null ? (ushort)0 : value.value;
         public static implicit operator LatchedUInt16(ushort value) => new(value);

@@ -16,10 +16,10 @@ namespace Aeon.Emulator.Sound.FM
         private const byte Timer1Mask = 0xC0;
         private const byte Timer2Mask = 0xA0;
 
-        private readonly AudioPlayer audioPlayer = Audio.CreatePlayer();
+        private readonly AudioPlayer? audioPlayer = Audio.CreatePlayer();
         private int currentAddress;
-        private readonly FmSynthesizer synth;
-        private Task generateTask;
+        private readonly FmSynthesizer? synth;
+        private Task? generateTask;
         private CancellationTokenSource cancelPlayback = new();
         private byte timer1Data;
         private byte timer2Data;
@@ -30,6 +30,10 @@ namespace Aeon.Emulator.Sound.FM
 
         public FmSoundCard()
         {
+            if (this.audioPlayer is null)
+            {
+                return;
+            }
             this.synth = new FmSynthesizer(this.audioPlayer.Format.SampleRate);
         }
 
@@ -82,7 +86,7 @@ namespace Aeon.Emulator.Sound.FM
                     if (!this.initialized)
                         this.Initialize();
 
-                    this.synth.SetRegisterValue(0, currentAddress, value);
+                    this.synth?.SetRegisterValue(0, currentAddress, value);
                 }
             }
         }
@@ -100,7 +104,10 @@ namespace Aeon.Emulator.Sound.FM
             if (this.initialized && !this.paused)
             {
                 this.cancelPlayback.Cancel();
-                await this.generateTask.ConfigureAwait(false);
+                if (this.generateTask is not null)
+                {
+                    await this.generateTask.ConfigureAwait(false);                    
+                }
                 this.paused = true;
             }
         }
@@ -124,10 +131,10 @@ namespace Aeon.Emulator.Sound.FM
                 if (!paused)
                 {
                     this.cancelPlayback.Cancel();
-                    this.generateTask.GetAwaiter().GetResult();
+                    this.generateTask?.GetAwaiter().GetResult();
                 }
 
-                this.audioPlayer.Dispose();
+                this.audioPlayer?.Dispose();
                 this.cancelPlayback.Dispose();
                 this.initialized = false;
             }
@@ -138,7 +145,10 @@ namespace Aeon.Emulator.Sound.FM
         {
             var buffer = new float[1024];
             float[] playBuffer;
-
+            if (this.audioPlayer is null)
+            {
+                return;
+            }
             bool expandToStereo = this.audioPlayer.Format.Channels == 2;
             if (expandToStereo)
                 playBuffer = new float[buffer.Length * 2];
@@ -163,7 +173,7 @@ namespace Aeon.Emulator.Sound.FM
 
             void fillBuffer()
             {
-                this.synth.GetData(buffer);
+                this.synth?.GetData(buffer);
                 if (expandToStereo)
                     ChannelAdapter.MonoToStereo(buffer.AsSpan(), playBuffer.AsSpan());
             }

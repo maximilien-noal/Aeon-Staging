@@ -1,15 +1,17 @@
 ﻿using System;
 using System.IO;
 using System.IO.Compression;
+using System.Runtime.Versioning;
 using Mt32emu;
 using TinyAudio;
 
 namespace Aeon.Emulator.Sound
 {
+    [UnsupportedOSPlatform("macos")]
     internal sealed class Mt32Player : IDisposable
     {
         private readonly Mt32Context context = new();
-        private readonly AudioPlayer audioPlayer = Audio.CreatePlayer(true);
+        private readonly AudioPlayer? audioPlayer = Audio.CreatePlayer(true);
         private bool disposed;
 
         public Mt32Player(string romsPath)
@@ -18,7 +20,10 @@ namespace Aeon.Emulator.Sound
                 throw new ArgumentNullException(nameof(romsPath));
 
             this.LoadRoms(romsPath);
-
+            if (this.audioPlayer is null)
+            {
+                return;
+            }
             var analogMode = Mt32GlobalState.GetBestAnalogOutputMode(this.audioPlayer.Format.SampleRate);
             this.context.AnalogOutputMode = analogMode;
             this.context.SetSampleRate(this.audioPlayer.Format.SampleRate);
@@ -29,14 +34,14 @@ namespace Aeon.Emulator.Sound
 
         public void PlayShortMessage(uint message) => this.context.PlayMessage(message);
         public void PlaySysex(ReadOnlySpan<byte> data) => this.context.PlaySysex(data);
-        public void Pause() => this.audioPlayer.StopPlayback();
-        public void Resume() => this.audioPlayer.BeginPlayback(this.FillBuffer);
+        public void Pause() => this.audioPlayer?.StopPlayback();
+        public void Resume() => this.audioPlayer?.BeginPlayback(this.FillBuffer);
         public void Dispose()
         {
             if (!this.disposed)
             {
                 this.context.Dispose();
-                this.audioPlayer.Dispose();
+                this.audioPlayer?.Dispose();
                 this.disposed = true;
             }
         }
