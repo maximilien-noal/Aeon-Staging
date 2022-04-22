@@ -1,0 +1,9 @@
+[submodule "Ymf262Emu-Staging"]
+	path = Ymf262Emu-Staging
+	url = https://github.com/maximilien-noal/Ymf262Emu-Staging
+[submodule "mt32emu.net-Staging"]
+	path = mt32emu.net-Staging
+	url = https://github.com/maximilien-noal/mt32emu.net-Staging
+[submodule "TinyAudio-Staging"]
+	path = TinyAudio-Staging
+	url = https://github.com/maximilien-noal/TinyAudio-Staging
