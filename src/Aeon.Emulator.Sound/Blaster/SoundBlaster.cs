@@ -360,6 +360,10 @@ namespace Aeon.Emulator.Sound.Blaster
             short[] writeBuffer = new short[65536 * 2];
 
             using var player = Audio.CreatePlayer();
+            if (player is null)
+            {
+                return;
+            }
             int sampleRate = (int)player.Format.SampleRate;
             player.BeginPlayback();
 

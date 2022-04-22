@@ -26,7 +26,7 @@ namespace Aeon.Emulator.Sound.PCSpeaker
         private readonly ConcurrentQueue<QueuedNote> queuedNotes = new();
         private readonly object threadStateLock = new();
         private SpeakerControl controlRegister = SpeakerControl.UseTimer;
-        private Task generateWaveformTask;
+        private Task? generateWaveformTask;
         private readonly CancellationTokenSource cancelGenerateWaveform = new();
         private int currentPeriod;
 
@@ -106,7 +106,7 @@ namespace Aeon.Emulator.Sound.PCSpeaker
         /// </summary>
         /// <param name="source">Source of the event.</param>
         /// <param name="e">Unused EventArgs instance.</param>
-        private void FrequencyChanged(object source, EventArgs e)
+        private void FrequencyChanged(object? source, EventArgs e)
         {
             this.EnqueueCurrentNote();
 
@@ -160,7 +160,10 @@ namespace Aeon.Emulator.Sound.PCSpeaker
         private async Task GenerateWaveformAsync()
         {
             using var player = Audio.CreatePlayer();
-
+            if (player is null)
+            {
+                return;
+            }
             FillWithSilence(player);
 
             var buffer = new byte[4096];
