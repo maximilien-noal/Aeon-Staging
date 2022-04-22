@@ -10,9 +10,9 @@
     <Description>Emulates sound cards for Aeon</Description>
   </PropertyGroup>
   <ItemGroup>
-    <PackageReference Include="Mt32emu.net" Version="1.0.0-rc.1" />
-    <PackageReference Include="TinyAudio" Version="0.3.1" />
-    <PackageReference Include="Ymf262Emu" Version="1.0.1" />
+    <ProjectReference Include="..\..\mt32emu.net-Staging\mt32emu\Mt32emu.csproj" />
+    <ProjectReference Include="..\..\TinyAudio-Staging\TinyAudio\TinyAudio.csproj" />
+    <ProjectReference Include="..\..\Ymf262Emu-Staging\Ymf262Emu\Ymf262Emu.csproj" />
     <ProjectReference Include="..\Aeon.Emulator\Aeon.Emulator.csproj" />
   </ItemGroup>
 </Project>

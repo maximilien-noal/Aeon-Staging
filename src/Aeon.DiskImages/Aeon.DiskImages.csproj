@@ -11,9 +11,9 @@
   </PropertyGroup>
   <ItemGroup>
     <PackageReference Include="System.IO.Pipelines" Version="6.0.1" />
-    <PackageReference Include="TinyAudio" Version="0.3.1" />
   </ItemGroup>
   <ItemGroup>
+    <ProjectReference Include="..\..\TinyAudio-Staging\TinyAudio\TinyAudio.csproj" />
     <ProjectReference Include="..\Aeon.Emulator\Aeon.Emulator.csproj" />
   </ItemGroup>
 </Project>
