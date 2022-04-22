@@ -1,10 +1,12 @@
 ﻿using System;
+using System.Runtime.Versioning;
 
 namespace Aeon.Emulator.Input
 {
     /// <summary>
     /// Contains information about a DirectInput device.
     /// </summary>
+    [SupportedOSPlatform("windows")]
     public sealed class DeviceInfo : IEquatable<DeviceInfo>
     {
         /// <summary>

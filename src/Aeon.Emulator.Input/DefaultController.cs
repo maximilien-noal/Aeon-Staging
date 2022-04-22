@@ -1,9 +1,11 @@
 ﻿using System;
 using System.Diagnostics;
 using System.Linq;
+using System.Runtime.Versioning;
 
 namespace Aeon.Emulator.Input
 {
+    [SupportedOSPlatform("windows")]
     internal sealed class DefaultController : IGameController
     {
         private IGameController current;

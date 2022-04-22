@@ -1,7 +1,9 @@
 ﻿using System;
+using System.Runtime.Versioning;
 
 namespace Aeon.Emulator.Input
 {
+    [SupportedOSPlatform("windows")]
     [Flags]
     public enum XInputButtons : ushort
     {

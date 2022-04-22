@@ -1,7 +1,9 @@
 ﻿using System.Runtime.InteropServices;
+using System.Runtime.Versioning;
 
 namespace Aeon.Emulator.Input
 {
+    [SupportedOSPlatform("windows")]
     [StructLayout(LayoutKind.Sequential)]
     public readonly struct XInputGamepadState
     {
