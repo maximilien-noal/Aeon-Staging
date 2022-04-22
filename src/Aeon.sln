@@ -23,6 +23,8 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "TinyAudio", "..\TinyAudio-S
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Ymf262Emu", "..\Ymf262Emu-Staging\Ymf262Emu\Ymf262Emu.csproj", "{09B1737C-34FC-4304-ADC8-E368C8766940}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Aeon.Avalonia", "Aeon.Avalonia\Aeon.Avalonia.csproj", "{95BFA37F-0739-409D-ADC8-86ACCEF9027F}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -69,6 +71,10 @@ Global
 		{09B1737C-34FC-4304-ADC8-E368C8766940}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{09B1737C-34FC-4304-ADC8-E368C8766940}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{09B1737C-34FC-4304-ADC8-E368C8766940}.Release|Any CPU.Build.0 = Release|Any CPU
+		{95BFA37F-0739-409D-ADC8-86ACCEF9027F}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{95BFA37F-0739-409D-ADC8-86ACCEF9027F}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{95BFA37F-0739-409D-ADC8-86ACCEF9027F}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{95BFA37F-0739-409D-ADC8-86ACCEF9027F}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
