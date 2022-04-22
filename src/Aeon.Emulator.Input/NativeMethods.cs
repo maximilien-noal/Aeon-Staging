@@ -1,8 +1,10 @@
 ﻿using System;
 using System.Runtime.InteropServices;
+using System.Runtime.Versioning;
 
 namespace Aeon.Emulator.Input
 {
+    [SupportedOSPlatform("windows")]
     internal static class NativeMethods
     {
         /// <summary>
