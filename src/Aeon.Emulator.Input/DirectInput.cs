@@ -3,12 +3,14 @@ using System.Linq;
 using System.Collections.Generic;
 using System.Runtime.InteropServices;
 using System.Runtime.CompilerServices;
+using System.Runtime.Versioning;
 
 namespace Aeon.Emulator.Input
 {
     /// <summary>
     /// Provides access to DirectInput8.
     /// </summary>
+    [SupportedOSPlatform("windows")]
     public sealed class DirectInput : IDisposable
     {
         private static WeakReference instance;

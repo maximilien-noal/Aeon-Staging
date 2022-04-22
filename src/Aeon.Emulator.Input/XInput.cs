@@ -1,8 +1,10 @@
 ﻿using System;
 using System.Diagnostics;
+using System.Runtime.Versioning;
 
 namespace Aeon.Emulator.Input
 {
+    [SupportedOSPlatform("windows")]
     public static class XInput
     {
         public static void Enable() => NativeMethods.XInputEnable(true);

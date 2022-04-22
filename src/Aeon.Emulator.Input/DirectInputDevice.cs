@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Runtime.Versioning;
 using System.Threading;
 
 namespace Aeon.Emulator.Input
@@ -6,6 +7,7 @@ namespace Aeon.Emulator.Input
     /// <summary>
     /// Provides access to a DirectInput device.
     /// </summary>
+    [SupportedOSPlatform("windows")]
     public sealed class DirectInputDevice : IDisposable
     {
         private readonly unsafe DirectInputDevice8Inst* device;

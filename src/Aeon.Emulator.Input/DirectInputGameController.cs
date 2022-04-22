@@ -1,5 +1,8 @@
-﻿namespace Aeon.Emulator.Input
+﻿using System.Runtime.Versioning;
+
+namespace Aeon.Emulator.Input
 {
+    [SupportedOSPlatform("windows")]
     internal sealed class DirectInputGameController : IGameController
     {
         private readonly DirectInputDevice device;
