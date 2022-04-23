@@ -46,7 +46,7 @@ namespace Aeon.Emulator.Sound.PCSpeaker
         /// </summary>
         /// <param name="obj">Other instance to test for equality.</param>
         /// <returns>True if values are equal; otherwise false.</returns>
-        public override bool Equals(object obj) => obj is QueuedNote note && this.Equals(note);
+        public override bool Equals(object? obj) => obj is QueuedNote note && this.Equals(note);
         /// <summary>
         /// Returns a hash code for the instance.
         /// </summary>

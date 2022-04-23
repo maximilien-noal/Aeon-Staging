@@ -25,7 +25,7 @@ namespace Aeon.Emulator.Sound.Blaster
         /// <summary>
         /// Occurs when a buffer has been transferred in auto-initialize mode.
         /// </summary>
-        public event EventHandler AutoInitBufferComplete;
+        public event EventHandler? AutoInitBufferComplete;
 
         /// <summary>
         /// Gets or sets the DSP's sample rate.
@@ -91,6 +91,9 @@ namespace Aeon.Emulator.Sound.Blaster
             if (autoInitialize)
                 factor = 1.5;
 
+            if (this.currentChannel is null)
+                return;
+
             this.currentChannel.TransferRate = (int)(transferRate * factor);
             this.currentChannel.IsActive = true;
         }
@@ -127,7 +130,7 @@ namespace Aeon.Emulator.Sound.Blaster
                 this.decodeRemainderOffset--;
             }
 
-            if (length <= 0)
+            if (length <= 0 || this.decoder is null)
                 return;
 
             if (this.referenceByteExpected)
@@ -234,15 +237,15 @@ namespace Aeon.Emulator.Sound.Blaster
         /// <summary>
         /// DMA channel used for 8-bit data transfers.
         /// </summary>
-        private readonly DmaChannel dmaChannel8;
+        private readonly DmaChannel? dmaChannel8;
         /// <summary>
         /// DMA channel used for 16-bit data transfers.
         /// </summary>
-        private readonly DmaChannel dmaChannel16;
+        private readonly DmaChannel? dmaChannel16;
         /// <summary>
         /// Currently active DMA channel.
         /// </summary>
-        private DmaChannel currentChannel;
+        private DmaChannel? currentChannel;
 
         /// <summary>
         /// Number of bytes transferred in the current auto-init cycle.
@@ -264,11 +267,11 @@ namespace Aeon.Emulator.Sound.Blaster
         /// <summary>
         /// Current ADPCM decoder instance.
         /// </summary>
-        private ADPCMDecoder decoder;
+        private ADPCMDecoder? decoder;
         /// <summary>
         /// Buffer used for ADPCM decoding.
         /// </summary>
-        private byte[] decodeBuffer;
+        private byte[]? decodeBuffer;
         /// <summary>
         /// Last index of remaining decoded bytes.
         /// </summary>
