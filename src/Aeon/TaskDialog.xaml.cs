@@ -46,7 +46,7 @@ namespace Aeon.Emulator.Launcher
         /// <summary>
         /// Gets the item that has been selected in the dialog.
         /// </summary>
-        public TaskDialogItem? SelectedItem { get; private set; }
+        public TaskDialogItem SelectedItem { get; private set; }
 
         private void Item_Click(object source, RoutedEventArgs e)
         {
