@@ -2,7 +2,6 @@
 	<PropertyGroup>
 		<OutputType>WinExe</OutputType>
 		<Nullable>enable</Nullable>
-		<WarningsAsErrors>nullable</WarningsAsErrors>
 		<TargetFramework>net6.0-windows</TargetFramework>
 		<RootNamespace>Aeon.Emulator.Launcher</RootNamespace>
 		<LangVersion>latest</LangVersion>
