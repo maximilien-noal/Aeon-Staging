@@ -7,11 +7,11 @@ namespace Aeon.Emulator.Launcher
     public sealed partial class PerformanceWindow : Window
     {
         private long lastCount;
-        private DispatcherTimer timer;
+        private DispatcherTimer? timer;
 
         public PerformanceWindow() => this.InitializeComponent();
 
-        public EmulatorDisplay EmulatorDisplay { get; set; }
+        public EmulatorDisplay? EmulatorDisplay { get; set; }
 
         protected override void OnInitialized(EventArgs e)
         {
@@ -46,7 +46,7 @@ namespace Aeon.Emulator.Launcher
             extendedMemoryLabel.Content = string.Format("{0}k used, {1}k free", extendedMemory.BytesAllocated / 1024, extendedMemory.BytesFree / 1024);
         }
 
-        private void Timer_Tick(object sender, EventArgs e)
+        private void Timer_Tick(object? sender, EventArgs e)
         {
             var display = this.EmulatorDisplay;
             if (display != null)

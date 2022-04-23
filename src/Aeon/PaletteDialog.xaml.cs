@@ -16,7 +16,7 @@ namespace Aeon.Emulator.Launcher
         /// </summary>
         public static readonly DependencyProperty EmulatorDisplayProperty = DependencyProperty.Register(nameof(EmulatorDisplay), typeof(EmulatorDisplay), typeof(PaletteDialog));
 
-        private DispatcherTimer timer;
+        private DispatcherTimer? timer;
 
         /// <summary>
         /// Initializes a new instance of the <see cref="PaletteDialog"/> class.
@@ -35,7 +35,7 @@ namespace Aeon.Emulator.Launcher
         /// <summary>
         /// Gets the palette to display. This is a dependency property.
         /// </summary>
-        public uint[] Palette
+        public uint[]? Palette
         {
             get
             {
@@ -66,7 +66,7 @@ namespace Aeon.Emulator.Launcher
         /// </summary>
         /// <param name="sender">Source of the event.</param>
         /// <param name="e">Unused EventArgs instance.</param>
-        private void UpdateColors(object sender, EventArgs e)
+        private void UpdateColors(object? sender, EventArgs e)
         {
             var palette = this.Palette;
             if (palette == null)

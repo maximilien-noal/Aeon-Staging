@@ -27,19 +27,19 @@ namespace Aeon.Emulator.Launcher
         /// <summary>
         /// Occurs when the return value of the CanExecute method has changed.
         /// </summary>
-        public event EventHandler CanExecuteChanged;
+        public event EventHandler? CanExecuteChanged;
 
         /// <summary>
         /// Returns a value indicating whether the command can currently execute.
         /// </summary>
         /// <param name="parameter">Parameter for the command.</param>
         /// <returns>Value indicating whether the command can currently execute.</returns>
-        public bool CanExecute(object parameter) => this.canExecuteState;
+        public bool CanExecute(object? parameter) => this.canExecuteState;
         /// <summary>
         /// Executes the command.
         /// </summary>
         /// <param name="parameter">Parameter for the command.</param>
-        public void Execute(object parameter) => this.execute();
+        public void Execute(object? parameter) => this.execute();
         /// <summary>
         /// Updates the CanExecute return value if necessary.
         /// </summary>
