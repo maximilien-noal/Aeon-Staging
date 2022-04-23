@@ -17,7 +17,7 @@ namespace Aeon.Emulator.Launcher
         /// <summary>
         /// Gets the application command line arguments.
         /// </summary>
-        public ReadOnlyCollection<string> Args { get; private set; }
+        public ReadOnlyCollection<string>? Args { get; private set; }
 
         /// <summary>
         /// Invoked when the application is started.

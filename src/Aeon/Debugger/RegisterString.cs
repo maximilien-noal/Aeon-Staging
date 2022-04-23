@@ -37,7 +37,7 @@ namespace Aeon.Emulator.Launcher.Debugger
         /// <summary>
         /// Occurs when a property value has changed.
         /// </summary>
-        public event PropertyChangedEventHandler PropertyChanged;
+        public event PropertyChangedEventHandler? PropertyChanged;
 
         /// <summary>
         /// Gets or sets a value indicating whether the value is displayed in hexadecimal.

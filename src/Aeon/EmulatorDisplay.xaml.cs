@@ -5,6 +5,7 @@ using System.Windows.Input;
 using System.Windows.Media;
 using System.Windows.Media.Imaging;
 using System.Windows.Threading;
+
 using Aeon.Emulator;
 using Aeon.Emulator.Video;
 using Aeon.Emulator.Video.Rendering;
@@ -29,19 +30,19 @@ namespace Aeon.Emulator.Launcher
         public static readonly RoutedEvent CurrentProcessChangedEvent = EventManager.RegisterRoutedEvent(nameof(CurrentProcessChanged), RoutingStrategy.Bubble, typeof(RoutedEventHandler), typeof(EmulatorDisplay));
         public static readonly RoutedCommand FullScreenCommand = new();
 
-        private EmulatorHost emulator;
+        private EmulatorHost? emulator;
         private bool mouseJustCaptured;
         private bool isMouseCaptured;
         private System.Windows.Point centerPoint;
-        private DispatcherTimer timer;
+        private DispatcherTimer? timer;
         private readonly EventHandler updateHandler;
         private int cursorBlink;
         private Video.Point cursorPosition = new(0, 1);
         private readonly SimpleCommand resumeCommand;
         private readonly SimpleCommand pauseCommand;
-        private Presenter currentPresenter;
+        private Presenter? currentPresenter;
         private int physicalMemorySize = 16;
-        private FastBitmap renderTarget;
+        private FastBitmap? renderTarget;
 
         /// <summary>
         /// Initializes a new instance of the <see cref="EmulatorDisplay"/> class.
@@ -96,7 +97,7 @@ namespace Aeon.Emulator.Launcher
                     this.emulator.Error += this.Emulator_Error;
                     this.emulator.CurrentProcessChanged += this.Emulator_CurrentProcessChanged;
                     this.emulator.EmulationSpeed = this.EmulationSpeed;
-                    this.timer.Start();
+                    this.timer?.Start();
                     this.InitializePresenter();
                 }
 
@@ -146,7 +147,7 @@ namespace Aeon.Emulator.Launcher
         /// <summary>
         /// Gets the BitmapSource used for rendering the output display.
         /// </summary>
-        public BitmapSource DisplayBitmap => this.renderTarget.InteropBitmap;
+        public BitmapSource? DisplayBitmap => this.renderTarget?.InteropBitmap;
         /// <summary>
         /// Gets information about the current process. This is a dependency property.
         /// </summary>
@@ -159,7 +160,7 @@ namespace Aeon.Emulator.Launcher
         /// Gets the command used to pause the emulator.
         /// </summary>
         public ICommand PauseCommand => this.pauseCommand;
-        public Presenter CurrentPresenter => this.currentPresenter;
+        public Presenter? CurrentPresenter => this.currentPresenter;
 
         /// <summary>
         /// Disposes the current emulator and returns the control to its default state.
@@ -177,7 +178,7 @@ namespace Aeon.Emulator.Launcher
                 this.emulator.CurrentProcessChanged -= this.Emulator_CurrentProcessChanged;
                 this.mouseImage.Visibility = Visibility.Collapsed;
                 this.cursorRectangle.Visibility = Visibility.Collapsed;
-                this.timer.Stop();
+                this.timer?.Stop();
 
                 this.emulator.Dispose();
                 this.emulator = null;
@@ -243,7 +244,7 @@ namespace Aeon.Emulator.Launcher
             base.OnContentChanged(oldContent, newContent);
         }
 
-        private void GraphicalUpdate(object sender, EventArgs e)
+        private void GraphicalUpdate(object? sender, EventArgs e)
         {
             if (this.emulator != null)
             {
@@ -253,8 +254,11 @@ namespace Aeon.Emulator.Launcher
 
                 this.EnsureRenderTarget(presenter);
 
-                presenter.Update(this.renderTarget.PixelBuffer);
-                this.renderTarget.InteropBitmap.Invalidate();
+                if (this.renderTarget is not not null && this.renderTarget?.InteropBitmap is not null)
+                {
+                    presenter.Update(this.renderTarget.PixelBuffer);
+                    this.renderTarget.InteropBitmap.Invalidate();
+                }
 
                 if (this.emulator.VirtualMachine.IsCursorVisible)
                 {
@@ -278,7 +282,7 @@ namespace Aeon.Emulator.Launcher
                 }
             }
         }
-        private void HandleModeChange(object sender, EventArgs e) => this.InitializePresenter();
+        private void HandleModeChange(object? sender, EventArgs e) => this.InitializePresenter();
         private void InitializePresenter()
         {
             this.displayImage.Source = null;
@@ -291,23 +295,26 @@ namespace Aeon.Emulator.Launcher
 
             var videoMode = this.emulator.VirtualMachine.VideoMode;
             this.currentPresenter = this.GetPresenter(videoMode);
-            this.currentPresenter.Scaler = this.ScalingAlgorithm;
-            this.EnsureRenderTarget(this.currentPresenter);
+            if (this.currentPresenter is not null)
+            {
+                this.currentPresenter.Scaler = this.ScalingAlgorithm;
+                this.EnsureRenderTarget(this.currentPresenter);
 
-            int pixelWidth = this.currentPresenter.TargetWidth;
-            int pixelHeight = this.currentPresenter.TargetHeight;
-            this.displayImage.Source = this.renderTarget.InteropBitmap;
-            this.displayImage.Width = pixelWidth;
-            this.displayImage.Height = pixelHeight;
-            this.displayArea.Width = pixelWidth;
-            this.displayArea.Height = pixelHeight;
+                int pixelWidth = this.currentPresenter.TargetWidth;
+                int pixelHeight = this.currentPresenter.TargetHeight;
+                this.displayImage.Source = this.renderTarget?.InteropBitmap;
+                this.displayImage.Width = pixelWidth;
+                this.displayImage.Height = pixelHeight;
+                this.displayArea.Width = pixelWidth;
+                this.displayArea.Height = pixelHeight;
 
-            this.centerPoint.X = pixelWidth / 2;
-            this.centerPoint.Y = pixelHeight / 2;
+                this.centerPoint.X = pixelWidth / 2;
+                this.centerPoint.Y = pixelHeight / 2;
+            }
         }
         private void EnsureRenderTarget(Presenter presenter)
         {
-            if (this.renderTarget == null || presenter.TargetWidth != this.renderTarget.InteropBitmap.PixelWidth || presenter.TargetHeight != this.renderTarget.InteropBitmap.PixelHeight)
+            if (this.renderTarget == null || presenter.TargetWidth != this.renderTarget?.InteropBitmap?.PixelWidth || presenter.TargetHeight != this.renderTarget.InteropBitmap.PixelHeight)
             {
                 this.renderTarget?.Dispose();
                 this.renderTarget = new FastBitmap(presenter.TargetWidth, presenter.TargetHeight);
@@ -322,7 +329,7 @@ namespace Aeon.Emulator.Launcher
                 Canvas.SetTop(mouseImage, y * presenter.HeightRatio);
             }
         }
-        private Presenter GetPresenter(VideoMode videoMode)
+        private Presenter? GetPresenter(VideoMode videoMode)
         {
             if (this.emulator == null)
                 return null;
@@ -368,7 +375,7 @@ namespace Aeon.Emulator.Launcher
             obj.InitializePresenter();
         }
 
-        private void Emulator_StateChanged(object sender, EventArgs e)
+        private void Emulator_StateChanged(object? sender, EventArgs e)
         {
             if (this.emulator != null)
             {
@@ -378,13 +385,14 @@ namespace Aeon.Emulator.Launcher
                 this.RaiseEvent(new RoutedEventArgs(EmulatorStateChangedEvent));
             }
         }
-        private void Emulator_MouseVisibilityChanged(object sender, EventArgs e)
+        private void Emulator_MouseVisibilityChanged(object? sender, EventArgs e)
         {
-            this.mouseImage.Visibility = this.emulator.VirtualMachine.IsMouseVisible ? Visibility.Visible : Visibility.Collapsed;
+            if (this.emulator is not null)
+                this.mouseImage.Visibility = this.emulator.VirtualMachine.IsMouseVisible ? Visibility.Visible : Visibility.Collapsed;
         }
-        private void Emulator_MouseMove(object sender, MouseMoveEventArgs e) => this.MoveMouseCursor(e.X, e.Y);
-        private void Emulator_Error(object sender, ErrorEventArgs e) => this.RaiseEvent(new EmulationErrorRoutedEventArgs(EmulationErrorEvent, e.Message));
-        private void Emulator_CurrentProcessChanged(object sender, EventArgs e)
+        private void Emulator_MouseMove(object? sender, MouseMoveEventArgs e) => this.MoveMouseCursor(e.X, e.Y);
+        private void Emulator_Error(object? sender, ErrorEventArgs e) => this.RaiseEvent(new EmulationErrorRoutedEventArgs(EmulationErrorEvent, e.Message));
+        private void Emulator_CurrentProcessChanged(object? sender, EventArgs e)
         {
             if (this.emulator != null)
                 this.SetValue(CurrentProcessPropertyKey, this.emulator.VirtualMachine.CurrentProcess);
@@ -393,7 +401,7 @@ namespace Aeon.Emulator.Launcher
 
             this.RaiseEvent(new RoutedEventArgs(CurrentProcessChangedEvent));
         }
-        private void DisplayImage_MouseDown(object sender, MouseButtonEventArgs e)
+        private void DisplayImage_MouseDown(object? sender, MouseButtonEventArgs e)
         {
             if (this.emulator != null && this.emulator.State == EmulatorState.Running)
             {
@@ -440,12 +448,12 @@ namespace Aeon.Emulator.Launcher
             {
                 var presenter = this.currentPresenter;
 
-                if (this.MouseInputMode == MouseInputMode.Absolute)
+                if (this.MouseInputMode == MouseInputMode.Absolute && presenter is not null)
                 {
                     var pos = e.GetPosition(displayImage);
                     this.emulator.MouseEvent(new MouseMoveAbsoluteEvent((int)(pos.X / presenter.WidthRatio), (int)(pos.Y / presenter.HeightRatio)));
                 }
-                else if (this.isMouseCaptured)
+                else if (this.isMouseCaptured && presenter is not null)
                 {
                     var deltaPos = System.Windows.Input.Mouse.GetPosition(this.displayImage);
 

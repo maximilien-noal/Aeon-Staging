@@ -30,7 +30,7 @@ namespace Aeon.Emulator.Launcher
         /// <summary>
         /// Gets the InteropBitmap instance.
         /// </summary>
-        public InteropBitmap InteropBitmap { get; private set; }
+        public InteropBitmap? InteropBitmap { get; private set; }
         /// <summary>
         /// Gets the pointer to the bitmap pixel data.
         /// </summary>
@@ -48,7 +48,7 @@ namespace Aeon.Emulator.Launcher
         /// <summary>
         /// Forces a redraw of the InteropBitmap.
         /// </summary>
-        public void Invalidate() => this.InteropBitmap.Invalidate();
+        public void Invalidate() => this.InteropBitmap?.Invalidate();
 
         /// <summary>
         /// Releases unmanaged resources used by the bitmp.
@@ -87,7 +87,7 @@ namespace Aeon.Emulator.Launcher
         }
 
         [DllImport("kernel32.dll", SetLastError = true, CharSet = CharSet.Unicode)]
-        private static extern IntPtr CreateFileMapping(IntPtr hFile, IntPtr lpFileMappingAttributes, uint flProtect, uint dwMaximumSizeHigh, uint dwMaximumSizeLow, string lpName);
+        private static extern IntPtr CreateFileMapping(IntPtr hFile, IntPtr lpFileMappingAttributes, uint flProtect, uint dwMaximumSizeHigh, uint dwMaximumSizeLow, string? lpName);
         [DllImport("kernel32.dll", SetLastError = true)]
         private static extern IntPtr MapViewOfFile(IntPtr hFileMappingObject, uint dwDesiredAccess, uint dwFileOffsetHigh, uint dwFileOffsetLow, uint dwNumberOfBytesToMap);
         [DllImport("kernel32.dll", SetLastError = true)]

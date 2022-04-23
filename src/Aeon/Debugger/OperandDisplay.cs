@@ -3,6 +3,7 @@ using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Data;
 using System.Windows.Documents;
+
 using Aeon.Emulator;
 using Aeon.Emulator.DebugSupport;
 
@@ -101,7 +102,7 @@ namespace Aeon.Emulator.Launcher.Debugger
         /// </summary>
         /// <param name="prefixes">Segment register prefix.</param>
         /// <returns>String representation of the segment register.</returns>
-        private static string GetSegmentPrefix(PrefixState prefixes)
+        private static string? GetSegmentPrefix(PrefixState prefixes)
         {
             if ((prefixes & SegmentPrefixes) != 0)
                 return (prefixes & SegmentPrefixes).ToString().ToLower();
@@ -124,7 +125,7 @@ namespace Aeon.Emulator.Launcher.Debugger
         /// </summary>
         /// <param name="operand">Operand to display.</param>
         /// <returns>FrameworkElement to display as content.</returns>
-        private FrameworkElement BuildContent(CodeOperand operand)
+        private FrameworkElement? BuildContent(CodeOperand operand)
         {
             return operand.Type switch
             {

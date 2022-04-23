@@ -45,7 +45,7 @@ namespace Aeon.Emulator.Dos.VirtualFileSystem
         /// Initializes a new instance of the <see cref="VirtualPath"/> class.
         /// </summary>
         /// <param name="path">String representation of an absolute or relative path.</param>
-        public VirtualPath(string path) : this()
+        public VirtualPath(string? path) : this()
         {
             if (path == null)
                 throw new ArgumentNullException(nameof(path));
