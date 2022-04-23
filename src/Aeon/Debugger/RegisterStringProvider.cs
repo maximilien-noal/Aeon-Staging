@@ -1,6 +1,5 @@
 ﻿using System.ComponentModel;
 using System.Text;
-
 using Aeon.Emulator.DebugSupport;
 
 namespace Aeon.Emulator.Launcher.Debugger
@@ -25,7 +24,7 @@ namespace Aeon.Emulator.Launcher.Debugger
         /// <summary>
         /// Occurs when a property value has changed.
         /// </summary>
-        public event PropertyChangedEventHandler? PropertyChanged;
+        public event PropertyChangedEventHandler PropertyChanged;
 
         /// <summary>
         /// Gets or sets a value indicating whether the registers should be displayed in hexadecimal.
@@ -110,7 +109,7 @@ namespace Aeon.Emulator.Launcher.Debugger
         /// <summary>
         /// Gets a string for displaying which CPU flags are set.
         /// </summary>
-        public string? Flags { get; private set; }
+        public string Flags { get; private set; }
 
         /// <summary>
         /// Updates displayed register values to match the source values.

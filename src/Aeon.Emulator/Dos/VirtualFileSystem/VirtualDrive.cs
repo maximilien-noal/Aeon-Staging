@@ -2,7 +2,6 @@
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
-
 using Aeon.Emulator.Dos.Programs;
 
 namespace Aeon.Emulator.Dos.VirtualFileSystem
@@ -73,7 +72,7 @@ namespace Aeon.Emulator.Dos.VirtualFileSystem
         /// <summary>
         /// Gets or sets the volume label for the drive.
         /// </summary>
-        public string? VolumeLabel
+        public string VolumeLabel
         {
             get => this.labelOverride ?? this.Mapping?.VolumeLabel;
             set => this.labelOverride = value;

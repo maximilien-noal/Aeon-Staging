@@ -5,22 +5,20 @@ using System.Windows.Input;
 using System.Windows.Interop;
 using System.Windows.Media;
 using System.Windows.Media.Imaging;
-
 using Aeon.DiskImages;
 using Aeon.DiskImages.Archives;
 using Aeon.Emulator.Dos.VirtualFileSystem;
 using Aeon.Emulator.Launcher.Configuration;
-
 using Microsoft.Win32;
 
 namespace Aeon.Emulator.Launcher
 {
     public sealed partial class MainWindow : Window, System.Windows.Forms.IWin32Window
     {
-        private PerformanceWindow? performanceWindow;
-        private AeonConfiguration? currentConfig;
+        private PerformanceWindow performanceWindow;
+        private AeonConfiguration currentConfig;
         private bool hasActivated;
-        private PaletteDialog? paletteWindow;
+        private PaletteDialog paletteWindow;
         private readonly Lazy<WindowInteropHelper> interopHelper;
 
         public MainWindow()
@@ -39,7 +37,7 @@ namespace Aeon.Emulator.Launcher
             {
                 var args = App.Current.Args;
 
-                if (args?.Count > 0)
+                if (args.Count > 0)
                     QuickLaunch(args[0]);
 
                 this.hasActivated = true;
@@ -95,11 +93,8 @@ namespace Aeon.Emulator.Launcher
                         }
                         else
                         {
-                            if (string.IsNullOrWhiteSpace(config.Id) == false)
-                            {
-                                var rootPath = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData), "Aeon Emulator", "Files", config.Id, letter.ToUpperInvariant());
-                                vmDrive.Mapping = new DifferencingFolder(driveLetter, config.Archive, rootPath);
-                            }
+                            var rootPath = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData), "Aeon Emulator", "Files", config.Id, letter.ToUpperInvariant());
+                            vmDrive.Mapping = new DifferencingFolder(driveLetter, config.Archive, rootPath);
                         }
                     }
                     else
@@ -118,7 +113,7 @@ namespace Aeon.Emulator.Launcher
             vm.RegisterVirtualDevice(new Sound.PCSpeaker.InternalSpeaker());
             vm.RegisterVirtualDevice(new Sound.Blaster.SoundBlaster(vm));
             vm.RegisterVirtualDevice(new Sound.FM.FmSoundCard());
-            vm.RegisterVirtualDevice(new Sound.GeneralMidi(globalConfig is not null ? globalConfig.Mt32Enabled ? globalConfig.Mt32RomsPath : null : null));
+            vm.RegisterVirtualDevice(new Sound.GeneralMidi(globalConfig.Mt32Enabled ? globalConfig.Mt32RomsPath : null));
 
             vm.RegisterVirtualDevice(new Input.JoystickDevice());
 
@@ -141,24 +136,21 @@ namespace Aeon.Emulator.Launcher
         }
         private void LaunchCurrentConfig()
         {
-            if (this.currentConfig is not null)
+            ApplyConfiguration(this.currentConfig);
+            if (!string.IsNullOrEmpty(this.currentConfig.Launch))
             {
-                ApplyConfiguration(this.currentConfig);
-                if (!string.IsNullOrEmpty(this.currentConfig.Launch))
-                {
-                    var launchTargets = this.currentConfig.Launch.Split(new char[] { ' ', '\t' }, 2, StringSplitOptions.RemoveEmptyEntries);
-                    if (launchTargets.Length == 1)
-                        this.emulatorDisplay.EmulatorHost.LoadProgram(launchTargets[0]);
-                    else
-                        this.emulatorDisplay.EmulatorHost.LoadProgram(launchTargets[0], launchTargets[1]);
-                }
+                var launchTargets = this.currentConfig.Launch.Split(new char[] { ' ', '\t' }, 2, StringSplitOptions.RemoveEmptyEntries);
+                if (launchTargets.Length == 1)
+                    this.emulatorDisplay.EmulatorHost.LoadProgram(launchTargets[0]);
                 else
-                {
-                    this.emulatorDisplay.EmulatorHost.LoadProgram("COMMAND.COM");
-                }
-
-                this.emulatorDisplay.EmulatorHost.Run();
+                    this.emulatorDisplay.EmulatorHost.LoadProgram(launchTargets[0], launchTargets[1]);
             }
+            else
+            {
+                this.emulatorDisplay.EmulatorHost.LoadProgram("COMMAND.COM");
+            }
+
+            this.emulatorDisplay.EmulatorHost.Run();
         }
         private void QuickLaunch(string fileName)
         {
@@ -170,7 +162,7 @@ namespace Aeon.Emulator.Launcher
 
             this.LaunchCurrentConfig();
         }
-        private TaskDialogItem? ShowTaskDialog(string title, string caption, params TaskDialogItem[] items)
+        private TaskDialogItem ShowTaskDialog(string title, string caption, params TaskDialogItem[] items)
         {
             var taskDialog = new TaskDialog { Owner = this, Items = items, Icon = this.Icon, Title = title, Caption = caption };
             if (taskDialog.ShowDialog() == true)
@@ -298,7 +290,7 @@ namespace Aeon.Emulator.Launcher
                     this.Title = "Aeon";
             }
         }
-        private void PerformanceWindow_Click(object? sender, RoutedEventArgs e)
+        private void PerformanceWindow_Click(object sender, RoutedEventArgs e)
         {
             if (performanceWindow != null)
                 performanceWindow.Activate();
@@ -311,7 +303,7 @@ namespace Aeon.Emulator.Launcher
                 performanceWindow.Show();
             }
         }
-        private void PerformanceWindow_Closed(object? sender, EventArgs e)
+        private void PerformanceWindow_Closed(object sender, EventArgs e)
         {
             if (performanceWindow != null)
             {
@@ -352,7 +344,7 @@ namespace Aeon.Emulator.Launcher
                 InstructionLogWindow.ShowDialog(log);
             }
         }
-        private void PaletteWindow_Closed(object? sender, EventArgs e)
+        private void PaletteWindow_Closed(object sender, EventArgs e)
         {
             if (this.paletteWindow != null)
             {

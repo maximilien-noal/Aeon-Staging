@@ -1,5 +1,4 @@
 ﻿using System.Windows;
-
 using Aeon.Emulator.DebugSupport;
 using Aeon.Emulator.Launcher.Debugger;
 
@@ -11,7 +10,7 @@ namespace Aeon.Emulator.Launcher
         public static readonly DependencyProperty IsHexFormatProperty = AeonDebug.IsHexFormatProperty.AddOwner(typeof(DebuggerWindow));
         public static readonly DependencyProperty InstructionLogProperty = DependencyProperty.Register("InstructionLog", typeof(InstructionLog), typeof(DebuggerWindow));
 
-        private Disassembler? disassembler;
+        private Disassembler disassembler;
 
         public DebuggerWindow() => this.InitializeComponent();
 
