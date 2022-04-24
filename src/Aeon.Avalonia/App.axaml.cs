@@ -1,6 +1,5 @@
 using System;
 
-using Aeon.Avalonia.ViewModels;
 using Aeon.Avalonia.Views;
 
 using Avalonia;
@@ -24,11 +23,7 @@ public partial class App : Application
     {
         if (ApplicationLifetime is IClassicDesktopStyleApplicationLifetime desktop)
         {
-            desktop.MainWindow = new MainWindow
-            {
-                DataContext = new MainWindowViewModel()
-            };
-            MainWindow = (MainWindow)desktop.MainWindow;
+            desktop.MainWindow = MainWindow = new MainWindow();
             Args = desktop.Args;
         }
 
