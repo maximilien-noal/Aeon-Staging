@@ -1,4 +1,5 @@
 using System;
+using System.Collections.ObjectModel;
 
 using Aeon.Avalonia.Views;
 
@@ -18,7 +19,7 @@ public partial class App : Application
 
     public static MainWindow? MainWindow { get; private set; }
 
-    public static string[] Args { get; private set; } = Array.Empty<string>();
+    public static ReadOnlyCollection<string> Args { get; private set; } = new(Array.Empty<string>());
 
     public override void OnFrameworkInitializationCompleted()
     {
@@ -26,7 +27,7 @@ public partial class App : Application
         {
             desktop.ShutdownMode = ShutdownMode.OnMainWindowClose;
             desktop.MainWindow = MainWindow = new MainWindow();
-            Args = desktop.Args;
+            Args = new(desktop.Args);
         }
 
         base.OnFrameworkInitializationCompleted();
