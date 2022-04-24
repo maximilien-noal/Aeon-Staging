@@ -3,6 +3,7 @@ using System;
 using Aeon.Avalonia.Views;
 
 using Avalonia;
+using Avalonia.Controls;
 using Avalonia.Controls.ApplicationLifetimes;
 using Avalonia.Markup.Xaml;
 
@@ -23,6 +24,7 @@ public partial class App : Application
     {
         if (ApplicationLifetime is IClassicDesktopStyleApplicationLifetime desktop)
         {
+            desktop.ShutdownMode = ShutdownMode.OnMainWindowClose;
             desktop.MainWindow = MainWindow = new MainWindow();
             Args = desktop.Args;
         }
