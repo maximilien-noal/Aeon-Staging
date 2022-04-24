@@ -53,4 +53,9 @@
 		<ProjectReference Include="..\Aeon.Emulator.Sound\Aeon.Emulator.Sound.csproj" />
 		<ProjectReference Include="..\Aeon.Emulator\Aeon.Emulator.csproj" />
 	</ItemGroup>
+	<ItemGroup>
+	  <Compile Update="InstructionLogWindow.axaml.cs">
+	    <DependentUpon>InstructionLogWindow.axaml</DependentUpon>
+	  </Compile>
+	</ItemGroup>
 </Project>
