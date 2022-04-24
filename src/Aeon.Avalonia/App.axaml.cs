@@ -1,29 +1,37 @@
-using Avalonia;
-using Avalonia.Controls.ApplicationLifetimes;
-using Avalonia.Markup.Xaml;
+using System;
+
 using Aeon.Avalonia.ViewModels;
 using Aeon.Avalonia.Views;
 
-namespace Aeon.Avalonia
+using Avalonia;
+using Avalonia.Controls.ApplicationLifetimes;
+using Avalonia.Markup.Xaml;
+
+namespace Aeon.Avalonia;
+
+public partial class App : Application
 {
-    public partial class App : Application
+    public override void Initialize()
     {
-        public override void Initialize()
-        {
-            AvaloniaXamlLoader.Load(this);
-        }
+        AvaloniaXamlLoader.Load(this);
+    }
 
-        public override void OnFrameworkInitializationCompleted()
+    public static MainWindow? MainWindow { get; private set; }
+
+    public static string[] Args { get; private set; } = Array.Empty<string>();
+
+    public override void OnFrameworkInitializationCompleted()
+    {
+        if (ApplicationLifetime is IClassicDesktopStyleApplicationLifetime desktop)
         {
-            if (ApplicationLifetime is IClassicDesktopStyleApplicationLifetime desktop)
+            desktop.MainWindow = new MainWindow
             {
-                desktop.MainWindow = new MainWindow
-                {
-                    DataContext = new MainWindowViewModel(),
-                };
-            }
-
-            base.OnFrameworkInitializationCompleted();
+                DataContext = new MainWindowViewModel()
+            };
+            MainWindow = (MainWindow)desktop.MainWindow;
+            Args = desktop.Args;
         }
+
+        base.OnFrameworkInitializationCompleted();
     }
 }
