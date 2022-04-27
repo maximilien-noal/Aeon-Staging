@@ -11,6 +11,7 @@ namespace Aeon.Emulator.Input
         public unsafe DirectInput8V* Vtbl;
     }
 
+    [SupportedOSPlatform("windows")]
     [StructLayout(LayoutKind.Sequential)]
     internal unsafe struct DirectInput8V
     {
@@ -46,6 +47,7 @@ namespace Aeon.Emulator.Input
     //[UnmanagedFunctionPointer(CallingConvention.StdCall)]
     //internal unsafe delegate uint CreateDeviceProc(IntPtr pThis, Guid* rguid, DirectInputDevice8Inst** lplpDirectInputDevice, IntPtr pUnkOuter);
 
+    [SupportedOSPlatform("windows")]
     public enum DeviceClass
     {
         All = 0,
@@ -55,6 +57,7 @@ namespace Aeon.Emulator.Input
         GameController = 4
     }
 
+    [SupportedOSPlatform("windows")]
     [Flags]
     public enum DeviceEnumFlags
     {
@@ -66,6 +69,7 @@ namespace Aeon.Emulator.Input
         IncludeHidden = 0x00040000
     }
 
+    [SupportedOSPlatform("windows")]
     [StructLayout(LayoutKind.Sequential)]
     internal struct DIDEVICEINSTANCE
     {

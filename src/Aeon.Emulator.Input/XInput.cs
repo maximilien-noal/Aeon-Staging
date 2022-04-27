@@ -42,6 +42,7 @@ namespace Aeon.Emulator.Input
             }
         }
 
+        [SupportedOSPlatform("windows")]
         private sealed class Controller : IGameController
         {
             private const long DebouncePeriod = 10;
