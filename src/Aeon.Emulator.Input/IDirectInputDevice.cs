@@ -11,6 +11,7 @@ namespace Aeon.Emulator.Input
         public unsafe DirectInputDevice8V* Vtbl;
     }
 
+    [SupportedOSPlatform("windows")]
     [StructLayout(LayoutKind.Sequential)]
     internal unsafe struct DirectInputDevice8V
     {
@@ -68,6 +69,7 @@ namespace Aeon.Emulator.Input
     //[UnmanagedFunctionPointer(CallingConvention.StdCall)]
     //internal unsafe delegate uint SetCooperativeLevelProc(IntPtr pThis, IntPtr hwnd, uint dwFlags);
 
+    [SupportedOSPlatform("windows")]
     [StructLayout(LayoutKind.Sequential)]
     internal struct DIJOYSTATE
     {
@@ -76,6 +78,7 @@ namespace Aeon.Emulator.Input
         public unsafe fixed byte rgbButtons[4];
     }
 
+    [SupportedOSPlatform("windows")]
     internal static class DeviceObjectTypes
     {
         public static readonly Guid XAxis = new(0xA36D02E0, 0xC9F3, 0x11CF, 0xBF, 0xC7, 0x44, 0x45, 0x53, 0x54, 0x00, 0x00);
@@ -126,6 +129,7 @@ namespace Aeon.Emulator.Input
         }
     }
 
+    [SupportedOSPlatform("windows")]
     [StructLayout(LayoutKind.Sequential)]
     internal struct DIOBJECTDATAFORMAT
     {
@@ -135,6 +139,7 @@ namespace Aeon.Emulator.Input
         public uint dwFlags;
     }
 
+    [SupportedOSPlatform("windows")]
     [StructLayout(LayoutKind.Sequential)]
     internal struct DIDATAFORMAT
     {
