@@ -6,7 +6,7 @@ namespace Aeon.Emulator.Launcher
     /// <summary>
     /// Implements ICommand using arbitrary delegates.
     /// </summary>
-    internal sealed class SimpleCommand : ICommand
+    public sealed class SimpleCommand : ICommand
     {
         private readonly Func<bool> canExecute;
         private readonly Action execute;

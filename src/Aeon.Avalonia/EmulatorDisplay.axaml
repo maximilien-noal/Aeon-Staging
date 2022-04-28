@@ -19,7 +19,6 @@
 	<Viewbox Name="outerViewbox">
 		<Canvas Name="displayArea">
 			<Image Name="displayImage" Stretch="None" />
-			<!--PointerPressed="DisplayImage_MouseDown" PointerReleased="DisplayImage_MouseUp" PointerMoved="DisplayImage_MouseMove" />-->
 			<Rectangle Name="cursorRectangle" Width="8" Height="2" Fill="Gray" IsVisible="False" />
 			<Image Name="mouseImage" Source="{StaticResource defaultArrow}" IsVisible="False" />
 		</Canvas>
