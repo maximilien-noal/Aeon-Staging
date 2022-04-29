@@ -1,0 +1,62 @@
+<Window xmlns="https://github.com/avaloniaui"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+        xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+        mc:Ignorable="d" d:DesignWidth="800" d:DesignHeight="450"
+        x:Class="Aeon.Emulator.Launcher.PerformanceWindow"
+		Title="Aeon Performance" Height="300" Width="500" ShowInTaskbar="False" Icon="Aeon.ico" MinWidth="400" MinHeight="200">
+	<DockPanel>
+		<Label Content="Emulator Statistics" FontSize="20" Foreground="DarkBlue" DockPanel.Dock="Top" />
+		<ScrollViewer VerticalScrollBarVisibility="Auto">
+			<StackPanel Margin="20,0,0,0">
+				<Rectangle />
+				<Expander Name="processorExpander" IsExpanded="True">
+					<Expander.Header>
+						<Label Content="Processor" FontSize="16" Foreground="SteelBlue" />
+					</Expander.Header>
+					<Grid Margin="30,0,0,0">
+						<Grid.ColumnDefinitions>
+							<ColumnDefinition Width="Auto" />
+							<ColumnDefinition Width="*" />
+						</Grid.ColumnDefinitions>
+						<Grid.RowDefinitions>
+							<RowDefinition Height="Auto" />
+							<RowDefinition Height="Auto" />
+						</Grid.RowDefinitions>
+						<Label Content="Instructions emulated:" Height="28" HorizontalAlignment="Left"  VerticalAlignment="Top"  />
+						<Label Content="Instructions per second:" Height="28" HorizontalAlignment="Left" VerticalAlignment="Top" Grid.Row="1" />
+						<Label Name="instructionsLabel" Content="0" Height="28" HorizontalAlignment="Right" VerticalAlignment="Top" Grid.Column="1" />
+						<Label Name="ipsLabel" Content="0" Height="28" HorizontalAlignment="Right" VerticalAlignment="Top" Grid.Column="1" Grid.Row="1" />
+					</Grid>
+				</Expander>
+				<Rectangle />
+				<Expander Name="memoryExpander" IsExpanded="True">
+					<Expander.Header>
+						<Label Content="Memory" FontSize="16" Foreground="SteelBlue" />
+					</Expander.Header>
+					<Grid Margin="30,0,0,0">
+						<Grid.ColumnDefinitions>
+							<ColumnDefinition Width="Auto" />
+							<ColumnDefinition Width="*" />
+						</Grid.ColumnDefinitions>
+						<Grid.RowDefinitions>
+							<RowDefinition Height="Auto" />
+							<RowDefinition Height="Auto" />
+							<RowDefinition Height="Auto" />
+						</Grid.RowDefinitions>
+						<Label Content="Conventional memory:" />
+						<Label Name="conventionalMemoryLabel" Grid.Column="1" HorizontalAlignment="Right" />
+						<Label Content="Expanded memory:" Grid.Row="1" />
+						<Label Name="expandedMemoryLabel" Grid.Column="1" Grid.Row="1" HorizontalAlignment="Right" />
+						<Label Content="Extended memory:" Grid.Row="2" />
+						<Label Name="extendedMemoryLabel" Grid.Column="1" Grid.Row="2" HorizontalAlignment="Right" />
+					</Grid>
+				</Expander>
+				<Rectangle />
+				<Expander Header="I/O" IsVisible="False">
+				</Expander>
+			</StackPanel>
+		</ScrollViewer>
+	</DockPanel>
+</Window>
+
