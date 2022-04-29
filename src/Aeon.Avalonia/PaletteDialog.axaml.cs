@@ -26,7 +26,7 @@ public partial class PaletteDialog : Window
     /// </summary>
     public EmulatorDisplay EmulatorDisplay
     {
-        get => (EmulatorDisplay)this.GetValue(EmulatorDisplayProperty);
+        get => this.GetValue(EmulatorDisplayProperty);
         set => this.SetValue(EmulatorDisplayProperty, value);
     }
 
