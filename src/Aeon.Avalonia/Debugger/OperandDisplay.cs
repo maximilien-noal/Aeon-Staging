@@ -66,7 +66,7 @@ namespace Aeon.Emulator.Launcher.Debugger
         /// </summary>
         public Instruction Instruction
         {
-            get => (Instruction)this.GetValue(InstructionProperty);
+            get => this.GetValue(InstructionProperty);
             set => this.SetValue(InstructionProperty, value);
         }
 
@@ -75,7 +75,7 @@ namespace Aeon.Emulator.Launcher.Debugger
         /// </summary>
         public bool IsHexFormat
         {
-            get => (bool)this.GetValue(IsHexFormatProperty);
+            get => this.GetValue(IsHexFormatProperty);
             set => this.SetValue(IsHexFormatProperty, value);
         }
 
@@ -84,7 +84,7 @@ namespace Aeon.Emulator.Launcher.Debugger
         /// </summary>
         public CodeOperand Operand
         {
-            get => (CodeOperand)this.GetValue(OperandProperty);
+            get => this.GetValue(OperandProperty);
             set => this.SetValue(OperandProperty, value);
         }
 
@@ -93,7 +93,7 @@ namespace Aeon.Emulator.Launcher.Debugger
         /// </summary>
         public IRegisterContainer RegisterSource
         {
-            get => (IRegisterContainer)this.GetValue(RegisterSourceProperty);
+            get => this.GetValue(RegisterSourceProperty);
             set => this.SetValue(RegisterSourceProperty, value);
         }
 

@@ -115,13 +115,13 @@ public partial class EmulatorDisplay : Window
     /// <summary>
     /// Gets the current state of the emulator.  This is a dependency property.
     /// </summary>
-    public EmulatorState EmulatorState => (EmulatorState)this.GetValue(EmulatorStateProperty);
+    public EmulatorState EmulatorState => this.GetValue(EmulatorStateProperty);
     /// <summary>
     /// Gets or sets a value indicating whether the correct aspect ratio is maintained. This is a dependency property.
     /// </summary>
     public bool IsAspectRatioLocked
     {
-        get => (bool)this.GetValue(IsAspectRatioLockedProperty);
+        get => this.GetValue(IsAspectRatioLockedProperty);
         set => this.SetValue(IsAspectRatioLockedProperty, value);
     }
     /// <summary>
@@ -129,19 +129,19 @@ public partial class EmulatorDisplay : Window
     /// </summary>
     public MouseInputMode MouseInputMode
     {
-        get => (MouseInputMode)this.GetValue(MouseInputModeProperty);
+        get => this.GetValue(MouseInputModeProperty);
         set => this.SetValue(MouseInputModeProperty, value);
     }
     /// <summary>
     /// Gets a value indicating whether the emulator has captured mouse input.  This is a dependency property.
     /// </summary>
-    public bool IsMouseCursorCaptured => (bool)this.GetValue(IsMouseCursorCapturedProperty);
+    public bool IsMouseCursorCaptured => this.GetValue(IsMouseCursorCapturedProperty);
     /// <summary>
     /// Gets or sets the emulation speed.  This is a dependency property.
     /// </summary>
     public int EmulationSpeed
     {
-        get => (int)this.GetValue(EmulationSpeedProperty);
+        get => this.GetValue(EmulationSpeedProperty);
         set => this.SetValue(EmulationSpeedProperty, value);
     }
     /// <summary>
@@ -149,7 +149,7 @@ public partial class EmulatorDisplay : Window
     /// </summary>
     public ScalingAlgorithm ScalingAlgorithm
     {
-        get => (ScalingAlgorithm)this.GetValue(ScalingAlgorithmProperty);
+        get => this.GetValue(ScalingAlgorithmProperty);
         set => this.SetValue(ScalingAlgorithmProperty, value);
     }
     /// <summary>
@@ -366,7 +366,7 @@ public partial class EmulatorDisplay : Window
     }
     private static bool EmulationSpeedChangedValidate(int value)
     {
-        int n = (int)value;
+        int n = value;
         return n >= EmulatorHost.MinimumSpeed;
     }
 
