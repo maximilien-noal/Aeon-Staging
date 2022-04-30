@@ -9,7 +9,15 @@ namespace Aeon.Emulator.Input
 
         bool TryGetState(out GameControllerState state);
 
-        public static IGameController GetDefault() => new DefaultController();
+        public static IGameController? GetDefault()
+        {
+            if (OperatingSystem.IsWindows())
+            {
+                return new DefaultController();
+            }
+
+            return null;
+        }
     }
 
     public readonly record struct GameControllerState(float XAxis, float YAxis, GameControllerButtons Buttons);

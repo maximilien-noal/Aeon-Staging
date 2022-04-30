@@ -28,7 +28,7 @@ namespace Aeon.Emulator.Input
         private const double Factor = ResistanceFactor * MaxResistance;
 
         private VirtualMachine vm;
-        private readonly IGameController controller = IGameController.GetDefault();
+        private readonly IGameController? controller = IGameController.GetDefault();
         private long xAxisDischargeTicks;
         private long yAxisDischargeTicks;
         private readonly Stopwatch dischargeStart = new();
@@ -49,6 +49,11 @@ namespace Aeon.Emulator.Input
         byte IInputPort.ReadByte(int port)
         {
             int portValue = 0;
+
+            if (this.controller is null)
+            {
+                return 0xF0;
+            }
 
             if (!this.controller.TryGetState(out var state))
                 return 0xF0;
@@ -75,7 +80,7 @@ namespace Aeon.Emulator.Input
         ushort IInputPort.ReadWord(int port) => ((IInputPort)this).ReadByte(port);
         void IOutputPort.WriteByte(int port, byte value)
         {
-            if (this.controller.TryGetState(out var state))
+            if (this.controller is not null && this.controller.TryGetState(out var state))
             {
                 var name = this.controller.Name;
                 if (this.controllerName != name)
@@ -111,7 +116,7 @@ namespace Aeon.Emulator.Input
             if (!this.disposed)
             {
                 this.disposed = true;
-                this.controller.Dispose();
+                this.controller?.Dispose();
             }
         }
 
