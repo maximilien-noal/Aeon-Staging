@@ -33,19 +33,19 @@
                 <MenuItem Header="_View">
                     <MenuItem>
                         <MenuItem.Header>
-                            <StackPanel Orientation="Horizontal">
-                                <CheckBox Name="viewToolBarMenuItem" IsChecked="True" />
-                                <Label Content="_Toolbar" />
-                            </StackPanel>
+                            <WrapPanel Orientation="Horizontal">
+                                <CheckBox VerticalAlignment="Center" HorizontalAlignment="Left" Name="viewToolBarMenuItem" IsChecked="True" />
+                                <Label VerticalAlignment="Center" HorizontalAlignment="Left" Content="_Toolbar" />
+                            </WrapPanel>
                         </MenuItem.Header>
                     </MenuItem>
                     <Separator />
                     <MenuItem>
                         <MenuItem.Header>
-                            <StackPanel Orientation="Horizontal">
-                                <CheckBox IsChecked="{Binding IsAspectRatioLocked}" />
-                                <Label Content="_Lock Aspect Ratio" />
-                            </StackPanel>
+                            <WrapPanel Orientation="Horizontal">
+                                <CheckBox VerticalAlignment="Center" HorizontalAlignment="Left" IsChecked="{Binding IsAspectRatioLocked}" />
+                                <Label VerticalAlignment="Center" HorizontalAlignment="Left" Content="_Lock Aspect Ratio" />
+                            </WrapPanel>
                         </MenuItem.Header>
                     </MenuItem>
                     <MenuItem Header="_Full Screen" Command="{x:Static local:EmulatorDisplay.FullScreenCommand}" />
