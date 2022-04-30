@@ -33,7 +33,7 @@ namespace Aeon.Emulator.Launcher
         public void BeginInvoke(Delegate method, object source, EventArgs e)
         {
             var action = new Action(() => method.DynamicInvoke(source, e));
-            this.dispatcher.Post(action, DispatcherPriority.MinValue);
+            this.dispatcher.Post(action, DispatcherPriority.MaxValue);
         }
     }
 }
