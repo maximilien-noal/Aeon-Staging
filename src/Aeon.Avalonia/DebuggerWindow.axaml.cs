@@ -34,11 +34,6 @@ public partial class DebuggerWindow : Window
 #endif
     }
 
-    private void InitializeComponent()
-    {
-        AvaloniaXamlLoader.Load(this);
-    }
-
     public void UpdateDebugger()
     {
     }

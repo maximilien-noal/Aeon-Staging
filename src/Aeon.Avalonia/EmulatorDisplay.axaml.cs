@@ -477,10 +477,6 @@ public partial class EmulatorDisplay : UserControl
             }
         }
     }
-    private void InitializeComponent()
-    {
-        AvaloniaXamlLoader.Load(this);
-    }
 
     public delegate void EmulationErrorRoutedEventHandler(object sender, EmulationErrorRoutedEventArgs e);
 }

@@ -20,11 +20,6 @@ internal sealed partial class InstructionLogWindow : Window
 #endif
     }
 
-    private void InitializeComponent()
-    {
-        AvaloniaXamlLoader.Load(this);
-    }
-
     public static void ShowDialog(LogAccessor log)
     {
         var window = new InstructionLogWindow { Owner = App.MainWindow };
