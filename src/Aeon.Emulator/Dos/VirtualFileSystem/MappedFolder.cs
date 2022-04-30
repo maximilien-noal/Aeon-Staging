@@ -171,7 +171,10 @@ namespace Aeon.Emulator.Dos.VirtualFileSystem
             if (path == null)
                 throw new ArgumentNullException(nameof(path));
 
-            return Path.Combine(this.HostPath, path.Path);
+            var realPath = Directory.GetFiles(this.HostPath, path.Path, new EnumerationOptions() {
+                MatchCasing = MatchCasing.CaseInsensitive
+            });
+            return realPath?.FirstOrDefault();
         }
     }
 }
