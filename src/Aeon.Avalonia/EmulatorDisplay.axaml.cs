@@ -16,7 +16,7 @@ using global::Avalonia.Media.Imaging;
 using global::Avalonia.Platform;
 using global::Avalonia.Threading;
 
-public partial class EmulatorDisplay : Window
+public partial class EmulatorDisplay : UserControl
 {
     private static readonly StyledProperty<EmulatorState> EmulatorStateProperty = AvaloniaProperty.Register<EmulatorDisplay, EmulatorState>(nameof(EmulatorState), EmulatorState.NoProgram);
     private static readonly StyledProperty<bool> IsMouseCursorCapturedProperty = AvaloniaProperty.Register<EmulatorDisplay, bool>(nameof(IsMouseCursorCaptured), false);
@@ -54,12 +54,12 @@ public partial class EmulatorDisplay : Window
         this.resumeCommand = new SimpleCommand(() => this.EmulatorState == EmulatorState.Paused, () => { this.EmulatorHost.Run(); });
         this.pauseCommand = new SimpleCommand(() => this.EmulatorState == EmulatorState.Running, () => { this.EmulatorHost.Pause(); });
         InitializeComponent();
-        displayImage.PointerPressed += DisplayImage_MouseDown;
-        displayImage.PointerReleased += DisplayImage_MouseUp;
-        displayImage.PointerMoved += DisplayImage_MouseMove;
-#if DEBUG
-        this.AttachDevTools();
-#endif
+        if(displayImage is not null)
+        {
+            displayImage.PointerPressed += DisplayImage_MouseDown;
+            displayImage.PointerReleased += DisplayImage_MouseUp;
+            displayImage.PointerMoved += DisplayImage_MouseMove;
+        }
         updateHandler += this.GraphicalUpdate;
     }
 
@@ -250,7 +250,7 @@ public partial class EmulatorDisplay : Window
         base.OnLostFocus(e);
     }
 
-    private void GraphicalUpdate(object sender, EventArgs e)
+    private void GraphicalUpdate(object? sender, EventArgs e)
     {
         if (this.emulator != null)
         {
