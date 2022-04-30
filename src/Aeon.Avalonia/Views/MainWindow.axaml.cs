@@ -125,8 +125,8 @@ public partial class MainWindow : Window
 
         emulatorDisplay.EmulationSpeed = config.EmulationSpeed ?? 20_000_000;
         emulatorDisplay.MouseInputMode = config.IsMouseAbsolute ? MouseInputMode.Absolute : MouseInputMode.Relative;
-        toolBar.IsVisible = config.HideUserInterface;
-        menuContainer.IsVisible = config.HideUserInterface;
+        toolBar.IsVisible = !config.HideUserInterface;
+        menuContainer.IsVisible = !config.HideUserInterface;
         if (!string.IsNullOrEmpty(config.Title))
             this.Title = config.Title;
 
