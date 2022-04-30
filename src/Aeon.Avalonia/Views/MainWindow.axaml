@@ -2,22 +2,19 @@
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
         xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
-        xmlns:rendering="clr-namespace:Aeon.Emulator.Video.Rendering;assembly=Aeon.Emulator"
         xmlns:local="clr-namespace:Aeon.Emulator.Launcher"
-        xmlns:sys="clr-namespace:System;assembly=System.Runtime"
         mc:Ignorable="d" d:DesignWidth="800" d:DesignHeight="450"
         x:Class="Aeon.Emulator.Launcher.Views.MainWindow"
         Name="RootWindow"
         Title="Aeon" Width="800" Height="600" MinWidth="360" MinHeight="270" Icon="/Aeon.ico"
-        DataContext="{Binding ElementName=emulatorDisplay}"
-        Background="{StaticResource BackgroundGradient}">
-        <Window.Resources>
-                <local:MouseModeConverter x:Key="mouseModeConverter" />
-                <local:SpeedConverter x:Key="speedConverter" />
-        </Window.Resources>
-        <DockPanel>
-        <StackPanel Name="menuContainer" DockPanel.Dock="Top">
-            <MenuItem Name="mainMenu">
+        DataContext="{Binding ElementName=emulatorDisplay}">
+    <Window.Resources>
+        <local:MouseModeConverter x:Key="mouseModeConverter" />
+        <local:SpeedConverter x:Key="speedConverter" />
+    </Window.Resources>
+    <DockPanel>
+        <StackPanel Orientation="Vertical" DockPanel.Dock="Top">
+            <Menu Name="menuContainer">
                 <MenuItem Header="_Aeon">
                     <MenuItem Header="_Quick Launch Program..." Click="QuickLaunch_Click" />
                     <MenuItem Header="_Quick Launch Command Prompt..." Click="CommandPrompt_Click" />
@@ -26,12 +23,12 @@
                     <MenuItem Header="R_esume" Command="{Binding ResumeCommand}" />
                     <Separator />
                     <MenuItem Header="E_xit" DataContext="{Binding ElementName=RootWindow}"
-                              Command="{Binding CloseMethodCommand}" />
+                                Command="{Binding CloseMethodCommand}" />
                 </MenuItem>
                 <MenuItem Header="_Edit">
-                    <MenuItem Header="_Copy Screen" 
-                              DataContext="{Binding ElementName=RootWindow}"
-                              Command="{Binding CopyCommand}" />
+                    <MenuItem Header="_Copy Screen"
+                                DataContext="{Binding ElementName=RootWindow}"
+                                Command="{Binding CopyCommand}" />
                 </MenuItem>
                 <MenuItem Header="_View">
                     <MenuItem>
@@ -41,6 +38,7 @@
                                 <Label Content="_Toolbar" />
                             </StackPanel>
                         </MenuItem.Header>
+                    </MenuItem>
                     <Separator />
                     <MenuItem>
                         <MenuItem.Header>
@@ -55,86 +53,51 @@
                     <MenuItem Header="_Performance Window" Click="PerformanceWindow_Click" />
                 </MenuItem>
                 <MenuItem Header="_Debug">
-                    <MenuItem Name="showDebuggerMenuItem" Header="Debugger" Click="ShowDebugger_Click" Tag="__INTERNAL__" />
+                    <MenuItem Name="showDebuggerMenuItem" Header="Debugger" Click="ShowDebugger_Click"
+                                Tag="__INTERNAL__" />
                     <MenuItem Name="colorPaletteMenuItem" Header="Color Palette" Click="ShowPalette_Click" />
                     <MenuItem Header="Dump Video RAM" Click="DumpVideoRam_Click" />
                     <MenuItem Header="Open Instruction Log..." Click="OpenInstructionLog_Click" />
                 </MenuItem>
-            </MenuItem>
-            <StackPanel Orientation="Horizontal" Name="toolBar" IsVisible="{Binding IsChecked, ElementName=viewToolBarMenuItem}">
-                <StackPanel.Background>
-                    <LinearGradientBrush StartPoint="0.5,0" EndPoint="0.5,1">
-                        <GradientStop Color="WhiteSmoke" Offset="0.0" />
-                        <GradientStop Color="DimGray" Offset="1.0" />
-                    </LinearGradientBrush>
-                </StackPanel.Background>
-                <StackPanel Orientation="Horizontal" Background="Transparent">
-                    <StackPanel.Resources>
-                        <Style x:Key="commandStyle" Selector="StackPanel">
-                            <Setter Property="Shape.Stroke" Value="DarkGreen" />
-                            <Setter Property="Shape.Fill">
-                                <Setter.Value>
-                                    <LinearGradientBrush StartPoint="0,0" EndPoint="1,1">
-                                        <GradientStop Color="LightGreen" Offset="0.0" />
-                                        <GradientStop Color="DarkGreen" Offset="1.0" />
-                                    </LinearGradientBrush>
-                                </Setter.Value>
-                            </Setter>
-                        </Style>
-                    </StackPanel.Resources>
+            </Menu>
+            <WrapPanel Orientation="Horizontal" Name="toolBar"
+                        IsVisible="{Binding IsChecked, ElementName=viewToolBarMenuItem}">
+                <WrapPanel Orientation="Horizontal">
                     <Button ToolTip.Tip="Run Program..." Click="QuickLaunch_Click">
                         <Image Width="16" Height="16" Source="/Resources/openfolderHS.png" />
                     </Button>
                     <Separator />
-                    <Button Command="{Binding ResumeCommand}" ToolTip.Tip="Resume">
-                        <Canvas Width="16" Height="16">
-                            <Polygon Points="0,0 0,9 5,4 0,0">
-                                <Polygon.RenderTransform>
-                                    <TranslateTransform X="6" Y="4" />
-                                </Polygon.RenderTransform>
-                            </Polygon>
-                        </Canvas>
+                    <Button Content="Resume" Command="{Binding ResumeCommand}" ToolTip.Tip="Resume">
                     </Button>
-                    <Button Command="{Binding PauseCommand}" ToolTip.Tip="Pause">
-                        <Canvas Width="16" Height="16">
-                            <Rectangle Width="4" Height="10">
-                            </Rectangle>
-                            <Rectangle Width="4" Height="10" Canvas.Left="5">
-                            </Rectangle>
-                            <Canvas.RenderTransform>
-                                <TranslateTransform X="3" Y="3" />
-                            </Canvas.RenderTransform>
-                        </Canvas>
+                    <Button Content="Pause" Command="{Binding PauseCommand}" ToolTip.Tip="Pause">
                     </Button>
                     <Separator />
                     <ToggleButton Name="mouseIntegrationButton" ToolTip.Tip="Toggle Mouse Integration"
-                              IsChecked="{Binding MouseInputMode, Converter={StaticResource mouseModeConverter}}">
+                                    IsChecked="{Binding MouseInputMode, Converter={StaticResource mouseModeConverter}}">
                         <Image Width="16" Height="16" Source="/Resources/MouseIntegration.png" />
                     </ToggleButton>
                     <Separator />
                     <Label Content="Speed:" />
-                    <Button ToolTip.Tip="Slow Down Emulation"
-                        Width="18" Height="18" Padding="0" Click="SlowerButton_Click">
-                        <!--Template="{StaticResource roundButtonTemplate}"-->
+                    <Button Content="Slow Down Emulation" ToolTip.Tip="Slow Down Emulation"
+                            Width="18" Height="18" Padding="0" Click="SlowerButton_Click">
                         <Label FontFamily="Courier New" FontWeight="Bold" Content="-" Padding="0" />
                     </Button>
                     <TextBlock Width="50" Text="{Binding EmulationSpeed, Converter={StaticResource speedConverter}}"
-                           TextAlignment="Center" VerticalAlignment="Center" />
-                    <Button ToolTip.Tip="Speed Up Emulation"
-                        Width="18" Height="18" Padding="0" Click="FasterButton_Click" >
-                        <!--Template="{StaticResource roundButtonTemplate}"-->
+                                TextAlignment="Center" VerticalAlignment="Center" />
+                    <Button Content="Speed Up Emulation" ToolTip.Tip="Speed Up Emulation"
+                            Width="18" Height="18" Padding="0" Click="FasterButton_Click">
                         <Label FontFamily="Courier New" FontWeight="Bold" Content="+" Padding="0" />
                     </Button>
                     <Separator />
                     <Label Content="Scaler:" />
                     <ComboBox Items="{Binding ElementName=RootWindow, Path=ScalerValues}"
-                        SelectedItem="{Binding ScalingAlgorithm}"
-                        Background="LightGray" />
-                </StackPanel>
-            </StackPanel></MenuItem>
+                                SelectedItem="{Binding ScalingAlgorithm}" />
+                </WrapPanel>
+            </WrapPanel>
         </StackPanel>
         <local:EmulatorDisplay x:Name="emulatorDisplay" EmulatorStateChanged="EmulatorDisplay_EmulatorStateChanged"
-                             EmulationError="EmulatorDisplay_EmulationError" CurrentProcessChanged="EmulatorDisplay_CurrentProcessChanged"
-                             Margin="0,7,0,0" />
+                               EmulationError="EmulatorDisplay_EmulationError"
+                               CurrentProcessChanged="EmulatorDisplay_CurrentProcessChanged"
+                               Background="{StaticResource BackgroundGradient}" />
     </DockPanel>
 </Window>
