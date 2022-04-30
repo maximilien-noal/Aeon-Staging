@@ -64,10 +64,21 @@ public partial class PerformanceWindow : Window
     }
     public PerformanceWindow()
     {
+        Initialize();
+    }
+
+    private void Initialize()
+    {
         InitializeComponent();
 #if DEBUG
         this.AttachDevTools();
 #endif
+    }
+
+    public PerformanceWindow(WindowBase owner)
+    {
+        this.Owner = owner;
+        Initialize();
     }
 
     private void InitializeComponent()

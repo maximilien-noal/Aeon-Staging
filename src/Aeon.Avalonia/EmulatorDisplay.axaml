@@ -12,7 +12,7 @@
 		<Pen x:Key="blackPen" Brush="Black" Thickness="1" />
 		<DrawingImage x:Key="defaultArrow">
 			<DrawingImage.Drawing>
-				<GeometryDrawing Brush="White" Geometry="{x:Static Member=local:Geometries.Arrow}" Pen="{StaticResource blackPen}" />
+				<GeometryDrawing Brush="White" Geometry="{x:Static local:Geometries.Arrow}" Pen="{StaticResource blackPen}" />
 			</DrawingImage.Drawing>
 		</DrawingImage>
 	</ContentControl.Resources>

@@ -1,12 +1,11 @@
 using System;
 using System.Collections.ObjectModel;
 
-using Aeon.Avalonia.Views;
-
 using Avalonia;
 using Avalonia.Controls;
 using Avalonia.Controls.ApplicationLifetimes;
 using Avalonia.Markup.Xaml;
+using MainWindow = Aeon.Emulator.Launcher.Views.MainWindow;
 
 namespace Aeon.Avalonia;
 
