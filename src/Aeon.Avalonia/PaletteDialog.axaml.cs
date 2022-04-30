@@ -44,14 +44,9 @@ public partial class PaletteDialog : Window
                 return null;
         }
     }
-
-    /// <summary>
-    /// Invoked when the window is initialized.
-    /// </summary>
-    /// <param name="e">Unused EventArgs instance.</param>
-    protected override void OnInitialized()
+    protected override void OnOpened(EventArgs e)
     {
-        base.OnInitialized();
+        base.OnOpened(e);
         for (int i = 0; i < 256; i++)
             this.grid.Children.Add(new Rectangle() { Fill = new SolidColorBrush() });
 
@@ -91,10 +86,5 @@ public partial class PaletteDialog : Window
 #if DEBUG
         this.AttachDevTools();
 #endif
-    }
-
-    private void InitializeComponent()
-    {
-        AvaloniaXamlLoader.Load(this);
     }
 }
