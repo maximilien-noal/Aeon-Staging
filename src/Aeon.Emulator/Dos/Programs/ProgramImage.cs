@@ -63,7 +63,7 @@ namespace Aeon.Emulator.Dos.Programs
         /// <summary>
         /// Reads an executable file image into memory.
         /// </summary>
-        /// <param name="fileName">Full path to file to load in the firtual file system.</param>
+        /// <param name="fileName">Full path to file to load in the virtual file system.</param>
         /// <param name="vm">Virtual machine instance which is loading the file.</param>
         /// <returns>Loaded program image.</returns>
         public static ProgramImage Load(string fileName, VirtualMachine vm)
