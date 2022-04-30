@@ -30,20 +30,20 @@ public partial class EmulatorDisplay : UserControl
     public static readonly StyledProperty<int> EmulationSpeedProperty = AvaloniaProperty.Register<EmulatorDisplay, int>(nameof(EmulationSpeed), 20_000_000, coerce: OnEmulationSpeedChanged, validate: EmulationSpeedChangedValidate);
     public static readonly StyledProperty<ScalingAlgorithm> ScalingAlgorithmProperty = AvaloniaProperty.Register<EmulatorDisplay, ScalingAlgorithm>(nameof(ScalingAlgorithm), ScalingAlgorithm.None, coerce: OnScalingAlgorithmChanged);
 
-    private EmulatorHost emulator;
+    private EmulatorHost? emulator;
     private bool mouseJustCaptured;
     private bool isMouseCaptured;
     private Video.Point centerPoint;
-    private DispatcherTimer timer;
+    private DispatcherTimer? timer;
     private readonly EventHandler updateHandler;
     private int cursorBlink;
     private Video.Point cursorPosition = new(0, 1);
     private readonly SimpleCommand resumeCommand;
     private readonly SimpleCommand pauseCommand;
     public static readonly RoutedCommand FullScreenCommand = new();
-    private Presenter currentPresenter;
+    private Presenter? currentPresenter;
     private int physicalMemorySize = 16;
-    private WriteableBitmap renderTarget;
+    private WriteableBitmap? renderTarget;
 
     /// <summary>
     /// Initializes a new instance of the <see cref="EmulatorDisplay"/> class.
@@ -105,7 +105,7 @@ public partial class EmulatorDisplay : UserControl
                 this.emulator.Error += this.Emulator_Error;
                 this.emulator.CurrentProcessChanged += this.Emulator_CurrentProcessChanged;
                 this.emulator.EmulationSpeed = this.EmulationSpeed;
-                this.timer.Start();
+                this.timer?.Start();
                 this.InitializePresenter();
             }
 
@@ -155,11 +155,11 @@ public partial class EmulatorDisplay : UserControl
     /// <summary>
     /// Gets the BitmapSource used for rendering the output display.
     /// </summary>
-    public IImage DisplayBitmap => this.renderTarget;
+    public IImage? DisplayBitmap => this.renderTarget;
     /// <summary>
     /// Gets information about the current process. This is a dependency property.
     /// </summary>
-    public Emulator.Dos.DosProcess CurrentProcess => this.GetValue(CurrentProcessProperty);
+    public Emulator.Dos.DosProcess? CurrentProcess => this.GetValue(CurrentProcessProperty);
 
     /// <summary>
     /// Gets the command used to resume the emulator from a paused state.
@@ -170,7 +170,7 @@ public partial class EmulatorDisplay : UserControl
     /// </summary>
     public ICommand PauseCommand => this.pauseCommand;
 
-    public Presenter CurrentPresenter => this.currentPresenter;
+    public Presenter? CurrentPresenter => this.currentPresenter;
 
     /// <summary>
     /// Disposes the current emulator and returns the control to its default state.
@@ -188,7 +188,7 @@ public partial class EmulatorDisplay : UserControl
             this.emulator.CurrentProcessChanged -= this.Emulator_CurrentProcessChanged;
             this.mouseImage.IsVisible = false;
             this.cursorRectangle.IsVisible = false;
-            this.timer.Stop();
+            this.timer?.Stop();
 
             this.emulator.Dispose();
             this.emulator = null;
@@ -255,12 +255,12 @@ public partial class EmulatorDisplay : UserControl
         if (this.emulator != null)
         {
             var presenter = this.currentPresenter;
-            if (presenter == null)
+            if (presenter == null || this.renderTarget is null)
                 return;
 
             this.EnsureRenderTarget(presenter);
-
-            presenter.Update(this.renderTarget.Lock().Address);
+            using ILockedFramebuffer buf = this.renderTarget.Lock();
+            presenter.Update(buf.Address);
             this.displayImage.InvalidateVisual();
 
             if (this.emulator.VirtualMachine.IsCursorVisible)
@@ -285,7 +285,7 @@ public partial class EmulatorDisplay : UserControl
             }
         }
     }
-    private void HandleModeChange(object sender, EventArgs e) => this.InitializePresenter();
+    private void HandleModeChange(object? sender, EventArgs e) => this.InitializePresenter();
     private void InitializePresenter()
     {
         this.displayImage.Source = null;
@@ -298,19 +298,21 @@ public partial class EmulatorDisplay : UserControl
 
         var videoMode = this.emulator.VirtualMachine.VideoMode;
         this.currentPresenter = this.GetPresenter(videoMode);
-        this.currentPresenter.Scaler = this.ScalingAlgorithm;
-        this.EnsureRenderTarget(this.currentPresenter);
+        if(this.currentPresenter is not null)
+        {
+            this.currentPresenter.Scaler = this.ScalingAlgorithm;
+            this.EnsureRenderTarget(this.currentPresenter);
+            int pixelWidth = this.currentPresenter.TargetWidth;
+            int pixelHeight = this.currentPresenter.TargetHeight;
+            this.displayImage.Source = this.renderTarget;
+            this.displayImage.Width = pixelWidth;
+            this.displayImage.Height = pixelHeight;
+            this.displayArea.Width = pixelWidth;
+            this.displayArea.Height = pixelHeight;
 
-        int pixelWidth = this.currentPresenter.TargetWidth;
-        int pixelHeight = this.currentPresenter.TargetHeight;
-        this.displayImage.Source = this.renderTarget;
-        this.displayImage.Width = pixelWidth;
-        this.displayImage.Height = pixelHeight;
-        this.displayArea.Width = pixelWidth;
-        this.displayArea.Height = pixelHeight;
-
-        this.centerPoint.X = pixelWidth / 2;
-        this.centerPoint.Y = pixelHeight / 2;
+            this.centerPoint.X = pixelWidth / 2;
+            this.centerPoint.Y = pixelHeight / 2;
+        }
     }
     private void EnsureRenderTarget(Presenter presenter)
     {
@@ -385,7 +387,7 @@ public partial class EmulatorDisplay : UserControl
         return e;
     }
 
-    private void Emulator_StateChanged(object sender, EventArgs e)
+    private void Emulator_StateChanged(object? sender, EventArgs e)
     {
         if (this.emulator != null)
         {
@@ -393,13 +395,13 @@ public partial class EmulatorDisplay : UserControl
             this.RaiseEvent(new RoutedEventArgs(EmulatorStateChangedEvent));
         }
     }
-    private void Emulator_MouseVisibilityChanged(object sender, EventArgs e)
+    private void Emulator_MouseVisibilityChanged(object? sender, EventArgs e)
     {
         this.mouseImage.IsVisible = this.emulator.VirtualMachine.IsMouseVisible;
     }
-    private void Emulator_MouseMove(object sender, MouseMoveEventArgs e) => this.MoveMouseCursor(e.X, e.Y);
-    private void Emulator_Error(object sender, ErrorEventArgs e) => this.RaiseEvent(new EmulationErrorRoutedEventArgs(EmulationErrorEvent, e.Message));
-    private void Emulator_CurrentProcessChanged(object sender, EventArgs e)
+    private void Emulator_MouseMove(object? sender, MouseMoveEventArgs e) => this.MoveMouseCursor(e.X, e.Y);
+    private void Emulator_Error(object? sender, ErrorEventArgs e) => this.RaiseEvent(new EmulationErrorRoutedEventArgs(EmulationErrorEvent, e.Message));
+    private void Emulator_CurrentProcessChanged(object? sender, EventArgs e)
     {
         if (this.emulator != null)
             this.SetValue(CurrentProcessProperty, this.emulator.VirtualMachine.CurrentProcess);
@@ -423,7 +425,7 @@ public partial class EmulatorDisplay : UserControl
                 return;
             }
 
-            var button = e.MouseButton.ToEmulatorButtons();
+            var button = e.GetCurrentPoint(this).Properties.ToEmulatorButtons();
             if (button != MouseButtons.None)
             {
                 var mouseEvent = new MouseButtonDownEvent(button);
@@ -441,7 +443,7 @@ public partial class EmulatorDisplay : UserControl
                 return;
             }
 
-            var button = e.MouseButton.ToEmulatorButtons();
+            var button = e.InitialPressMouseButton.ToEmulatorButtons();
             if (button != MouseButtons.None)
             {
                 var mouseEvent = new MouseButtonUpEvent(button);
@@ -454,7 +456,8 @@ public partial class EmulatorDisplay : UserControl
         if (this.emulator != null && this.emulator.State == EmulatorState.Running)
         {
             var presenter = this.currentPresenter;
-
+            if(presenter is null)
+                return;
             if (this.MouseInputMode == MouseInputMode.Absolute)
             {
                 var pos = e.GetPosition(displayImage);
@@ -478,5 +481,5 @@ public partial class EmulatorDisplay : UserControl
         }
     }
 
-    public delegate void EmulationErrorRoutedEventHandler(object sender, EmulationErrorRoutedEventArgs e);
+    public delegate void EmulationErrorRoutedEventHandler(object? sender, EmulationErrorRoutedEventArgs e);
 }
