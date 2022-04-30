@@ -5,4 +5,15 @@
 	<Application.Styles>
 		<FluentTheme Mode="Light"/>
 	</Application.Styles>
-</Application>
+	<Application.Resources>
+		<ResourceDictionary>
+			<ResourceDictionary.MergedDictionaries>
+				<ResourceDictionary>
+					<LinearGradientBrush x:Key="BackgroundGradient">
+						<GradientStop Offset="0" Color="SteelBlue" />
+						<GradientStop Offset="1" Color="#FF1D4461" />
+					</LinearGradientBrush>
+				</ResourceDictionary>
+			</ResourceDictionary.MergedDictionaries>
+		</ResourceDictionary>
+	</Application.Resources></Application>

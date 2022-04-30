@@ -74,7 +74,18 @@ public partial class PaletteDialog : Window
             ((SolidColorBrush)((Rectangle)this.grid.Children[i]).Fill).Color = Color.FromRgb((byte)(palette[i] >> 16), (byte)(palette[i] >> 8), (byte)palette[i]);
     }
 
+    public PaletteDialog(WindowBase owner)
+    {
+        this.Owner = owner;
+        Initialize();
+    }
+
     public PaletteDialog()
+    {
+        Initialize();
+    }
+
+    private void Initialize()
     {
         InitializeComponent();
 #if DEBUG

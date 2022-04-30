@@ -54,12 +54,23 @@ public partial class TaskDialog : Window
     /// </summary>
     public TaskDialog()
     {
+        Initialize();
+    }
+
+    private void Initialize()
+    {
         InitializeComponent();
         this.AddHandler(Button.ClickEvent, Item_Click);
 
 #if DEBUG
         this.AttachDevTools();
 #endif
+    }
+
+    public TaskDialog(WindowBase owner)
+    {
+        this.Owner = owner;
+        Initialize();
     }
 
     private void InitializeComponent()
