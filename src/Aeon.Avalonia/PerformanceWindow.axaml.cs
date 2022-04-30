@@ -29,21 +29,21 @@ public partial class PerformanceWindow : Window
 
         long value = currentCount - lastCount;
 
-        //instructionsLabel.Content = currentCount.ToString("#,#");
-        //ipsLabel.Content = value.ToString("#,#");
+        instructionsLabel.Content = currentCount.ToString("#,#");
+        ipsLabel.Content = value.ToString("#,#");
 
         lastCount = currentCount;
     }
     private void UpdateMemoryFields(EmulatorHost host)
     {
-        //var conventionalMemory = host.VirtualMachine.GetConventionalMemoryUsage();
-        //conventionalMemoryLabel.Content = string.Format("{0}k used, {1}k free", conventionalMemory.MemoryUsed / 1024, conventionalMemory.MemoryFree / 1024);
+        var conventionalMemory = host.VirtualMachine.GetConventionalMemoryUsage();
+        conventionalMemoryLabel.Content = string.Format("{0}k used, {1}k free", conventionalMemory.MemoryUsed / 1024, conventionalMemory.MemoryFree / 1024);
 
-        //var expandedMemory = host.VirtualMachine.GetExpandedMemoryUsage();
-        //expandedMemoryLabel.Content = string.Format("{0}k used, {1}k free", expandedMemory.BytesAllocated / 1024, expandedMemory.BytesFree / 1024);
+        var expandedMemory = host.VirtualMachine.GetExpandedMemoryUsage();
+        expandedMemoryLabel.Content = string.Format("{0}k used, {1}k free", expandedMemory.BytesAllocated / 1024, expandedMemory.BytesFree / 1024);
 
-        //var extendedMemory = host.VirtualMachine.GetExtendedMemoryUsage();
-        //extendedMemoryLabel.Content = string.Format("{0}k used, {1}k free", extendedMemory.BytesAllocated / 1024, extendedMemory.BytesFree / 1024);
+        var extendedMemory = host.VirtualMachine.GetExtendedMemoryUsage();
+        extendedMemoryLabel.Content = string.Format("{0}k used, {1}k free", extendedMemory.BytesAllocated / 1024, extendedMemory.BytesFree / 1024);
     }
 
     private void Timer_Tick(object sender, EventArgs e)
@@ -54,11 +54,11 @@ public partial class PerformanceWindow : Window
             var host = display.EmulatorHost;
             if (host != null)
             {
-                //if (processorExpander.IsExpanded)
-                //    this.UpdateProcessorFields(host);
+                if (processorExpander.IsExpanded)
+                    this.UpdateProcessorFields(host);
 
-                //if (memoryExpander.IsExpanded)
-                //    this.UpdateMemoryFields(host);
+                if (memoryExpander.IsExpanded)
+                    this.UpdateMemoryFields(host);
             }
         }
     }
@@ -79,10 +79,5 @@ public partial class PerformanceWindow : Window
     {
         this.Owner = owner;
         Initialize();
-    }
-
-    private void InitializeComponent()
-    {
-        AvaloniaXamlLoader.Load(this);
     }
 }

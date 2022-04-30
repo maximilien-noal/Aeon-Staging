@@ -72,9 +72,4 @@ public partial class TaskDialog : Window
         this.Owner = owner;
         Initialize();
     }
-
-    private void InitializeComponent()
-    {
-        AvaloniaXamlLoader.Load(this);
-    }
 }
