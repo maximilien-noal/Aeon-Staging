@@ -8,17 +8,21 @@
         MinWidth="160" MinHeight="100"
 	    Background="Transparent"
 	    Focusable="True">
-	<ContentControl.Resources>
+	<UserControl.Styles>
+		<Style Selector="UserControl:focus">
+		</Style>
+	</UserControl.Styles>
+	<UserControl.Resources>
 		<Pen x:Key="blackPen" Brush="Black" Thickness="1" />
 		<DrawingImage x:Key="defaultArrow">
 			<DrawingImage.Drawing>
 				<GeometryDrawing Brush="White" Geometry="{x:Static local:Geometries.Arrow}" Pen="{StaticResource blackPen}" />
 			</DrawingImage.Drawing>
 		</DrawingImage>
-	</ContentControl.Resources>
+	</UserControl.Resources>
 	<Viewbox Name="outerViewbox">
 		<Canvas Name="displayArea">
-			<Image Name="displayImage" Stretch="None" />
+			<Image Name="displayImage" Stretch="UniformToFill" />
 			<Rectangle Name="cursorRectangle" Width="8" Height="2" Fill="Gray" IsVisible="False" />
 			<Image Name="mouseImage" Source="{StaticResource defaultArrow}" IsVisible="False" />
 		</Canvas>
