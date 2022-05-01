@@ -93,10 +93,10 @@ namespace Aeon.Emulator.Video.Rendering
                     {
                         uint p = src[(srcPos + x) & ushort.MaxValue];
                         BinaryPrimitives.WriteUInt32LittleEndian(byteBuf, p);
-                        destPtr[destPos++] = palette[byteBuf[0]];
-                        destPtr[destPos++] = palette[byteBuf[1]];
-                        destPtr[destPos++] = palette[byteBuf[2]];
-                        destPtr[destPos++] = palette[byteBuf[3]];
+                        destPtr[destPos++] = ToArgb(palette[byteBuf[0]]);
+                        destPtr[destPos++] = ToArgb(palette[byteBuf[1]]);
+                        destPtr[destPos++] = ToArgb(palette[byteBuf[2]]);
+                        destPtr[destPos++] = ToArgb(palette[byteBuf[3]]);
                     }
                 }
 
@@ -111,10 +111,10 @@ namespace Aeon.Emulator.Video.Rendering
                         {
                             uint p = src[(srcPos + x) & ushort.MaxValue];
                             BinaryPrimitives.WriteUInt32LittleEndian(byteBuf, p);
-                            destPtr[destPos++] = palette[byteBuf[0]];
-                            destPtr[destPos++] = palette[byteBuf[1]];
-                            destPtr[destPos++] = palette[byteBuf[2]];
-                            destPtr[destPos++] = palette[byteBuf[3]];
+                            destPtr[destPos++] = ToArgb(palette[byteBuf[0]]);
+                            destPtr[destPos++] = ToArgb(palette[byteBuf[1]]);
+                            destPtr[destPos++] = ToArgb(palette[byteBuf[2]]);
+                            destPtr[destPos++] = ToArgb(palette[byteBuf[3]]);
                         }
                     }
                 }

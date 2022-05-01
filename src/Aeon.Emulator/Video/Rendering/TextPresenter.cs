@@ -98,7 +98,7 @@ namespace Aeon.Emulator.Video.Rendering
                         var equalsResult = Vector.Equals(maskResult, indexVector[i]);
                         var result = Vector.ConditionalSelect(equalsResult, foregroundVector, backgroundVector);
                         for (int j = 0; j < Vector<uint>.Count; j++)
-                            dest[x + j] = result[j];
+                            dest[x + j] = ToArgb(result[j]);
 
                         x += Vector<uint>.Count;
                     }
@@ -113,7 +113,7 @@ namespace Aeon.Emulator.Video.Rendering
                     byte current = this.font[(index * fontHeight) + y];
 
                     for (int x = 0; x < 8; x++)
-                        dest[x] = (current & (1 << (7 - x))) != 0 ? foregroundColor : backgroundColor;
+                        dest[x] = ToArgb( (current & (1 << (7 - x))) != 0 ? foregroundColor : backgroundColor);
 
                     dest += this.consoleWidth * 8;
                 }
