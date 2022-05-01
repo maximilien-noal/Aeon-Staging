@@ -460,7 +460,9 @@ public partial class EmulatorDisplay : UserControl
             if (this.MouseInputMode == MouseInputMode.Absolute)
             {
                 var pos = e.GetPosition(displayImage);
-                this.emulator.MouseEvent(new MouseMoveAbsoluteEvent((int)(pos.X / presenter.WidthRatio), (int)(pos.Y / presenter.HeightRatio)));
+                double x = pos.X / presenter.WidthRatio;
+                double v = pos.Y / presenter.HeightRatio;
+                this.emulator.MouseEvent(new MouseMoveAbsoluteEvent((int)x, (int)v));
             }
             else if (this.isMouseCaptured)
             {
