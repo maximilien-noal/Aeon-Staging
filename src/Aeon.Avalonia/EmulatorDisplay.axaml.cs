@@ -321,7 +321,7 @@ public partial class EmulatorDisplay : UserControl
             this.renderTarget = new
                 (new(presenter.TargetWidth,
                 presenter.TargetHeight),
-                new(presenter.TargetWidth, presenter.TargetHeight),
+                new(96, 96),
                 PixelFormat.Bgra8888,
                 AlphaFormat.Unpremul);
         }
