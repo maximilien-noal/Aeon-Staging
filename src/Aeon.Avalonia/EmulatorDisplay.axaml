@@ -22,7 +22,7 @@
 	</UserControl.Resources>
 	<Viewbox Name="outerViewbox">
 		<Canvas Name="displayArea">
-			<Image Name="displayImage" Stretch="UniformToFill" />
+			<Image Name="displayImage" Stretch="None" />
 			<Rectangle Name="cursorRectangle" Width="8" Height="2" Fill="Gray" IsVisible="False" />
 			<Image Name="mouseImage" Source="{StaticResource defaultArrow}" IsVisible="False" />
 		</Canvas>
