@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
+using Aeon.Emulator.Instructions;
 
 namespace Aeon.Emulator.Dos.VirtualFileSystem
 {
@@ -171,10 +172,28 @@ namespace Aeon.Emulator.Dos.VirtualFileSystem
             if (path == null)
                 throw new ArgumentNullException(nameof(path));
 
-            var realPath = Directory.GetFiles(this.HostPath, path.Path, new EnumerationOptions() {
-                MatchCasing = MatchCasing.CaseInsensitive
+            if(path.Path?.Length == 0)
+            {
+                return Path.GetFullPath(this.HostPath);
+            }
+
+            var paths = Directory.GetFiles(this.HostPath, "*", new EnumerationOptions() {
+                MatchCasing = MatchCasing.CaseInsensitive,
+                RecurseSubdirectories = true
             });
-            return realPath?.FirstOrDefault();
+
+            for (int i = 0; i < paths.Length; i++)
+            {
+                string filePath = paths[i];
+                var localPath = filePath.Replace(this.HostPath, "");
+                localPath = localPath.Replace("/", "\\");
+                if (string.Equals(localPath, path.Path, StringComparison.InvariantCultureIgnoreCase))
+                {
+                    return filePath;
+                }
+            }
+
+            return "";
         }
     }
 }
