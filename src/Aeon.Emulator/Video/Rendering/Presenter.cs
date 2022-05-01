@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Drawing;
 
 namespace Aeon.Emulator.Video.Rendering
 {
@@ -11,6 +12,21 @@ namespace Aeon.Emulator.Video.Rendering
         private MemoryBitmap? internalBuffer;
         private readonly object syncLock = new();
         private bool disposed;
+
+        protected static uint ToRgba(uint pixel) {
+            var color = Color.FromArgb((int)pixel);
+            return (uint)(color.R << 16 | color.G << 8 | color.B) | 0xFF000000;
+        }
+
+        protected static uint ToBgra(uint pixel) {
+            var color = Color.FromArgb((int)pixel);
+            return (uint)(color.B << 16 | color.G << 8 | color.R) | 0xFF000000;
+        }
+
+        protected static uint ToArgb(uint pixel) {
+            var color = Color.FromArgb((int)pixel);
+            return 0xFF000000 | ((uint)color.R << 16) | ((uint)color.G << 8) | color.B;
+        }
 
         /// <summary>
         /// Initializes a new instance of the <see cref="Presenter"/> class.
