@@ -1,5 +1,4 @@
 ﻿using System;
-using System.Drawing;
 
 #nullable enable
 
@@ -14,29 +13,25 @@ namespace Aeon.Emulator.Video.Rendering
         private MemoryBitmap? internalBuffer;
         private readonly object syncLock = new();
         private bool disposed;
-
-        protected static uint ToRgba(uint pixel) {
-            var color = Color.FromArgb((int)pixel);
-            return (uint)(color.R << 16 | color.G << 8 | color.B) | 0xFF000000;
-        }
-
-        protected static uint ToBgra(uint pixel) {
-            var color = Color.FromArgb((int)pixel);
-            return (uint)(color.B << 16 | color.G << 8 | color.R) | 0xFF000000;
-        }
-
-        protected static uint ToArgb(uint pixel) {
-            var color = Color.FromArgb((int)pixel);
-            return 0xFF000000 | ((uint)color.R << 16) | ((uint)color.G << 8) | color.B;
-        }
+        private readonly Func<uint, uint>? _colorConverterFunc;
 
         /// <summary>
         /// Initializes a new instance of the <see cref="Presenter"/> class.
         /// </summary>
         /// <param name="videoMode"><see cref="Video.VideoMode"/> instance describing the video mode.</param>
-        protected Presenter(VideoMode videoMode)
+        protected Presenter(VideoMode videoMode, Func<uint, uint>? colorConversionFunc = null)
         {
             this.VideoMode = videoMode;
+            _colorConverterFunc = colorConversionFunc;
+        }
+
+        protected unsafe uint ToNativeColorFormat(uint pixel)
+        {
+            if (_colorConverterFunc is null)
+            {
+                return pixel;
+            }
+            return _colorConverterFunc(pixel);
         }
 
         /// <summary>
@@ -100,6 +95,7 @@ namespace Aeon.Emulator.Video.Rendering
         /// Gets information about the video mode.
         /// </summary>
         protected VideoMode VideoMode { get; }
+
 
         /// <summary>
         /// Updates the bitmap to match the current state of the video RAM.

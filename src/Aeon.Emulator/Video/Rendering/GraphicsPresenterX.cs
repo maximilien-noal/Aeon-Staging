@@ -4,7 +4,7 @@ using System.IO;
 
 namespace Aeon.Emulator.Video.Rendering
 {
-    
+
 
     /// <summary>
     /// Renders 8-bit mode X graphics to a bitmap.
@@ -16,7 +16,7 @@ namespace Aeon.Emulator.Video.Rendering
         /// </summary>
         /// <param name="dest">Pointer to destination bitmap.</param>
         /// <param name="videoMode">VideoMode instance describing the video mode.</param>
-        public GraphicsPresenterX(VideoMode videoMode) : base(videoMode)
+        public unsafe GraphicsPresenterX(VideoMode videoMode, Func<uint, uint>? colorConversionFunc = null) : base(videoMode, colorConversionFunc)
         {
         }
 
@@ -93,10 +93,10 @@ namespace Aeon.Emulator.Video.Rendering
                     {
                         uint p = src[(srcPos + x) & ushort.MaxValue];
                         BinaryPrimitives.WriteUInt32LittleEndian(byteBuf, p);
-                        destPtr[destPos++] = ToArgb(palette[byteBuf[0]]);
-                        destPtr[destPos++] = ToArgb(palette[byteBuf[1]]);
-                        destPtr[destPos++] = ToArgb(palette[byteBuf[2]]);
-                        destPtr[destPos++] = ToArgb(palette[byteBuf[3]]);
+                        destPtr[destPos++] = ToNativeColorFormat(palette[byteBuf[0]]);
+                        destPtr[destPos++] = ToNativeColorFormat(palette[byteBuf[1]]);
+                        destPtr[destPos++] = ToNativeColorFormat(palette[byteBuf[2]]);
+                        destPtr[destPos++] = ToNativeColorFormat(palette[byteBuf[3]]);
                     }
                 }
 
@@ -111,10 +111,10 @@ namespace Aeon.Emulator.Video.Rendering
                         {
                             uint p = src[(srcPos + x) & ushort.MaxValue];
                             BinaryPrimitives.WriteUInt32LittleEndian(byteBuf, p);
-                            destPtr[destPos++] = ToArgb(palette[byteBuf[0]]);
-                            destPtr[destPos++] = ToArgb(palette[byteBuf[1]]);
-                            destPtr[destPos++] = ToArgb(palette[byteBuf[2]]);
-                            destPtr[destPos++] = ToArgb(palette[byteBuf[3]]);
+                            destPtr[destPos++] = ToNativeColorFormat(palette[byteBuf[0]]);
+                            destPtr[destPos++] = ToNativeColorFormat(palette[byteBuf[1]]);
+                            destPtr[destPos++] = ToNativeColorFormat(palette[byteBuf[2]]);
+                            destPtr[destPos++] = ToNativeColorFormat(palette[byteBuf[3]]);
                         }
                     }
                 }

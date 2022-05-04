@@ -12,7 +12,7 @@ namespace Aeon.Emulator.Video.Rendering
         /// Initializes a new instance of the <see cref="GraphicsPresenter16"/> class.
         /// </summary>
         /// <param name="videoMode">VideoMode instance describing the video mode.</param>
-        public GraphicsPresenter16(VideoMode videoMode) : base(videoMode)
+        public unsafe GraphicsPresenter16(VideoMode videoMode, Func<uint, uint>? colorConversionFunc = null) : base(videoMode, colorConversionFunc)
         {
         }
 

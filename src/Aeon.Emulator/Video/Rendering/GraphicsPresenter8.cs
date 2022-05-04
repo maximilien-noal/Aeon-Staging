@@ -12,7 +12,7 @@ namespace Aeon.Emulator.Video.Rendering
         /// Initializes a new instance of the GraphicsPresenter8 class.
         /// </summary>
         /// <param name="videoMode">VideoMode instance describing the video mode.</param>
-        public GraphicsPresenter8(VideoMode videoMode) : base(videoMode)
+        public unsafe GraphicsPresenter8(VideoMode videoMode, Func<uint, uint>? colorConversionFunc = null) : base(videoMode, colorConversionFunc)
         {
         }
 
@@ -37,7 +37,7 @@ namespace Aeon.Emulator.Video.Rendering
                 {
                     var src = srcPtr[offset];
                     var pixel = palette[src];
-                    *x = ToArgb(pixel);
+                    *x = ToNativeColorFormat(pixel);
                     offset++;
                 }
             }

@@ -53,7 +53,7 @@ public partial class EmulatorDisplay : UserControl
         this.resumeCommand = new SimpleCommand(() => this.EmulatorState == EmulatorState.Paused, () => { this.EmulatorHost.Run(); });
         this.pauseCommand = new SimpleCommand(() => this.EmulatorState == EmulatorState.Running, () => { this.EmulatorHost.Pause(); });
         InitializeComponent();
-        if(displayImage is not null)
+        if (displayImage is not null)
         {
             displayImage.PointerPressed += DisplayImage_MouseDown;
             displayImage.PointerReleased += DisplayImage_MouseUp;
@@ -254,7 +254,7 @@ public partial class EmulatorDisplay : UserControl
         if (this.emulator != null)
         {
             var presenter = this.currentPresenter;
-            if (presenter == null || this.renderTarget is null)
+            if (presenter == null)
                 return;
 
             this.EnsureRenderTarget(presenter);
@@ -297,7 +297,7 @@ public partial class EmulatorDisplay : UserControl
 
         var videoMode = this.emulator.VirtualMachine.VideoMode;
         this.currentPresenter = this.GetPresenter(videoMode);
-        if(this.currentPresenter is not null)
+        if (this.currentPresenter is not null)
         {
             this.currentPresenter.Scaler = this.ScalingAlgorithm;
             this.EnsureRenderTarget(this.currentPresenter);
@@ -335,27 +335,61 @@ public partial class EmulatorDisplay : UserControl
             Canvas.SetTop(mouseImage, y * presenter.HeightRatio);
         }
     }
-    private Presenter? GetPresenter(VideoMode videoMode)
+    private unsafe Presenter? GetPresenter(VideoMode videoMode)
     {
-        if (this.emulator == null)
+        if (this.emulator is null)
             return null;
 
         if (videoMode.VideoModeType == VideoModeType.Text)
         {
-            return new TextPresenter(videoMode);
+            return new TextPresenter(videoMode, ToNativePixelFormat);
         }
         else
         {
             return videoMode.BitsPerPixel switch
             {
-                2 => new GraphicsPresenter2(videoMode),
-                4 => new GraphicsPresenter4(videoMode),
-                8 when videoMode.IsPlanar => new GraphicsPresenterX(videoMode),
-                8 when !videoMode.IsPlanar => new GraphicsPresenter8(videoMode),
-                16 => new GraphicsPresenter16(videoMode),
+                2 => new GraphicsPresenter2(videoMode, ToNativePixelFormat),
+                4 => new GraphicsPresenter4(videoMode, ToNativePixelFormat),
+                8 when videoMode.IsPlanar => new GraphicsPresenterX(videoMode, ToNativePixelFormat),
+                8 when !videoMode.IsPlanar => new GraphicsPresenter8(videoMode, ToNativePixelFormat),
+                16 => new GraphicsPresenter16(videoMode, ToNativePixelFormat),
                 _ => null
             };
         }
+    }
+
+    private static uint ToRgba(uint pixel)
+    {
+        var color = System.Drawing.Color.FromArgb((int)pixel);
+        return (uint)(color.R << 16 | color.G << 8 | color.B) | 0xFF000000;
+    }
+
+    private static uint ToBgra(uint pixel)
+    {
+        var color = System.Drawing.Color.FromArgb((int)pixel);
+        return (uint)(color.B << 16 | color.G << 8 | color.R) | 0xFF000000;
+    }
+
+    private static uint ToArgb(uint pixel)
+    {
+        var color = System.Drawing.Color.FromArgb((int)pixel);
+        return 0xFF000000 | ((uint)color.R << 16) | ((uint)color.G << 8) | color.B;
+    }
+
+    private uint ToNativePixelFormat(uint pixel)
+    {
+        if (this.renderTarget is null)
+        {
+            return pixel;
+        }
+        using var buf = this.renderTarget.Lock();
+        return buf.Format switch
+        {
+            PixelFormat.Rgba8888 => ToRgba(pixel),
+            PixelFormat.Rgb565 => ToRgba(pixel),
+            PixelFormat.Bgra8888 => ToArgb(pixel),
+            _ => pixel
+        };
     }
 
     private static int OnEmulationSpeedChanged(IAvaloniaObject d, int e)
@@ -455,7 +489,7 @@ public partial class EmulatorDisplay : UserControl
         if (this.emulator != null && this.emulator.State == EmulatorState.Running)
         {
             var presenter = this.currentPresenter;
-            if(presenter is null)
+            if (presenter is null)
                 return;
             if (this.MouseInputMode == MouseInputMode.Absolute)
             {
