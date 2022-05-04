@@ -21,7 +21,7 @@ namespace Aeon.Emulator.Video.Rendering
         /// </summary>
         /// <param name="dest">Pointer to destination bitmap.</param>
         /// <param name="videoMode">VideoMode instance describing the video mode.</param>
-        public TextPresenter(VideoMode videoMode) : base(videoMode)
+        public unsafe TextPresenter(VideoMode videoMode, Func<uint, uint>? colorConversionFunc = null) : base(videoMode, colorConversionFunc)
         {
             unsafe
             {
@@ -98,7 +98,7 @@ namespace Aeon.Emulator.Video.Rendering
                         var equalsResult = Vector.Equals(maskResult, indexVector[i]);
                         var result = Vector.ConditionalSelect(equalsResult, foregroundVector, backgroundVector);
                         for (int j = 0; j < Vector<uint>.Count; j++)
-                            dest[x + j] = ToArgb(result[j]);
+                            dest[x + j] = ToNativeColorFormat(result[j]);
 
                         x += Vector<uint>.Count;
                     }
@@ -113,7 +113,7 @@ namespace Aeon.Emulator.Video.Rendering
                     byte current = this.font[(index * fontHeight) + y];
 
                     for (int x = 0; x < 8; x++)
-                        dest[x] = ToArgb( (current & (1 << (7 - x))) != 0 ? foregroundColor : backgroundColor);
+                        dest[x] = ToNativeColorFormat((current & (1 << (7 - x))) != 0 ? foregroundColor : backgroundColor);
 
                     dest += this.consoleWidth * 8;
                 }

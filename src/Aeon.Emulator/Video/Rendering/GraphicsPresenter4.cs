@@ -13,7 +13,7 @@ namespace Aeon.Emulator.Video.Rendering
         /// </summary>
         /// <param name="dest">Pointer to destination bitmap.</param>
         /// <param name="videoMode">VideoMode instance describing the video mode.</param>
-        public GraphicsPresenter4(VideoMode videoMode) : base(videoMode)
+        public unsafe GraphicsPresenter4(VideoMode videoMode, Func<uint, uint>? colorConversionFunc = null) : base(videoMode, colorConversionFunc)
         {
         }
 
