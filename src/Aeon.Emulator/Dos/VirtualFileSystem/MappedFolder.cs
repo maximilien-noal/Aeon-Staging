@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
+
 using Aeon.Emulator.Instructions;
 
 namespace Aeon.Emulator.Dos.VirtualFileSystem
@@ -169,15 +170,16 @@ namespace Aeon.Emulator.Dos.VirtualFileSystem
         /// <returns>Full path to the specified file or folder.</returns>
         protected string GetFullPath(VirtualPath path)
         {
-            if (path == null)
+            if (path is null || string.IsNullOrWhiteSpace(path.Path))
                 throw new ArgumentNullException(nameof(path));
 
-            if(path.Path?.Length == 0)
+            if (path.Path?.Length == 0)
             {
                 return Path.GetFullPath(this.HostPath);
             }
 
-            var paths = Directory.GetFiles(this.HostPath, "*", new EnumerationOptions() {
+            var paths = Directory.GetFiles(this.HostPath, "*", new EnumerationOptions()
+            {
                 MatchCasing = MatchCasing.CaseInsensitive,
                 RecurseSubdirectories = true
             });
@@ -186,8 +188,12 @@ namespace Aeon.Emulator.Dos.VirtualFileSystem
             {
                 string filePath = paths[i];
                 var localPath = filePath.Replace(this.HostPath, "");
-                localPath = localPath.Replace("/", "\\");
-                if (string.Equals(localPath, path.Path, StringComparison.InvariantCultureIgnoreCase))
+                localPath = localPath.Replace("/", "");
+                localPath = localPath.Replace("\\", "");
+                var testPath = path.Path;
+                testPath = testPath.Replace("/", "");
+                testPath = testPath.Replace("\\", "");
+                if (string.Equals(localPath, testPath, StringComparison.InvariantCultureIgnoreCase))
                 {
                     return filePath;
                 }
