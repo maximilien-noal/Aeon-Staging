@@ -11,8 +11,8 @@ namespace Aeon.Emulator.Sound.Blaster
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static int Resample8Mono(int sourceRate, int destRate, ReadOnlySpan<byte> source, Span<short> dest)
         {
-            double src2Dest = (double)destRate / (double)sourceRate;
-            double dest2Src = (double)sourceRate / (double)destRate;
+            double src2Dest = destRate / (double)sourceRate;
+            double dest2Src = sourceRate / (double)destRate;
 
             int length = (int)(src2Dest * source.Length);
 
@@ -42,8 +42,8 @@ namespace Aeon.Emulator.Sound.Blaster
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static int Resample8Stereo(int sourceRate, int destRate, ReadOnlySpan<byte> source, Span<short> dest)
         {
-            double src2Dest = (double)destRate / (double)sourceRate;
-            double dest2Src = (double)sourceRate / (double)destRate;
+            double src2Dest = destRate / (double)sourceRate;
+            double dest2Src = sourceRate / (double)destRate;
 
             int length = (int)(src2Dest * source.Length) / 2;
 
@@ -74,8 +74,8 @@ namespace Aeon.Emulator.Sound.Blaster
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static int Resample16Mono(int sourceRate, int destRate, ReadOnlySpan<short> source, Span<short> dest)
         {
-            double src2Dest = (double)destRate / (double)sourceRate;
-            double dest2Src = (double)sourceRate / (double)destRate;
+            double src2Dest = destRate / (double)sourceRate;
+            double dest2Src = sourceRate / (double)destRate;
 
             int length = (int)(src2Dest * source.Length);
 
@@ -105,8 +105,8 @@ namespace Aeon.Emulator.Sound.Blaster
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static int Resample16Stereo(int sourceRate, int destRate, ReadOnlySpan<short> source, Span<short> dest)
         {
-            double src2Dest = (double)destRate / (double)sourceRate;
-            double dest2Src = (double)sourceRate / (double)destRate;
+            double src2Dest = destRate / (double)sourceRate;
+            double dest2Src = sourceRate / (double)destRate;
 
             int length = (int)(src2Dest * source.Length) / 2;
 

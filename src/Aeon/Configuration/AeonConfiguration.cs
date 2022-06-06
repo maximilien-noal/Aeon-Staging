@@ -32,6 +32,9 @@ namespace Aeon.Emulator.Launcher.Configuration
         [JsonIgnore]
         public ArchiveFile Archive { get; private set; }
 
+        [JsonPropertyName("gdb-port-number")]
+        public int? GdbPortNumber { get; init; }
+
         public static AeonConfiguration Load(Stream stream)
         {
             return JsonSerializer.Deserialize<AeonConfiguration>(stream);

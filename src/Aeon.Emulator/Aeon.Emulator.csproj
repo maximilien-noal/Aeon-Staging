@@ -10,4 +10,7 @@
     <Title>Aeon Core</Title>
     <Version>0.7.1</Version>
   </PropertyGroup>
+  <ItemGroup>
+    <PackageReference Include="JetBrains.Annotations" Version="10.3.0" />
+  </ItemGroup>
 </Project>

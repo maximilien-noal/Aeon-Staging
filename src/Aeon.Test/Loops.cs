@@ -31,7 +31,7 @@ namespace Aeon.Test
                 {
                     this.count++;
                     if(this.count == 500)
-                        this.vm.PhysicalMemory.SetUInt16(vm.Processor.SS, (ushort)(vm.Processor.SP + 4), (ushort)0);
+                        this.vm.PhysicalMemory.SetUInt16(vm.Processor.SS, (ushort)(vm.Processor.SP + 4), 0);
                 }));
             this.vm.RegisterVirtualDevice(new CallbackInt(0x9B, () =>
                 {

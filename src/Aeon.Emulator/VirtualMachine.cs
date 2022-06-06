@@ -5,6 +5,7 @@ using Aeon.Emulator.DebugSupport;
 using Aeon.Emulator.Decoding;
 using Aeon.Emulator.Dos.Programs;
 using Aeon.Emulator.Dos.VirtualFileSystem;
+using Aeon.Emulator.Gdb;
 using Aeon.Emulator.Interrupts;
 using Aeon.Emulator.Memory;
 using Aeon.Emulator.RuntimeExceptions;
@@ -39,6 +40,7 @@ namespace Aeon.Emulator
         private readonly IInterruptHandler[] interruptHandlers = new IInterruptHandler[256];
         private readonly SortedList<ushort, IInputPort> inputPorts = new();
         private readonly SortedList<ushort, IOutputPort> outputPorts = new();
+
         private readonly DefaultPortHandler defaultPortHandler = new();
         private readonly List<IVirtualDevice> allDevices = new();
         private readonly ExpandedMemoryManager emm;
@@ -384,17 +386,17 @@ namespace Aeon.Emulator
         /// <summary>
         /// Emulates the next instruction.
         /// </summary>
-        public void Emulate() => InstructionSet.Emulate(this, 1);
+        public void Emulate(MachineBreakpoints? machineBreakPoints) => InstructionSet.Emulate(this, 1, machineBreakPoints);
         /// <summary>
         /// Emulates multiple instructions.
         /// </summary>
         /// <param name="count">Number of instructions to emulate.</param>
-        public void Emulate(int count) => InstructionSet.Emulate(this, (uint)count);
+        public void Emulate(int count, MachineBreakpoints? machineBreakpoints) => InstructionSet.Emulate(this, (uint)count, machineBreakpoints);
         /// <summary>
         /// Emulates the next instruction with logging enabled.
         /// </summary>
         /// <param name="log">Log to which instructions will be written.</param>
-        public void Emulate(InstructionLog log) => InstructionSet.Emulate(this, log);
+        public void Emulate(InstructionLog log, MachineBreakpoints? machineBreakpoints) => InstructionSet.Emulate(this, log, machineBreakpoints);
         /// <summary>
         /// Presses a key on the emulated keyboard.
         /// </summary>
@@ -447,7 +449,7 @@ namespace Aeon.Emulator
                 foreach (var interrupt in interruptHandler.HandledInterrupts)
                 {
                     interruptHandlers[interrupt.Interrupt] = interruptHandler;
-                    PhysicalMemory.AddInterruptHandler((byte)interrupt.Interrupt, interrupt.SavedRegisters, interrupt.IsHookable, interrupt.ClearInterruptFlag);
+                    PhysicalMemory.AddInterruptHandler(interrupt.Interrupt, interrupt.SavedRegisters, interrupt.IsHookable, interrupt.ClearInterruptFlag);
                 }
             }
 
@@ -522,7 +524,9 @@ namespace Aeon.Emulator
             foreach (var channel in this.dmaDeviceChannels)
             {
                 if (channel.IsActive && !channel.IsMasked)
+                {
                     channel.Transfer(this.PhysicalMemory);
+                }
             }
         }
         /// <summary>

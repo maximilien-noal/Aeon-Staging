@@ -7,6 +7,7 @@ using System.Runtime.InteropServices;
 using System.Runtime.Intrinsics.X86;
 using System.Text;
 using Aeon.Emulator.DebugSupport;
+using Aeon.Emulator.Gdb.Breakpoint;
 using Aeon.Emulator.Memory;
 using Aeon.Emulator.RuntimeExceptions;
 
@@ -50,6 +51,11 @@ namespace Aeon.Emulator
         /// </summary>
         internal static readonly RealModeAddress NullInterruptHandler = new(HandlerSegment, 4095);
 
+        internal void ToggleBreakPoint(BreakPoint breakPoint, bool on)
+        {
+            throw new NotImplementedException();
+        }
+
         private ushort nextHandlerOffset = 4096;
         private uint addressMask = 0x000FFFFFu;
         private readonly MetaAllocator metaAllocator = new();
@@ -78,6 +84,38 @@ namespace Aeon.Emulator
         /// Offset into the font segment where the 8x8 font is found.
         /// </summary>
         internal const ushort Font8x8Offset = 0x0100;
+
+        internal uint? SearchValue(uint address, int len, IList<byte> value)
+        {
+            int end = (int)(address + len);
+            if (end >= this.MemorySize)
+            {
+                end = this.MemorySize;
+            }
+
+            for (long i = address; i < end; i++)
+            {
+                long endValue = value.Count;
+                if (endValue + i >= this.MemorySize)
+                {
+                    endValue = this.MemorySize - i;
+                }
+
+                int j = 0;
+                while (j < endValue && this.PhysicalRead<byte>((uint)(i + j)) == value[j])
+                {
+                    j++;
+                }
+
+                if (j == endValue)
+                {
+                    return (uint)i;
+                }
+            }
+
+            return null;
+        }
+
         /// <summary>
         /// Offset into the font segment where the 8x14 font is found.
         /// </summary>
@@ -129,6 +167,14 @@ namespace Aeon.Emulator
             Bios = new Bios(this);
             InitializeFonts();
             InitializeBiosData();
+        }
+
+        internal void WriteBytes(uint address, byte[] data)
+        {
+            for(int i = 0; i < data.Length; i++)
+            {
+                this.PhysicalWrite(address, data[i]);
+            }
         }
 
         ~PhysicalMemory() => this.InternalDispose();
@@ -928,7 +974,7 @@ namespace Aeon.Emulator
         /// <param name="clearInterruptFlag">Value indicating whether the interrupt handler should clear the CPU Interrupt Enable flag.</param>
         internal void AddInterruptHandler(byte interrupt, Registers savedRegisters, bool isHookable, bool clearInterruptFlag)
         {
-            SetInterruptAddress(interrupt, (ushort)HandlerSegment, nextHandlerOffset);
+            SetInterruptAddress(interrupt, HandlerSegment, nextHandlerOffset);
             var ptr = GetPointer(HandlerSegment, nextHandlerOffset);
             unsafe
             {
@@ -977,7 +1023,7 @@ namespace Aeon.Emulator
         /// </summary>
         internal void AddTimerInterruptHandler()
         {
-            SetInterruptAddress(0x08, (ushort)HandlerSegment, nextHandlerOffset);
+            SetInterruptAddress(0x08, HandlerSegment, nextHandlerOffset);
 
             // Write instruction push ax.
             SetByte(HandlerSegment, nextHandlerOffset, 0x50);

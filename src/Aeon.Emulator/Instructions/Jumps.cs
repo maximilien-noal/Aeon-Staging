@@ -10,7 +10,7 @@ namespace Aeon.Emulator.Instructions
         [MethodImpl(MethodImplOptions.AggressiveInlining | MethodImplOptions.AggressiveOptimization)]
         public static void RelativeNearJump(Processor p, short offset)
         {
-            p.EIP = (ushort)((int)p.IP + offset);
+            p.EIP = (ushort)(p.IP + offset);
         }
         [Alternate(nameof(RelativeNearJump), AddressSize = 16 | 32)]
         [MethodImpl(MethodImplOptions.AggressiveInlining | MethodImplOptions.AggressiveOptimization)]
@@ -92,7 +92,7 @@ namespace Aeon.Emulator.Instructions
         public static void JumpOverflow(Processor p, short offset)
         {
             if (p.Flags.Overflow)
-                p.EIP = (ushort)((int)p.IP + offset);
+                p.EIP = (ushort)(p.IP + offset);
         }
         [Alternate(nameof(JumpOverflow), AddressSize = 16 | 32)]
         [MethodImpl(MethodImplOptions.AggressiveInlining | MethodImplOptions.AggressiveOptimization)]
@@ -107,7 +107,7 @@ namespace Aeon.Emulator.Instructions
         public static void JumpNotOverflow(Processor p, short offset)
         {
             if (!p.Flags.Overflow)
-                p.EIP = (ushort)((int)p.IP + offset);
+                p.EIP = (ushort)(p.IP + offset);
         }
         [Alternate(nameof(JumpNotOverflow), AddressSize = 16 | 32)]
         [MethodImpl(MethodImplOptions.AggressiveInlining | MethodImplOptions.AggressiveOptimization)]
@@ -122,7 +122,7 @@ namespace Aeon.Emulator.Instructions
         public static void JumpCarry(Processor p, short offset)
         {
             if (p.Flags.Carry)
-                p.EIP = (ushort)((int)p.IP + offset);
+                p.EIP = (ushort)(p.IP + offset);
         }
         [Alternate(nameof(JumpCarry), AddressSize = 16 | 32)]
         [MethodImpl(MethodImplOptions.AggressiveInlining | MethodImplOptions.AggressiveOptimization)]
@@ -137,7 +137,7 @@ namespace Aeon.Emulator.Instructions
         public static void JumpNotCarry(Processor p, short offset)
         {
             if (!p.Flags.Carry)
-                p.EIP = (ushort)((int)p.IP + offset);
+                p.EIP = (ushort)(p.IP + offset);
         }
         [Alternate(nameof(JumpNotCarry), AddressSize = 16 | 32)]
         [MethodImpl(MethodImplOptions.AggressiveInlining | MethodImplOptions.AggressiveOptimization)]
@@ -151,7 +151,7 @@ namespace Aeon.Emulator.Instructions
         public static void JumpZero(Processor p, short offset)
         {
             if (p.Flags.Zero)
-                p.EIP = (ushort)((int)p.IP + offset);
+                p.EIP = (ushort)(p.IP + offset);
         }
         [Alternate(nameof(JumpZero), AddressSize = 16 | 32)]
         [MethodImpl(MethodImplOptions.AggressiveInlining | MethodImplOptions.AggressiveOptimization)]
@@ -166,7 +166,7 @@ namespace Aeon.Emulator.Instructions
         public static void JumpNotZero(Processor p, short offset)
         {
             if (!p.Flags.Zero)
-                p.EIP = (ushort)((int)p.IP + offset);
+                p.EIP = (ushort)(p.IP + offset);
         }
         [Alternate(nameof(JumpNotZero), AddressSize = 16 | 32)]
         [MethodImpl(MethodImplOptions.AggressiveInlining | MethodImplOptions.AggressiveOptimization)]
@@ -181,7 +181,7 @@ namespace Aeon.Emulator.Instructions
         public static void JumpCarryOrZero(Processor p, short offset)
         {
             if (p.Flags.Carry || p.Flags.Zero)
-                p.EIP = (ushort)((int)p.IP + offset);
+                p.EIP = (ushort)(p.IP + offset);
         }
         [Alternate(nameof(JumpCarryOrZero), AddressSize = 16 | 32)]
         [MethodImpl(MethodImplOptions.AggressiveInlining | MethodImplOptions.AggressiveOptimization)]
@@ -196,7 +196,7 @@ namespace Aeon.Emulator.Instructions
         public static void JumpNotCarryAndNotZero(Processor p, short offset)
         {
             if (!p.Flags.Carry && !p.Flags.Zero)
-                p.EIP = (ushort)((int)p.IP + offset);
+                p.EIP = (ushort)(p.IP + offset);
         }
         [Alternate(nameof(JumpNotCarryAndNotZero), AddressSize = 16 | 32)]
         [MethodImpl(MethodImplOptions.AggressiveInlining | MethodImplOptions.AggressiveOptimization)]
@@ -211,7 +211,7 @@ namespace Aeon.Emulator.Instructions
         public static void JumpSign(Processor p, short offset)
         {
             if (p.Flags.Sign)
-                p.EIP = (ushort)((int)p.IP + offset);
+                p.EIP = (ushort)(p.IP + offset);
         }
         [Alternate(nameof(JumpSign), AddressSize = 16 | 32)]
         [MethodImpl(MethodImplOptions.AggressiveInlining | MethodImplOptions.AggressiveOptimization)]
@@ -226,7 +226,7 @@ namespace Aeon.Emulator.Instructions
         public static void JumpNotSign(Processor p, short offset)
         {
             if (!p.Flags.Sign)
-                p.EIP = (ushort)((int)p.IP + offset);
+                p.EIP = (ushort)(p.IP + offset);
         }
         [Alternate(nameof(JumpNotSign), AddressSize = 16 | 32)]
         [MethodImpl(MethodImplOptions.AggressiveInlining | MethodImplOptions.AggressiveOptimization)]
@@ -241,7 +241,7 @@ namespace Aeon.Emulator.Instructions
         public static void JumpLessThan(Processor p, short offset)
         {
             if (p.Flags.Sign != p.Flags.Overflow)
-                p.EIP = (ushort)((int)p.IP + offset);
+                p.EIP = (ushort)(p.IP + offset);
         }
         [Alternate(nameof(JumpLessThan), AddressSize = 16 | 32)]
         [MethodImpl(MethodImplOptions.AggressiveInlining | MethodImplOptions.AggressiveOptimization)]
@@ -256,7 +256,7 @@ namespace Aeon.Emulator.Instructions
         public static void JumpGreaterThanOrEqual(Processor p, short offset)
         {
             if (p.Flags.Sign == p.Flags.Overflow)
-                p.EIP = (ushort)((int)p.IP + offset);
+                p.EIP = (ushort)(p.IP + offset);
         }
         [Alternate(nameof(JumpGreaterThanOrEqual), AddressSize = 16 | 32)]
         [MethodImpl(MethodImplOptions.AggressiveInlining | MethodImplOptions.AggressiveOptimization)]
@@ -271,7 +271,7 @@ namespace Aeon.Emulator.Instructions
         public static void JumpLessThanOrEqual(Processor p, short offset)
         {
             if (p.Flags.Zero || (p.Flags.Sign != p.Flags.Overflow))
-                p.EIP = (ushort)((int)p.IP + offset);
+                p.EIP = (ushort)(p.IP + offset);
         }
         [Alternate(nameof(JumpLessThanOrEqual), AddressSize = 16 | 32)]
         [MethodImpl(MethodImplOptions.AggressiveInlining | MethodImplOptions.AggressiveOptimization)]
@@ -286,7 +286,7 @@ namespace Aeon.Emulator.Instructions
         public static void JumpGreaterThan(Processor p, short offset)
         {
             if (!p.Flags.Zero && (p.Flags.Sign == p.Flags.Overflow))
-                p.EIP = (ushort)((int)p.IP + offset);
+                p.EIP = (ushort)(p.IP + offset);
         }
         [Alternate(nameof(JumpGreaterThan), AddressSize = 16 | 32)]
         [MethodImpl(MethodImplOptions.AggressiveInlining | MethodImplOptions.AggressiveOptimization)]
@@ -301,14 +301,14 @@ namespace Aeon.Emulator.Instructions
         public static void JumpCXZero(Processor p, short offset)
         {
             if (p.CX == 0)
-                p.EIP = (ushort)((int)p.IP + offset);
+                p.EIP = (ushort)(p.IP + offset);
         }
         [Alternate(nameof(JumpCXZero), AddressSize = 32, OperandSize = 16)]
         [MethodImpl(MethodImplOptions.AggressiveInlining | MethodImplOptions.AggressiveOptimization)]
         public static void JumpECXZero(Processor p, short offset)
         {
             if (p.ECX == 0)
-                p.EIP = (ushort)((int)p.IP + offset);
+                p.EIP = (ushort)(p.IP + offset);
         }
         [Alternate(nameof(JumpCXZero), AddressSize = 16, OperandSize = 32)]
         [MethodImpl(MethodImplOptions.AggressiveInlining | MethodImplOptions.AggressiveOptimization)]
@@ -330,7 +330,7 @@ namespace Aeon.Emulator.Instructions
         public static void JumpParity(Processor p, short offset)
         {
             if (p.Flags.Parity)
-                p.EIP = (ushort)((int)p.IP + offset);
+                p.EIP = (ushort)(p.IP + offset);
         }
         [Alternate(nameof(JumpParity), AddressSize = 16 | 32, OperandSize = 32)]
         [MethodImpl(MethodImplOptions.AggressiveInlining | MethodImplOptions.AggressiveOptimization)]
@@ -345,7 +345,7 @@ namespace Aeon.Emulator.Instructions
         public static void JumpNoParity(Processor p, short offset)
         {
             if (!p.Flags.Parity)
-                p.EIP = (ushort)((int)p.IP + offset);
+                p.EIP = (ushort)(p.IP + offset);
         }
         [Alternate(nameof(JumpNoParity), AddressSize = 16 | 32, OperandSize = 32)]
         [MethodImpl(MethodImplOptions.AggressiveInlining | MethodImplOptions.AggressiveOptimization)]

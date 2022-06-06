@@ -196,11 +196,11 @@ namespace Aeon.Emulator.Video.Vesa
                 modeInfo->NumberOfBanks = 1;
                 modeInfo->MemoryModel = MemoryModel.Unchained256;
                 modeInfo->Reserved1 = 1;
-                modeInfo->WinFuncPtr = (uint)this.windowFuncPtr.Offset | ((uint)this.windowFuncPtr.Segment << 16);
+                modeInfo->WinFuncPtr = windowFuncPtr.Offset | ((uint)this.windowFuncPtr.Segment << 16);
                 modeInfo->BytesPerScanLine = 640;
 
                 modeInfo->PhysicalBasePointer = Modes.VesaLinear.BaseAddress;
-                modeInfo->OffscreenMemoryOffset = (uint)modeInfo->XResolution * (uint)modeInfo->YResolution;
+                modeInfo->OffscreenMemoryOffset = modeInfo->XResolution * (uint)modeInfo->YResolution;
                 modeInfo->OffscreenMemorySize = (ushort)((VideoHandler.TotalVramBytes - modeInfo->OffscreenMemoryOffset) / 1024u);
             }
 

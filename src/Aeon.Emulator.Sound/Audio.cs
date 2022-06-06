@@ -12,7 +12,7 @@ namespace Aeon.Emulator.Sound
         {
             if (OperatingSystem.IsWindows())
             {
-                return WasapiAudioPlayer.Create(TimeSpan.FromSeconds(0.25), useCallback);                
+                return WasapiAudioPlayer.Create(TimeSpan.FromSeconds(0.25), useCallback);
             }
 
             return null;
@@ -24,7 +24,7 @@ namespace Aeon.Emulator.Sound
 
             while (true)
             {
-                int count = (int)player.WriteData(writeBuffer);
+                int count = player.WriteData(writeBuffer);
                 writeBuffer = writeBuffer[count..];
                 if (writeBuffer.IsEmpty)
                     return;
@@ -38,7 +38,7 @@ namespace Aeon.Emulator.Sound
 
             while (true)
             {
-                int count = (int)player.WriteData(writeBuffer);
+                int count = player.WriteData(writeBuffer);
                 writeBuffer = writeBuffer[count..];
                 if (writeBuffer.IsEmpty)
                     return;
@@ -52,7 +52,7 @@ namespace Aeon.Emulator.Sound
 
             while (true)
             {
-                int count = (int)player.WriteData(writeBuffer);
+                int count = player.WriteData(writeBuffer);
                 writeBuffer = writeBuffer[count..];
                 if (writeBuffer.IsEmpty)
                     return;

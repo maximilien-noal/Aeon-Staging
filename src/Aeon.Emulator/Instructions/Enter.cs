@@ -30,7 +30,7 @@
                 ThrowHelper.ThrowNotImplementedException();
 
             vm.Processor.EBP = frameTemp;
-            vm.Processor.ESP = (uint)(vm.Processor.EBP - frameSize);
+            vm.Processor.ESP = vm.Processor.EBP - frameSize;
         }
     }
 }

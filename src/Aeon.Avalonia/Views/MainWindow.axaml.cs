@@ -139,6 +139,11 @@ public partial class MainWindow : Window
 
             return new DriveLetter(s[0]);
         }
+
+        if (config.GdbPortNumber is not null)
+        {
+            this.emulatorDisplay.EmulatorHost.StartGdbServer(config.GdbPortNumber.Value);
+        }
     }
 
     private void LaunchCurrentConfig()

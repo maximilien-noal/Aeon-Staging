@@ -8,6 +8,7 @@ using System.Threading;
 using System.Threading.Tasks;
 using Aeon.Emulator.DebugSupport;
 using Aeon.Emulator.Dos.Programs;
+using Aeon.Emulator.Gdb;
 using Aeon.Emulator.RuntimeExceptions;
 
 namespace Aeon.Emulator
@@ -26,6 +27,7 @@ namespace Aeon.Emulator
         private readonly SortedSet<Keys> keysPresssed = new();
         private int emulationSpeed = 10_000_000;
         private readonly InstructionLog log;
+        private GdbServer? gdbServer;
 
         /// <summary>
         /// The smallest number that may be assigned to the EmulationSpeed property.
@@ -38,10 +40,12 @@ namespace Aeon.Emulator
         public EmulatorHost()
             : this(new VirtualMachine(), null)
         {
+            MachineBreakpoints = new(this);
         }
         public EmulatorHost(int physicalMemory)
             : this(new VirtualMachine(new VirtualMachineStartupOptions(physicalMemory, true)), null)
         {
+            MachineBreakpoints = new(this);
         }
         /// <summary>
         /// Initializes a new instance of the EmulatorHost class.
@@ -50,6 +54,7 @@ namespace Aeon.Emulator
         public EmulatorHost(InstructionLog instructionLog)
             : this(new VirtualMachine(), instructionLog)
         {
+            MachineBreakpoints = new(this);
         }
         /// <summary>
         /// Initializes a new instance of the EmulatorHost class.
@@ -67,6 +72,7 @@ namespace Aeon.Emulator
             this.VirtualMachine.CurrentProcessChanged += (s, e) => this.OnCurrentProcessChanged(e);
 
             this.log = instructionLog;
+            MachineBreakpoints = new(this);
         }
 
         /// <summary>
@@ -89,6 +95,9 @@ namespace Aeon.Emulator
         /// Occurs when the text-mode cursor is shown or hidden.
         /// </summary>
         public event EventHandler CursorVisibilityChanged;
+
+        internal string DumpCallStack() => VirtualMachine.PeekStack16().ToString();
+
         /// <summary>
         /// Occurs when the current process has changed.
         /// </summary>
@@ -117,6 +126,12 @@ namespace Aeon.Emulator
                 }
             }
         }
+
+        public void StartGdbServer(int gdbPortNumber)
+        {
+            gdbServer = new(this, gdbPortNumber);
+        }
+
         /// <summary>
         /// Gets the hosted VirtualMachine instance.
         /// </summary>
@@ -143,6 +158,7 @@ namespace Aeon.Emulator
         /// Gets or sets the object to use for raising events.
         /// </summary>
         public IEventSynchronizer EventSynchronizer { get; set; }
+        public Gdb.MachineBreakpoints MachineBreakpoints { get; internal set; }
 
         /// <summary>
         /// Loads an executable program image into the emulator.
@@ -196,8 +212,15 @@ namespace Aeon.Emulator
                 throw new InvalidOperationException("No program is running.");
 
             this.targetState = EmulatorState.Paused;
+            gdbServer?.GdbCommandHandler?.Step();
             this.processorTask.Wait();
         }
+
+        internal string PeekReturn(Gdb.CallType type = Gdb.CallType.NEAR)
+        {
+            return "not implemented";
+        }
+
         /// <summary>
         /// Immediately stops emulation and places the emulator in a halted state.
         /// </summary>
@@ -262,14 +285,14 @@ namespace Aeon.Emulator
                 if (p.Flags.InterruptEnable & !p.TemporaryInterruptMask)
                 {
                     while (p.InPrefix)
-                        vm.Emulate();
+                        vm.Emulate(MachineBreakpoints);
 
                     // check flags again in case prefixed instruction changed them
                     if (p.Flags.InterruptEnable & !p.TemporaryInterruptMask)
                         this.CheckHardwareInterrupts();
                 }
 
-                vm.Emulate(count);
+                vm.Emulate(count, MachineBreakpoints);
             }
             catch (EmulatedException ex)
             {
@@ -278,9 +301,9 @@ namespace Aeon.Emulator
             }
             catch (EnableInstructionTrapException)
             {
-                vm.Emulate();
+                vm.Emulate(MachineBreakpoints);
                 while (p.InPrefix)
-                    vm.Emulate();
+                    vm.Emulate(MachineBreakpoints);
 
                 if (p.Flags.Trap)
                 {
@@ -292,6 +315,7 @@ namespace Aeon.Emulator
         private void EmulateInstructionsWithLogging(int count)
         {
             var vm = this.VirtualMachine;
+            MachineBreakpoints.CheckBreakPoint();
             vm.PerformDmaTransfers();
 
             try
@@ -299,13 +323,13 @@ namespace Aeon.Emulator
                 if (vm.Processor.Flags.InterruptEnable)
                 {
                     while (vm.Processor.InPrefix)
-                        vm.Emulate(this.log);
+                        vm.Emulate(this.log, MachineBreakpoints);
 
                     this.CheckHardwareInterrupts();
                 }
 
                 for (int i = 0; i < count; i++)
-                    vm.Emulate(this.log);
+                    vm.Emulate(this.log, MachineBreakpoints);
             }
             catch (EmulatedException ex)
             {
@@ -314,9 +338,9 @@ namespace Aeon.Emulator
             }
             catch (EnableInstructionTrapException)
             {
-                vm.Emulate(this.log);
+                vm.Emulate(this.log, MachineBreakpoints);
                 while (vm.Processor.InPrefix)
-                    vm.Emulate(this.log);
+                    vm.Emulate(this.log, MachineBreakpoints);
 
                 if (vm.Processor.Flags.Trap)
                 {
@@ -406,6 +430,8 @@ namespace Aeon.Emulator
             {
                 this.Halt();
                 this.processorTask?.GetAwaiter().GetResult();
+                this.MachineBreakpoints?.Dispose();
+                this.gdbServer?.Dispose();
                 this.VirtualMachine?.Dispose();
                 this.disposed = true;
             }

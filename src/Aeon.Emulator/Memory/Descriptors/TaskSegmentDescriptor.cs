@@ -55,11 +55,11 @@ namespace Aeon.Emulator
         /// <summary>
         /// Gets the physical base address of the segment.
         /// </summary>
-        public uint Base => (uint)this.base1 | ((uint)this.base2 << 16) | ((uint)this.base3 << 24);
+        public uint Base => base1 | ((uint)this.base2 << 16) | ((uint)this.base3 << 24);
         /// <summary>
         /// Gets the size of the segment.
         /// </summary>
-        public uint Limit => (uint)this.limit1 | (((uint)this.attributes2 & 0x0Fu) << 16);
+        public uint Limit => limit1 | ((attributes2 & 0x0Fu) << 16);
         /// <summary>
         /// Gets attribute byte 1 of the descriptor.
         /// </summary>

@@ -100,7 +100,7 @@ namespace Aeon.Test
             {
                 while(count < limit)
                 {
-                    vm.Emulate();
+                    vm.Emulate(null);
                     count++;
                 }
             }

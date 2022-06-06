@@ -308,7 +308,7 @@ namespace Aeon.Emulator.Dos.CD
         /// </summary>
         private void GetDirectoryEntry()
         {
-            var drive = vm.FileSystem.Drives[(int)vm.Processor.CX];
+            var drive = vm.FileSystem.Drives[vm.Processor.CX];
             if (drive.DriveType != DriveType.CDROM)
             {
                 vm.Processor.AX = 15;

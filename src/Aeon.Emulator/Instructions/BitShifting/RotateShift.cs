@@ -142,9 +142,9 @@ namespace Aeon.Emulator.Instructions.BitShifting
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static void DWordRotateRight1(Processor p, ref uint dest)
         {
-            uint b = (uint)(dest >> 1);
-            uint c = (uint)(dest << 31);
-            dest = (uint)(b | c);
+            uint b = dest >> 1;
+            uint c = dest << 31;
+            dest = b | c;
 
             p.Flags.Carry = (dest & 0x80000000) != 0;
             p.Flags.Overflow = (dest & 0xC0000000) == 0x80000000 || (dest & 0xC0000000) == 0x40000000;
@@ -182,9 +182,9 @@ namespace Aeon.Emulator.Instructions.BitShifting
                 return;
             }
 
-            uint b = (uint)(dest >> count);
-            uint c = (uint)(dest << (32 - count));
-            dest = (uint)(b | c);
+            uint b = dest >> count;
+            uint c = dest << (32 - count);
+            dest = b | c;
 
             p.Flags.Carry = (dest & 0x80000000) == 0x80000000;
         }

@@ -8,7 +8,7 @@ namespace Aeon.Emulator.Instructions.Arithmetic
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static void ByteAdd(Processor p, ref byte dest, byte src)
         {
-            uint uResult = (uint)dest + (uint)src;
+            uint uResult = dest + (uint)src;
             p.Flags.Update_Add_Byte(dest, src, (byte)uResult);
             dest = (byte)uResult;
         }
@@ -17,7 +17,7 @@ namespace Aeon.Emulator.Instructions.Arithmetic
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static void WordAdd(Processor p, ref ushort dest, ushort src)
         {
-            uint uResult = (uint)dest + (uint)src;
+            uint uResult = dest + (uint)src;
             p.Flags.Update_Add_Word(dest, src, (ushort)uResult);
             dest = (ushort)uResult;
         }
@@ -38,7 +38,7 @@ namespace Aeon.Emulator.Instructions.Arithmetic
         public static void ByteCarryAdd(Processor p, ref byte dest, byte src)
         {
             uint c = p.Flags.Carry ? 1u : 0u;
-            uint uResult = (uint)dest + (uint)src + c;
+            uint uResult = dest + (uint)src + c;
             p.Flags.Update_Adc_Byte(dest, src, c, (byte)uResult);
             dest = (byte)(uResult & 0xFFu);
         }
@@ -48,7 +48,7 @@ namespace Aeon.Emulator.Instructions.Arithmetic
         public static void WordCarryAdd(Processor p, ref ushort dest, ushort src)
         {
             uint c = p.Flags.Carry ? 1u : 0u;
-            uint uResult = (uint)dest + (uint)src + c;
+            uint uResult = dest + (uint)src + c;
             p.Flags.Update_Adc_Word(dest, src, c, (ushort)uResult);
             dest = (ushort)(uResult & 0xFFFFu);
         }
@@ -57,7 +57,7 @@ namespace Aeon.Emulator.Instructions.Arithmetic
         public static void DWordCarryAdd(Processor p, ref uint dest, uint src)
         {
             uint c = p.Flags.Carry ? 1u : 0u;
-            ulong uResult = (ulong)dest + (ulong)src + (ulong)c;
+            ulong uResult = dest + (ulong)src + c;
             p.Flags.Update_Adc_DWord(dest, src, c, (uint)uResult);
             dest = (uint)(uResult & 0xFFFFFFFFu);
         }
@@ -69,7 +69,7 @@ namespace Aeon.Emulator.Instructions.Arithmetic
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static void ByteIncrement(Processor p, ref byte dest)
         {
-            uint uResult = (uint)dest + (uint)1;
+            uint uResult = dest + (uint)1;
             p.Flags.Update_Inc_Byte(dest, (byte)uResult);
             dest = (byte)(uResult & 0xFF);
         }
@@ -78,7 +78,7 @@ namespace Aeon.Emulator.Instructions.Arithmetic
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static void WordIncrement(Processor p, ref ushort dest)
         {
-            uint uResult = (uint)dest + (uint)1;
+            uint uResult = dest + (uint)1;
             p.Flags.Update_Inc_Word(dest, (ushort)uResult);
             dest = (ushort)(uResult & 0xFFFF);
         }

@@ -450,8 +450,8 @@ namespace Aeon.DiskImages
 
             private static int Resample16Stereo(int sourceRate, int destRate, ReadOnlySpan<short> source, Span<short> dest)
             {
-                double src2Dest = (double)destRate / (double)sourceRate;
-                double dest2Src = (double)sourceRate / (double)destRate;
+                double src2Dest = destRate / (double)sourceRate;
+                double dest2Src = sourceRate / (double)destRate;
 
                 int length = (int)(src2Dest * source.Length) / 2;
 

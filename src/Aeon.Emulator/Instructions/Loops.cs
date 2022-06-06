@@ -12,7 +12,7 @@ namespace Aeon.Emulator.Instructions
             ref var cx = ref Unsafe.As<short, ushort>(ref p.CX);
             cx--;
             if (cx != 0)
-                p.EIP = (ushort)((int)p.IP + offset);
+                p.EIP = (ushort)(p.IP + offset);
         }
         [Alternate(nameof(LoopWhileNotZero_16_16), OperandSize = 32, AddressSize = 16)]
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
@@ -30,7 +30,7 @@ namespace Aeon.Emulator.Instructions
             ref var ecx = ref Unsafe.As<int, uint>(ref p.ECX);
             ecx--;
             if (ecx != 0)
-                p.EIP = (ushort)((int)p.IP + offset);
+                p.EIP = (ushort)(p.IP + offset);
         }
         [Alternate(nameof(LoopWhileNotZero_16_16), OperandSize = 32, AddressSize = 32)]
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
@@ -50,7 +50,7 @@ namespace Aeon.Emulator.Instructions
         {
             p.CX--;
             if (p.CX != 0 && p.Flags.Zero)
-                p.EIP = (ushort)((int)p.IP + offset);
+                p.EIP = (ushort)(p.IP + offset);
         }
         [Alternate(nameof(LoopWhileEqual_16_16), OperandSize = 32, AddressSize = 16)]
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
@@ -66,7 +66,7 @@ namespace Aeon.Emulator.Instructions
         {
             p.ECX--;
             if(p.ECX != 0 && p.Flags.Zero)
-                p.EIP = (ushort)((int)p.IP + offset);
+                p.EIP = (ushort)(p.IP + offset);
         }
         [Alternate(nameof(LoopWhileEqual_16_16), OperandSize = 32, AddressSize = 32)]
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
@@ -88,7 +88,7 @@ namespace Aeon.Emulator.Instructions
                 ushort* cx = (ushort*)p.PCX;
                 (*cx)--;
                 if(*cx != 0 && !p.Flags.Zero)
-                    p.EIP = (ushort)((int)p.IP + offset);
+                    p.EIP = (ushort)(p.IP + offset);
             }
         }
         [Alternate(nameof(LoopWhileNotEqual_16_16), OperandSize = 32, AddressSize = 16)]
@@ -112,7 +112,7 @@ namespace Aeon.Emulator.Instructions
                 uint* ecx = (uint*)p.PCX;
                 (*ecx)--;
                 if(*ecx != 0 && !p.Flags.Zero)
-                    p.EIP = (ushort)((int)p.IP + offset);
+                    p.EIP = (ushort)(p.IP + offset);
             }
         }
         [Alternate(nameof(LoopWhileNotEqual_16_16), OperandSize = 32, AddressSize = 32)]

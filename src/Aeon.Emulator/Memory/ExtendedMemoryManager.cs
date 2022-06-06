@@ -32,7 +32,7 @@ namespace Aeon.Emulator.Memory
         /// <summary>
         /// Gets the total amount of free memory in bytes.
         /// </summary>
-        public long TotalFreeMemory => this.GetFreeBlocks().Sum(b => (long)b.Length);
+        public long TotalFreeMemory => this.GetFreeBlocks().Sum(b => b.Length);
         /// <summary>
         /// Gets the total amount of extended memory.
         /// </summary>

@@ -257,7 +257,7 @@ namespace Aeon.Emulator.Decoding
 
                 //*(int*)processor.PIP = *(int*)processor.PIP + 2;
 
-                address = (uint)(GetSibAddress32(processor, displacement, sib, ref segment));
+                address = GetSibAddress32(processor, displacement, sib, ref segment);
             }
             else
             {
@@ -289,7 +289,7 @@ namespace Aeon.Emulator.Decoding
 
                 //*(int*)processor.PIP = *(int*)processor.PIP + 5;
 
-                address = (uint)(GetSibAddress32(processor, displacement, sib, ref segment));
+                address = GetSibAddress32(processor, displacement, sib, ref segment);
             }
             else
             {

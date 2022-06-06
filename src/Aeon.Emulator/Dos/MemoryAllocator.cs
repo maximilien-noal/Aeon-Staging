@@ -127,7 +127,7 @@ namespace Aeon.Emulator.Dos
                     blockList.Reassign(environmentSegment, newProcess);
 
                 // Allocate the largest free block for the new process.
-                ushort segment = blockList.Allocate(Math.Min((ushort)image.MaximumParagraphs, blockList.LargestFreeBlock), newProcess);
+                ushort segment = blockList.Allocate(Math.Min(image.MaximumParagraphs, blockList.LargestFreeBlock), newProcess);
                 //ushort segment = blockList.Allocate(blockList.LargestFreeBlock, newProcess);
                 if (segment == 0)
                     throw new InvalidOperationException();

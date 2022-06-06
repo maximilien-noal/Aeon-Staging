@@ -31,6 +31,9 @@ public sealed class AeonConfiguration
 
     [JsonIgnore]
     public ArchiveFile Archive { get; private set; }
+    
+    [JsonPropertyName("gdb-port-number")]
+    public int? GdbPortNumber { get; set; }
 
     public static AeonConfiguration Load(Stream stream)
     {

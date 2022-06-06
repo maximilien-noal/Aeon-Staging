@@ -360,7 +360,7 @@ namespace Aeon.Emulator.Dos
             firstBlock.IsLast = false;
             firstBlock.Write(memory);
 
-            ushort freeSize = unchecked((ushort)(EnvironmentVariableSegment - FirstSegment - 3));
+            ushort freeSize = unchecked(EnvironmentVariableSegment - FirstSegment - 3);
             var freeBlock = new MemoryControlBlock(FirstSegment + 2, 0, string.Empty);
             freeBlock.Length = freeSize;
             freeBlock.IsLast = false;

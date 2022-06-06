@@ -59,9 +59,9 @@ namespace Aeon.DiskImages
                 reader.Read(buffer, 0, 2048);
                 writer.Write(buffer, 0, 2048);
 
-                if (reportProgress != null && currentPercent != (int)((double)i / (double)count))
+                if (reportProgress != null && currentPercent != (int)(i / (double)count))
                 {
-                    currentPercent = (int)((double)i / (double)count);
+                    currentPercent = (int)(i / (double)count);
                     reportProgress(currentPercent);
                 }
             }

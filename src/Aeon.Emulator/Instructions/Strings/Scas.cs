@@ -83,7 +83,7 @@ namespace Aeon.Emulator.Instructions.Strings
                 ScanSingleByte32(vm);
                 vm.Processor.ECX--;
                 if (vm.Processor.ECX != 0 && vm.Processor.Flags.Zero)
-                    vm.Processor.EIP -= (uint)(1 + vm.Processor.PrefixCount);
+                    vm.Processor.EIP -= 1 + vm.Processor.PrefixCount;
             }
         }
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
@@ -94,7 +94,7 @@ namespace Aeon.Emulator.Instructions.Strings
                 ScanSingleByte32(vm);
                 vm.Processor.ECX--;
                 if (vm.Processor.ECX != 0 && !vm.Processor.Flags.Zero)
-                    vm.Processor.EIP -= (uint)(1 + vm.Processor.PrefixCount);
+                    vm.Processor.EIP -= 1 + vm.Processor.PrefixCount;
             }
         }
     }

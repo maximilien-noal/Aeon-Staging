@@ -8,7 +8,7 @@ namespace Aeon.Emulator.Instructions
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static void ByteCompare(Processor p, byte value1, byte value2)
         {
-            byte uResult = (byte)((uint)value1 - (uint)value2);
+            byte uResult = (byte)(value1 - (uint)value2);
             p.Flags.Update_Sub_Byte(value1, value2, uResult);
         }
 
@@ -16,7 +16,7 @@ namespace Aeon.Emulator.Instructions
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static void WordCompare(Processor p, ushort value1, ushort value2)
         {
-            ushort uResult = (ushort)((uint)value1 - (uint)value2);
+            ushort uResult = (ushort)(value1 - (uint)value2);
             p.Flags.Update_Sub_Word(value1, value2, uResult);
         }
         [Alternate(nameof(WordCompare), AddressSize = 16 | 32)]

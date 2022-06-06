@@ -27,7 +27,7 @@ public partial class TaskDialog : Window
     /// </summary>
     public string Caption
     {
-        get => (string)this.GetValue(CaptionProperty);
+        get => this.GetValue(CaptionProperty);
         set => this.SetValue(CaptionProperty, value);
     }
     /// <summary>

@@ -360,12 +360,12 @@ namespace Aeon.Emulator.Sound.Blaster
             short[] writeBuffer = new short[65536 * 2];
 
             using var player = Audio.CreatePlayer();
-            if (player is null)
+            int sampleRate = 44100;
+            if(player is not null)
             {
-                return;
+                sampleRate = player.Format.SampleRate;
+                player.BeginPlayback();
             }
-            int sampleRate = (int)player.Format.SampleRate;
-            player.BeginPlayback();
 
             while (!this.endPlayback)
             {
@@ -379,12 +379,14 @@ namespace Aeon.Emulator.Sound.Blaster
                     length = LinearUpsampler.Resample8Stereo(dsp.SampleRate, sampleRate, buffer, writeBuffer);
                 else
                     length = LinearUpsampler.Resample8Mono(dsp.SampleRate, sampleRate, buffer, writeBuffer);
-
-                Audio.WriteFullBuffer(player, writeBuffer.AsSpan(0, length));
+                if(player is not null)
+                {
+                    Audio.WriteFullBuffer(player, writeBuffer.AsSpan(0, length));
+                }
 
                 if (this.pausePlayback)
                 {
-                    player.StopPlayback();
+                    player?.StopPlayback();
                     while (this.pausePlayback)
                     {
                         Thread.Sleep(1);
@@ -392,7 +394,7 @@ namespace Aeon.Emulator.Sound.Blaster
                             return;
                     }
 
-                    player.BeginPlayback();
+                    player?.BeginPlayback();
                 }
 
                 if (this.pauseDuration > 0)
@@ -400,8 +402,12 @@ namespace Aeon.Emulator.Sound.Blaster
                     Array.Clear(writeBuffer, 0, writeBuffer.Length);
                     int count = this.pauseDuration / (1024 / 2) + 1;
                     for (int i = 0; i < count; i++)
-                        Audio.WriteFullBuffer(player, writeBuffer.AsSpan(0, 1024));
-
+                    {
+                        if(player is not null)
+                        {
+                            Audio.WriteFullBuffer(player, writeBuffer.AsSpan(0, 1024));
+                        }
+                    }
                     this.pauseDuration = 0;
                     RaiseInterrupt();
                 }

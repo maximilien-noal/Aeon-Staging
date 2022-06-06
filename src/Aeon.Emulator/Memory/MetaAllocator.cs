@@ -59,7 +59,7 @@ namespace Aeon.Emulator.Memory
 
                 var providedSegment = Math.Max(minimumSegment, freeBlock.Segment);
 
-                var newFreeBlockA = new Allocation(freeBlock.Segment, (uint)providedSegment - (uint)freeBlock.Segment, false);
+                var newFreeBlockA = new Allocation(freeBlock.Segment, providedSegment - (uint)freeBlock.Segment, false);
                 var newUsedBlock = new Allocation(providedSegment, paragraphs, true);
                 var newFreeBlockB = new Allocation((ushort)(providedSegment + paragraphs), freeBlock.Length - newFreeBlockA.Length - paragraphs, false);
 

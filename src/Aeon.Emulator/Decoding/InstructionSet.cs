@@ -6,6 +6,7 @@ using System.Linq;
 using System.Runtime.CompilerServices;
 using System.Runtime.InteropServices;
 using Aeon.Emulator.DebugSupport;
+using Aeon.Emulator.Gdb;
 
 namespace Aeon.Emulator.Decoding
 {
@@ -63,7 +64,7 @@ namespace Aeon.Emulator.Decoding
 
         [SkipLocalsInit]
         [MethodImpl(MethodImplOptions.AggressiveOptimization)]
-        internal static void Emulate(VirtualMachine vm, uint count)
+        internal static void Emulate(VirtualMachine vm, uint count, MachineBreakpoints? machineBreakPoints)
         {
             var processor = vm.Processor;
             var memory = vm.PhysicalMemory;
@@ -74,6 +75,7 @@ namespace Aeon.Emulator.Decoding
 
                 for (uint i = 0; i < count; i++)
                 {
+                    machineBreakPoints?.CheckBreakPoint();
                     uint startEIP = *eip;
                     processor.StartEIP = startEIP;
 
@@ -140,13 +142,14 @@ namespace Aeon.Emulator.Decoding
             }
         }
 
-        internal static void Emulate(VirtualMachine vm, InstructionLog log)
+        internal static void Emulate(VirtualMachine vm, InstructionLog log, MachineBreakpoints? machineBreakpoints)
         {
             var info = FindOpcode(vm.PhysicalMemory, vm.Processor);
             if (!info.IsPrefix)
                 log.Write(vm.Processor);
 
             var method = info.Emulators[vm.Processor.SizeModeIndex];
+            machineBreakpoints?.CheckBreakPoint();
             if (method != null)
                 method(vm);
             else
@@ -260,7 +263,7 @@ namespace Aeon.Emulator.Decoding
         }
         [MethodImpl(MethodImplOptions.NoInlining)]
         private static Exception GetPartiallyNotImplementedException(VirtualMachine vm, OpcodeInfo info) => new NotImplementedException($"Instruction '{info.Name}' not implemented for {vm.Processor.AddressSize}-bit addressing, {vm.Processor.OperandSize}-bit operand size.");
-        private static OpcodeInfo FindOpcode(PhysicalMemory memory, Processor processor)
+        private static OpcodeInfo? FindOpcode(PhysicalMemory memory, Processor processor)
         {
             unsafe
             {

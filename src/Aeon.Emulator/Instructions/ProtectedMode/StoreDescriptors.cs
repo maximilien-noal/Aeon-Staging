@@ -10,7 +10,7 @@ namespace Aeon.Emulator.Instructions.ProtectedMode
         {
             address &= 0xFFFF000000000000u;
             address |= m.IDTLimit;
-            address |= (ulong)((m.IDTAddress << 16) & 0x00FFFFFFu);
+            address |= (m.IDTAddress << 16) & 0x00FFFFFFu;
         }
         [Alternate(nameof(StoreIDT), AddressSize = 16 | 32, OperandSize = 32)]
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
@@ -27,7 +27,7 @@ namespace Aeon.Emulator.Instructions.ProtectedMode
         {
             address &= 0xFFFF000000000000u;
             address |= m.GDTLimit;
-            address |= (ulong)((m.GDTAddress << 16) & 0x00FFFFFFu);
+            address |= (m.GDTAddress << 16) & 0x00FFFFFFu;
         }
         [Alternate(nameof(StoreGDT), OperandSize = 32, AddressSize = 16 | 32)]
         [MethodImpl(MethodImplOptions.AggressiveInlining)]

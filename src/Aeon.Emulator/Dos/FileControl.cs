@@ -387,7 +387,7 @@ namespace Aeon.Emulator.Dos
             {
                 if (vm.Processor.AL <= 2)
                 {
-                    int distance = (int)(((ushort)vm.Processor.CX) << 16) | (ushort)vm.Processor.DX;
+                    int distance = ((ushort)vm.Processor.CX) << 16 | (ushort)vm.Processor.DX;
                     switch (vm.Processor.AL)
                     {
                         case 0:
@@ -399,7 +399,7 @@ namespace Aeon.Emulator.Dos
                             break;
 
                         case 2:
-                            s.Seek((long)distance, SeekOrigin.End);
+                            s.Seek(distance, SeekOrigin.End);
                             break;
                     }
 

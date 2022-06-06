@@ -19,6 +19,7 @@ namespace Aeon.Emulator
         private byte addressHighByte;
         private int transferRate;
         private System.Diagnostics.Stopwatch transferTimer = new System.Diagnostics.Stopwatch();
+        private ushort address;
 
         internal DmaChannel()
         {
@@ -64,7 +65,14 @@ namespace Aeon.Emulator
         /// <summary>
         /// Gets the DMA transfer memory address.
         /// </summary>
-        public ushort Address { get; internal set; }
+        public ushort Address
+        {
+            get { return address; }
+            internal set
+            {
+                address = value;
+            }
+        }
         /// <summary>
         /// Gets the number of bytes to transfer.
         /// </summary>

@@ -229,7 +229,7 @@ namespace Aeon.Emulator.Video
                     }
                     else
                     {
-                        this.SendToProvider(cursorPos.X, cursorPos.Y, (int)c, foreground, background);
+                        this.SendToProvider(cursorPos.X, cursorPos.Y, c, foreground, background);
 
                         if (cursorPos.X < this.Width - 1)
                         {

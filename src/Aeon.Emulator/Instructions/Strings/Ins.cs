@@ -67,7 +67,7 @@ namespace Aeon.Emulator.Instructions.Strings
             if (vm.Processor.ECX != 0)
             {
                 InSingleByte32(vm);
-                vm.Processor.EIP -= (uint)(1 + vm.Processor.PrefixCount);
+                vm.Processor.EIP -= 1 + vm.Processor.PrefixCount;
                 vm.Processor.ECX--;
             }
         }
