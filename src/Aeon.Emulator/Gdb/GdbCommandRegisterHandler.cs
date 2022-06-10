@@ -75,7 +75,7 @@ public class GdbCommandRegisterHandler {
             };
         }
         if (regIndex == 8) {
-            return _machine.VirtualMachine.Processor.EIP;
+            return MemoryUtils.ToPhysicalAddress(_machine.VirtualMachine.Processor.CS, _machine.VirtualMachine.Processor.IP);
         }
 
         if (regIndex == 9) {

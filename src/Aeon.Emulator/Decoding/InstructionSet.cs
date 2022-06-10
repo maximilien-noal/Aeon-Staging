@@ -75,11 +75,10 @@ namespace Aeon.Emulator.Decoding
 
                 for (uint i = 0; i < count; i++)
                 {
-                    machineBreakPoints?.CheckBreakPoint();
                     uint startEIP = *eip;
                     processor.StartEIP = startEIP;
-
                     byte* ip = processor.CachedInstruction;
+                    machineBreakPoints?.CheckBreakPoint();
                     memory.FetchInstruction(processor.segmentBases[(int)SegmentIndex.CS] + startEIP, ip);
 
                     uint sizeModeIndex = processor.SizeModeIndex;
@@ -149,7 +148,6 @@ namespace Aeon.Emulator.Decoding
                 log.Write(vm.Processor);
 
             var method = info.Emulators[vm.Processor.SizeModeIndex];
-            machineBreakpoints?.CheckBreakPoint();
             if (method != null)
                 method(vm);
             else

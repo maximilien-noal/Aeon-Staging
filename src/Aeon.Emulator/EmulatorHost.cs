@@ -315,7 +315,6 @@ namespace Aeon.Emulator
         private void EmulateInstructionsWithLogging(int count)
         {
             var vm = this.VirtualMachine;
-            MachineBreakpoints.CheckBreakPoint();
             vm.PerformDmaTransfers();
 
             try
