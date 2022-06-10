@@ -1,6 +1,7 @@
 ﻿namespace Aeon.Emulator.Gdb;
 
 using Aeon.Emulator.Gdb.Breakpoint;
+using Aeon.Emulator.Utils;
 using System;
 
 public class MachineBreakpoints : IDisposable {
@@ -50,7 +51,7 @@ public class MachineBreakpoints : IDisposable {
 
     private void CheckBreakPoints() {
         if (!_executionBreakPoints.IsEmpty) {
-            uint address = _machine.VirtualMachine.GetIpPhysicalAddress();
+            uint address = MemoryUtils.ToPhysicalAddress(_machine.VirtualMachine.Processor.CS, _machine.VirtualMachine.Processor.IP);
             _executionBreakPoints.TriggerMatchingBreakPoints(address);
         }
 

@@ -51,9 +51,28 @@ namespace Aeon.Emulator
         /// </summary>
         internal static readonly RealModeAddress NullInterruptHandler = new(HandlerSegment, 4095);
 
+        private readonly BreakPointHolder _readBreakPoints = new();
+
+        private readonly BreakPointHolder _writeBreakPoints = new();
+
         internal void ToggleBreakPoint(BreakPoint breakPoint, bool on)
         {
-            throw new NotImplementedException();
+            BreakPointType? type = breakPoint.BreakPointType;
+            switch (type)
+            {
+                case BreakPointType.READ:
+                    _readBreakPoints.ToggleBreakPoint(breakPoint, on);
+                    break;
+                case BreakPointType.WRITE:
+                    _writeBreakPoints.ToggleBreakPoint(breakPoint, on);
+                    break;
+                case BreakPointType.ACCESS:
+                    _readBreakPoints.ToggleBreakPoint(breakPoint, on);
+                    _writeBreakPoints.ToggleBreakPoint(breakPoint, on);
+                    break;
+                default:
+                    throw new EmulatedException($"Trying to add unsupported breakpoint of type {type}");
+            }
         }
 
         private ushort nextHandlerOffset = 4096;

@@ -44,12 +44,6 @@ namespace Aeon.Emulator
 
         private readonly DefaultPortHandler defaultPortHandler = new();
         private readonly List<IVirtualDevice> allDevices = new();
-
-        /// <summary>
-        /// Only works in real mode.
-        /// </summary>
-        internal uint GetIpPhysicalAddress() => MemoryUtils.ToPhysicalAddress(Processor.CS, Processor.IP);
-
         private readonly ExpandedMemoryManager emm;
         private readonly ExtendedMemoryManager xmm;
         private readonly List<DmaChannel> dmaDeviceChannels = new();
