@@ -50,7 +50,7 @@ public class MachineBreakpoints : IDisposable {
 
     private void CheckBreakPoints() {
         if (!_executionBreakPoints.IsEmpty) {
-            uint address = _machine.VirtualMachine.Processor.EIP;
+            uint address = _machine.VirtualMachine.GetIpPhysicalAddress();
             _executionBreakPoints.TriggerMatchingBreakPoints(address);
         }
 
