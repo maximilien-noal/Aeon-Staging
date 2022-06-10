@@ -75,6 +75,30 @@ namespace Aeon.Emulator
             }
         }
 
+        private void MonitorRangeReadAccess(uint startAddress, uint endAddress)
+        {
+            _readBreakPoints.TriggerBreakPointsWithAddressRange(startAddress, endAddress);
+        }
+
+        private void MonitorRangeWriteAccess(uint startAddress, uint endAddress)
+        {
+            _writeBreakPoints.TriggerBreakPointsWithAddressRange(startAddress, endAddress);
+        }
+
+        private void MonitorReadAccess(uint address)
+        {
+            _readBreakPoints.TriggerMatchingBreakPoints(address);
+        }
+
+        // For breakpoints to access what is getting written
+        public byte CurrentlyWritingByte { get; private set; } = 0;
+
+        private void MonitorWriteAccess(uint address, byte value)
+        {
+            CurrentlyWritingByte = value;
+            _writeBreakPoints.TriggerMatchingBreakPoints(address);
+        }
+
         private ushort nextHandlerOffset = 4096;
         private uint addressMask = 0x000FFFFFu;
         private readonly MetaAllocator metaAllocator = new();
@@ -1158,6 +1182,7 @@ namespace Aeon.Emulator
         [MethodImpl(MethodImplOptions.AggressiveOptimization | MethodImplOptions.AggressiveInlining)]
         private T PhysicalRead<T>(uint address, bool mask = true, bool checkVram = true) where T : unmanaged
         {
+            MonitorReadAccess(address);
             uint fullAddress = mask ? (address & this.addressMask) : address;
 
             unsafe
@@ -1193,6 +1218,10 @@ namespace Aeon.Emulator
         [MethodImpl(MethodImplOptions.AggressiveOptimization | MethodImplOptions.AggressiveInlining)]
         private void PhysicalWrite<T>(uint address, T value, bool mask = true) where T : unmanaged
         {
+            if(value is byte b)
+            {
+                MonitorWriteAccess(address, b);
+            }
             uint fullAddress = mask ? (address & this.addressMask) : address;
 
             unsafe
