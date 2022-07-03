@@ -5,17 +5,18 @@ using TinyAudio;
 
 namespace Aeon.Emulator.Sound
 {
-    [SupportedOSPlatform("windows")]
     internal static class Audio
     {
         public static AudioPlayer? CreatePlayer(bool useCallback = false)
         {
             if (OperatingSystem.IsWindows())
             {
-                return WasapiAudioPlayer.Create(TimeSpan.FromSeconds(0.25), useCallback);                
+                return WasapiAudioPlayer.Create(TimeSpan.FromSeconds(0.25), useCallback);
             }
-
-            return null;
+            else
+            {
+                return OpenAlAudioPlayer.Create(TimeSpan.FromSeconds(0.25), useCallback);
+            }
         }
 
         public static void WriteFullBuffer(AudioPlayer player, ReadOnlySpan<float> buffer)
