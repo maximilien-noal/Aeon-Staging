@@ -4,8 +4,6 @@ using System.IO;
 
 namespace Aeon.Emulator.Video.Rendering
 {
-
-
     /// <summary>
     /// Renders 8-bit mode X graphics to a bitmap.
     /// </summary>

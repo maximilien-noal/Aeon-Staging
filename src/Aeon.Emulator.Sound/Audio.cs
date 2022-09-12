@@ -2,6 +2,7 @@
 using System.Runtime.Versioning;
 using System.Threading;
 using TinyAudio;
+using TinyAudio.PortAudio;
 
 namespace Aeon.Emulator.Sound
 {
@@ -15,7 +16,7 @@ namespace Aeon.Emulator.Sound
             }
             else
             {
-                return OpenAlAudioPlayer.Create(TimeSpan.FromSeconds(0.25), useCallback);
+                return PortAudioPlayer.Create(48000, 2048);
             }
         }
 

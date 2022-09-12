@@ -87,7 +87,7 @@ namespace Aeon.Emulator.Sound.Blaster
 
                 case Ports.DspReadBufferStatus:
                     if (this.mixer.InterruptStatusRegister == InterruptStatus.Dma8)
-                        System.Diagnostics.Debug.WriteLine("Sound Blaster 8-bit DMA acknowledged");
+                        //System.Diagnostics.Debug.WriteLine("Sound Blaster 8-bit DMA acknowledged");
                     this.mixer.InterruptStatusRegister = InterruptStatus.None;
                     return this.outputData.Count > 0 ? (byte)0x80 : (byte)0u;
 
@@ -191,7 +191,7 @@ namespace Aeon.Emulator.Sound.Blaster
         {
             this.mixer.InterruptStatusRegister = InterruptStatus.Dma8;
             this.vm.InterruptController.RaiseHardwareInterrupt(this.IRQ);
-            System.Diagnostics.Debug.WriteLine("Sound Blaster IRQ");
+            //System.Diagnostics.Debug.WriteLine("Sound Blaster IRQ");
         }
         /// <summary>
         /// Resets the DSP.
@@ -242,43 +242,43 @@ namespace Aeon.Emulator.Sound.Blaster
                     dsp.Begin(false, false, false);
                     //else
                     //    this.vm.InterruptController.RaiseHardwareInterrupt(this.irq);
-                    System.Diagnostics.Debug.WriteLine("Single-cycle DMA");
+                    //System.Diagnostics.Debug.WriteLine("Single-cycle DMA");
                     vm.PerformDmaTransfers();
                     break;
 
                 case Commands.SingleCycleDmaOutputADPCM4Ref:
                     dsp.Begin(false, false, false, CompressionLevel.ADPCM4, true);
-                    System.Diagnostics.Debug.WriteLine("Single-cycle DMA ADPCM4 with reference byte");
+                    //System.Diagnostics.Debug.WriteLine("Single-cycle DMA ADPCM4 with reference byte");
                     vm.PerformDmaTransfers();
                     break;
 
                 case Commands.SingleCycleDmaOutputADPCM4:
                     dsp.Begin(false, false, false, CompressionLevel.ADPCM4, false);
-                    System.Diagnostics.Debug.WriteLine("Single-cycle DMA ADPCM4");
+                    //System.Diagnostics.Debug.WriteLine("Single-cycle DMA ADPCM4");
                     vm.PerformDmaTransfers();
                     break;
 
                 case Commands.SingleCycleDmaOutputADPCM2Ref:
                     dsp.Begin(false, false, false, CompressionLevel.ADPCM2, true);
-                    System.Diagnostics.Debug.WriteLine("Single-cycle DMA ADPCM2 with reference byte");
+                    //System.Diagnostics.Debug.WriteLine("Single-cycle DMA ADPCM2 with reference byte");
                     vm.PerformDmaTransfers();
                     break;
 
                 case Commands.SingleCycleDmaOutputADPCM2:
                     dsp.Begin(false, false, false, CompressionLevel.ADPCM2, false);
-                    System.Diagnostics.Debug.WriteLine("Single-cycle DMA ADPCM2");
+                    //System.Diagnostics.Debug.WriteLine("Single-cycle DMA ADPCM2");
                     vm.PerformDmaTransfers();
                     break;
 
                 case Commands.SingleCycleDmaOutputADPCM3Ref:
                     dsp.Begin(false, false, false, CompressionLevel.ADPCM3, true);
-                    System.Diagnostics.Debug.WriteLine("Single-cycle DMA ADPCM3 with reference byte");
+                    //System.Diagnostics.Debug.WriteLine("Single-cycle DMA ADPCM3 with reference byte");
                     vm.PerformDmaTransfers();
                     break;
 
                 case Commands.SingleCycleDmaOutputADPCM3:
                     dsp.Begin(false, false, false, CompressionLevel.ADPCM3, false);
-                    System.Diagnostics.Debug.WriteLine("Single-cycle DMA ADPCM3");
+                    //System.Diagnostics.Debug.WriteLine("Single-cycle DMA ADPCM3");
                     vm.PerformDmaTransfers();
                     break;
 
@@ -287,7 +287,7 @@ namespace Aeon.Emulator.Sound.Blaster
                     if (!this.blockTransferSizeSet)
                         dsp.BlockTransferSize = ((commandData[1] | (commandData[2] << 8)) + 1);
                     this.dsp.Begin(false, false, true);
-                    System.Diagnostics.Debug.WriteLine("Auto-init DMA");
+                    //System.Diagnostics.Debug.WriteLine("Auto-init DMA");
                     break;
 
                 case Commands.AutoInitDmaOutput8_Alt:
@@ -295,7 +295,7 @@ namespace Aeon.Emulator.Sound.Blaster
                     if (!this.blockTransferSizeSet)
                         dsp.BlockTransferSize = ((commandData[1] | (commandData[2] << 8)) + 1);
                     this.dsp.Begin(false, (commandData[0] & (1 << 5)) != 0, true);
-                    System.Diagnostics.Debug.WriteLine("Auto-init DMA");
+                    //System.Diagnostics.Debug.WriteLine("Auto-init DMA");
                     break;
 
                 case Commands.ExitAutoInit8:
@@ -305,12 +305,12 @@ namespace Aeon.Emulator.Sound.Blaster
                 case Commands.SingleCycleDmaOutput16:
                 case Commands.SingleCycleDmaOutput16Fifo:
                     this.dsp.Begin(true, (commandData[0] & (1 << 5)) != 0, false);
-                    System.Diagnostics.Debug.WriteLine("Single-cycle DMA");
+                    //System.Diagnostics.Debug.WriteLine("Single-cycle DMA");
                     break;
 
                 case Commands.AutoInitDmaOutput16:
                 case Commands.AutoInitDmaOutput16Fifo:
-                    System.Diagnostics.Debug.WriteLine("Auto-init DMA");
+                    //System.Diagnostics.Debug.WriteLine("Auto-init DMA");
                     this.dsp.Begin(true, (commandData[0] & (1 << 5)) != 0, true);
                     break;
 
@@ -325,14 +325,14 @@ namespace Aeon.Emulator.Sound.Blaster
                 case Commands.ExitDmaMode16:
                     this.dmaChannel.IsActive = false;
                     this.dsp.IsEnabled = false;
-                    System.Diagnostics.Debug.WriteLine("Pause Sound Blaster DMA");
+                    //System.Diagnostics.Debug.WriteLine("Pause Sound Blaster DMA");
                     break;
 
                 case Commands.ContinueDmaMode:
                 case Commands.ContinueDmaMode16:
                     this.dmaChannel.IsActive = true;
                     this.dsp.IsEnabled = true;
-                    System.Diagnostics.Debug.WriteLine("Continue Sound Blaster DMA");
+                    //System.Diagnostics.Debug.WriteLine("Continue Sound Blaster DMA");
                     break;
 
                 case Commands.RaiseIrq8:
