@@ -119,7 +119,11 @@ public partial class MainWindow : Window
         vm.RegisterVirtualDevice(new Aeon.Emulator.Sound.PCSpeaker.InternalSpeaker());
         vm.RegisterVirtualDevice(new SoundBlaster(vm));
         vm.RegisterVirtualDevice(new FmSoundCard());
-        vm.RegisterVirtualDevice(new GeneralMidi(globalConfig.Mt32Enabled ? globalConfig.Mt32RomsPath : null));
+        vm.RegisterVirtualDevice(new GeneralMidi(
+            new GeneralMidiOptions(
+                config.MidiEngine ?? globalConfig.MidiEngine ?? Sound.MidiEngine.MidiMapper,
+                globalConfig.SoundFontPath,
+                globalConfig.Mt32RomsPath)));
 
         vm.RegisterVirtualDevice(new JoystickDevice());
 

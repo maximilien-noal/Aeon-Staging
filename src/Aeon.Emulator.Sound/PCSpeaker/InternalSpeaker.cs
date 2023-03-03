@@ -26,7 +26,7 @@ namespace Aeon.Emulator.Sound.PCSpeaker
         private readonly object threadStateLock = new();
         private readonly float[] emptyBuffer = new float[1024];
         private SpeakerControl controlRegister = SpeakerControl.UseTimer;
-        private Task generateWaveformTask;
+        private Task? generateWaveformTask;
         private readonly CancellationTokenSource cancelGenerateWaveform = new();
         private int currentPeriod;
 
@@ -106,7 +106,7 @@ namespace Aeon.Emulator.Sound.PCSpeaker
         /// </summary>
         /// <param name="source">Source of the event.</param>
         /// <param name="e">Unused EventArgs instance.</param>
-        private void FrequencyChanged(object source, EventArgs e)
+        private void FrequencyChanged(object? source, EventArgs e)
         {
             this.EnqueueCurrentNote();
 
@@ -166,13 +166,13 @@ namespace Aeon.Emulator.Sound.PCSpeaker
             var buffer = new byte[4096];
             var writeBuffer = buffer;
             bool expandToStereo = false;
-            if (player.Format.Channels == 2)
+            if (player?.Format.Channels == 2)
             {
                 writeBuffer = new byte[buffer.Length * 2];
                 expandToStereo = true;
             }
 
-            player.BeginPlayback();
+            player?.BeginPlayback();
 
             int idleCount = 0;
 
@@ -189,7 +189,7 @@ namespace Aeon.Emulator.Sound.PCSpeaker
                         samples *= 2;
                     }
 
-                    while (periods > 0)
+                    while (periods > 0 && player is not null)
                     {
                         Audio.WriteFullBuffer(player, writeBuffer.AsSpan(0, samples));
                         periods--;
@@ -210,9 +210,9 @@ namespace Aeon.Emulator.Sound.PCSpeaker
             }
         }
 
-        private void FillWithSilence(AudioPlayer player)
+        private void FillWithSilence(AudioPlayer? player)
         {
-            while (player.WriteData(this.emptyBuffer) > 0)
+            while (player?.WriteData(this.emptyBuffer) > 0)
             {
             }
         }

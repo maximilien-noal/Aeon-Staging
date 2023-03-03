@@ -8,7 +8,7 @@ namespace Aeon.Emulator.Sound
     internal sealed class MeltySynthMidiMapper : MidiDevice
     {
         private readonly Synthesizer synthesizer;
-        private readonly AudioPlayer audioPlayer;
+        private readonly AudioPlayer? audioPlayer;
         private bool disposed;
 
         public MeltySynthMidiMapper(string soundFontPath)
@@ -17,17 +17,17 @@ namespace Aeon.Emulator.Sound
                 throw new ArgumentNullException(nameof(soundFontPath));
 
             this.audioPlayer = Audio.CreatePlayer(true);
-            this.synthesizer = new Synthesizer(soundFontPath, this.audioPlayer.Format.SampleRate);
-            this.audioPlayer.BeginPlayback(this.HandleBufferNeeded);
+            this.synthesizer = new Synthesizer(soundFontPath, this.audioPlayer?.Format.SampleRate ?? 48000);
+            this.audioPlayer?.BeginPlayback(this.HandleBufferNeeded);
         }
 
         public override void Pause()
         {
-            this.audioPlayer.StopPlayback();
+            this.audioPlayer?.StopPlayback();
         }
         public override void Resume()
         {
-            this.audioPlayer.BeginPlayback(this.HandleBufferNeeded);
+            this.audioPlayer?.BeginPlayback(this.HandleBufferNeeded);
         }
 
         protected override void PlayShortMessage(uint message)
@@ -42,7 +42,7 @@ namespace Aeon.Emulator.Sound
             if (!this.disposed)
             {
                 if (!disposing)
-                    this.audioPlayer.Dispose();
+                    this.audioPlayer?.Dispose();
 
                 this.disposed = true;
             }
