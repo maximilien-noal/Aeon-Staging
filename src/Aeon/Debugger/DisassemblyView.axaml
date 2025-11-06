@@ -13,14 +13,14 @@
                 <ResourceInclude Source="InstructionTemplates.axaml" />
                 <ResourceInclude Source="ListBoxTemplates.axaml" />
             </ResourceDictionary.MergedDictionaries>
-            <Style x:Key="loggedInstructionStyle" TargetType="ListBoxItem" BasedOn="{StaticResource listBoxItemStyle}">
-                <Setter Property="Background" Value="Gainsboro" />
-            </Style>
+            <!-- Style for logged instructions - removed TargetType/BasedOn as they're not compatible with Avalonia in this context -->
             <debug:InstructionStyleSelector x:Key="styleSelector" />
+            <debug:InstructionTemplateSelector x:Key="instructionTemplateSelector" />
         </ResourceDictionary>
     </UserControl.Resources>
     <Grid>
-        <ListBox Name="listBox" ItemContainerStyleSelector="{StaticResource styleSelector}" ItemsSource="{Binding InstructionsSource, ElementName=root}"
-                 FontFamily="Courier New" ItemTemplateSelector="{StaticResource instructionTemplateSelector}" />
+        <!-- Note: ItemContainerStyleSelector and ItemTemplateSelector are handled via code-behind in Avalonia -->
+        <ListBox Name="listBox" ItemsSource="{Binding InstructionsSource, ElementName=root}"
+                 FontFamily="Courier New" />
     </Grid>
 </UserControl>

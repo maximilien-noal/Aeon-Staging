@@ -2,11 +2,7 @@
                     xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
     <ControlTemplate x:Key="roundButtonTemplate" TargetType="Button">
         <Grid>
-            <Ellipse x:Name="border" Stroke="Gray">
-                <Ellipse.Fill>
-                    <SolidColorBrush Color="{TemplateBinding Background.Color}" />
-                </Ellipse.Fill>
-            </Ellipse>
+            <Ellipse x:Name="border" Stroke="Gray" Fill="{TemplateBinding Background}" />
             <Ellipse x:Name="whiteHighlight" Stroke="Transparent" Opacity="0.75">
                 <Ellipse.Fill>
                     <RadialGradientBrush Center="25%,25%">

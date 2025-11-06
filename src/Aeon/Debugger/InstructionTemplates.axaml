@@ -2,17 +2,24 @@
                     xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
                     xmlns:local="clr-namespace:Aeon.Emulator.Launcher.Debugger"
                     xmlns:dbg="clr-namespace:Aeon.Emulator.DebugSupport;assembly=Aeon.Emulator">
-    <ControlTemplate x:Key="miniExpanderButtonTemplate" TargetType="CheckBox">
+    <Styles>
+    <Style Selector="CheckBox.miniExpanderButton">
+        <Setter Property="Template">
+            <Setter.Value>
+    <ControlTemplate TargetType="CheckBox">
         <Border Name="border" Width="12" Height="12" BorderThickness="1" BorderBrush="Black" Background="Transparent" Margin="2" CornerRadius="2">
             <Grid>
                 <Rectangle Name="horizontalLine" StrokeThickness="0" Fill="Black" Width="8" Height="2" VerticalAlignment="Center" />
                 <!-- Vertical line shown when not checked - using binding instead of trigger -->
                 <Rectangle Name="verticalLine" StrokeThickness="0" Fill="Black" Width="2" Height="8" HorizontalAlignment="Center" 
-                           IsVisible="{Binding !#expandCheckBox.IsChecked}" />
+                           IsVisible="{Binding !IsChecked, RelativeSource={RelativeSource TemplatedParent}}" />
             </Grid>
         </Border>
         <!-- ControlTemplate.Triggers not supported in Avalonia - using Styles with pseudo-classes -->
     </ControlTemplate>
+            </Setter.Value>
+        </Setter>
+    </Style>
     
     <!-- Styles for hover effects on miniExpander -->
     <Style Selector="CheckBox:pointerover /template/ Rectangle#horizontalLine">
@@ -24,7 +31,8 @@
     <Style Selector="CheckBox:pointerover /template/ Border#border">
         <Setter Property="Background" Value="Gainsboro" />
     </Style>
-
+    </Styles>
+    
     <DataTemplate x:Key="instructionTemplate" DataType="{x:Type dbg:Instruction}">
         <StackPanel Orientation="Horizontal">
             <TextBlock Text="{Binding CS, StringFormat={}{0:X4}:}" />
@@ -50,7 +58,7 @@
                 <RowDefinition Height="Auto" />
                 <RowDefinition />
             </Grid.RowDefinitions>
-            <CheckBox Name="expandCheckBox" Template="{StaticResource miniExpanderButtonTemplate}" />
+            <CheckBox Name="expandCheckBox" Classes="miniExpanderButton" />
             <StackPanel Grid.Column="1" Orientation="Horizontal">
                 <TextBlock Text="{Binding CS, StringFormat={}{0:X4}:}" />
                 <TextBlock Text="{Binding EIP, StringFormat={}{0:X8}}" Margin="0,0,20,0" />

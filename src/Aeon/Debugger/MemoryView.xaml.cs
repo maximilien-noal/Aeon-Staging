@@ -213,8 +213,11 @@ namespace Aeon.Emulator.Launcher.Debugger
         /// </summary>
         /// <param name="sender">Source of the event.</param>
         /// <param name="e">Information about the event.</param>
-        private void ScrollBar_ValueChanged(object sender, AvaloniaPropertyChangedEventArgs<double> e)
+        private void ScrollBar_PropertyChanged(object? sender, AvaloniaPropertyChangedEventArgs e)
         {
+            if (e.Property.Name != "Value" || sender is not Avalonia.Controls.Primitives.ScrollBar scrollBar)
+                return;
+                
             var current = this.StartAddress;
             // Handle both double and BindingValue<double>
             double newValueDouble = 0.0;

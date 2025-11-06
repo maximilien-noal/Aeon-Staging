@@ -1,14 +1,16 @@
 ﻿<ResourceDictionary xmlns="https://github.com/avaloniaui"
                     xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
                     xmlns:emu="clr-namespace:Aeon.Emulator.Launcher">
+    <Styles>
     <Style Selector="emu|EmulatorDisplay[EmulatorState=Paused]">
-        <Setter Property="Opacity" Value="0.5" />
-    </Style>
-    <Style Selector="emu|EmulatorDisplay[EmulatorState=Running][MouseInputMode=Absolute]">
-        <Setter Property="Cursor" Value="{x:Static Cursor.None}" />
-    </Style>
-    <Style Selector="emu|EmulatorDisplay[EmulatorState=Running][IsMouseCursorCaptured=True]">
-        <Setter Property="Cursor" Value="{x:Static Cursor.None}" />
-    </Style>
+            <Setter Property="Opacity" Value="0.5" />
+        </Style>
+        <Style Selector="emu|EmulatorDisplay[EmulatorState=Running][MouseInputMode=Absolute]">
+            <Setter Property="Cursor" Value="None" />
+        </Style>
+        <Style Selector="emu|EmulatorDisplay[EmulatorState=Running][IsMouseCursorCaptured=True]">
+            <Setter Property="Cursor" Value="None" />
+        </Style>
+    </Styles>
     <!-- Note: ProgramExited animation needs to be handled in code-behind as Avalonia doesn't support trigger animations in styles -->
 </ResourceDictionary>

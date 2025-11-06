@@ -427,7 +427,10 @@ namespace Aeon.Emulator.Launcher
                 }
             }
         }
-        private void DisplayImage_MouseUp(object sender, PointerPressedEventArgs e)
+        // TODO: DisplayImage_MouseUp - PointerReleased event signature is different in Avalonia
+        // Need to use PointerReleasedEventArgs instead of PointerPressedEventArgs
+        /*
+        private void DisplayImage_MouseUp(object sender, PointerReleasedEventArgs e)
         {
             if (this.emulator != null && this.emulator.State == EmulatorState.Running)
             {
@@ -446,6 +449,7 @@ namespace Aeon.Emulator.Launcher
                 }
             }
         }
+        */
         private void DisplayImage_MouseMove(object sender, PointerEventArgs e)
         {
             if (this.emulator != null && this.emulator.State == EmulatorState.Running)

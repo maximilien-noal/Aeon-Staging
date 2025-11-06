@@ -29,6 +29,13 @@ namespace Aeon.Emulator.Launcher
             // WindowInteropHelper initialization removed
             AvaloniaXamlLoader.Load(this);
             
+            // Get emulatorDisplay control and hook up EmulationError event
+            emulatorDisplay = this.FindControl<EmulatorDisplay>("emulatorDisplay");
+            if (emulatorDisplay != null)
+            {
+                emulatorDisplay.AddHandler(EmulatorDisplay.EmulationErrorEvent, EmulatorDisplay_EmulationError);
+            }
+            
             // Populate scaler ComboBox - ObjectDataProvider not available in Avalonia
             InitializeScalerValues();
         }

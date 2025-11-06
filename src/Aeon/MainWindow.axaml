@@ -124,7 +124,7 @@
             </Border>
         </StackPanel>
         <local:EmulatorDisplay x:Name="emulatorDisplay" EmulatorStateChanged="EmulatorDisplay_EmulatorStateChanged"
-                             EmulationError="EmulatorDisplay_EmulationError" CurrentProcessChanged="EmulatorDisplay_CurrentProcessChanged"
+                             CurrentProcessChanged="EmulatorDisplay_CurrentProcessChanged"
                              Margin="0,7,0,0" />
     </DockPanel>
 </Window>

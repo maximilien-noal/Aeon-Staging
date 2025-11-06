@@ -6,7 +6,7 @@
              mc:Ignorable="d" 
              d:DesignHeight="300" d:DesignWidth="500">
     <DockPanel>
-        <ScrollBar Name="scrollBar" DockPanel.Dock="Right" Minimum="0" Maximum="60000" SmallChange="16" LargeChange="256" ValueChanged="ScrollBar_ValueChanged" />
+        <ScrollBar Name="scrollBar" DockPanel.Dock="Right" Minimum="0" Maximum="60000" SmallChange="16" LargeChange="256" PropertyChanged="ScrollBar_PropertyChanged" />
         <Grid Name="mainGrid">
             <Grid.ColumnDefinitions>
                 <ColumnDefinition Width="Auto" />
