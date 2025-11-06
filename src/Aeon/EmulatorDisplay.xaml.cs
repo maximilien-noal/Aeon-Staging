@@ -41,7 +41,6 @@ namespace Aeon.Emulator.Launcher
         private int cursorBlink;
         private Video.Point cursorPosition = new(0, 1);
         private readonly SimpleCommand resumeCommand;
-        private readonly SimpleCommand pauseCommand;
         private Presenter currentPresenter;
         private int physicalMemorySize = 16;
         private FastBitmap renderTarget;
@@ -61,14 +60,6 @@ namespace Aeon.Emulator.Launcher
         private bool isMouseCaptured;
         private Avalonia.Point centerPoint;
         private DispatcherTimer timer;
-        private readonly EventHandler updateHandler;
-        private int cursorBlink;
-        private Video.Point cursorPosition = new(0, 1);
-        private readonly SimpleCommand resumeCommand;
-        private readonly SimpleCommand pauseCommand;
-        private Presenter currentPresenter;
-        private int physicalMemorySize = 16;
-        private FastBitmap renderTarget;
 
         /// <summary>
         /// Initializes a new instance of the <see cref="EmulatorDisplay"/> class.

@@ -34,7 +34,7 @@ namespace Aeon.Emulator.Launcher.Debugger
         /// <summary>
         /// The IsHexFormat dependency property definition.
         /// </summary>
-        public static readonly StyledProperty IsHexFormatProperty = AeonDebug.IsHexFormatProperty.AddOwner(typeof(OperandDisplay));
+        public static readonly StyledProperty IsHexFormatProperty = AeonDebug.IsHexFormatProperty.AddOwner<OperandDisplay>();
 
         private const PrefixState SegmentPrefixes = PrefixState.CS | PrefixState.DS | PrefixState.ES | PrefixState.FS | PrefixState.GS | PrefixState.SS;
 
@@ -90,7 +90,7 @@ namespace Aeon.Emulator.Launcher.Debugger
         /// Invoked when a property value has changed.
         /// </summary>
         /// <param name="e">Information about the event.</param>
-        protected override void OnPropertyChanged(StyledPropertyChangedEventArgs e)
+        protected override void OnPropertyChanged(AvaloniaPropertyChangedEventArgs e)
         {
             base.OnPropertyChanged(e);
 
@@ -125,8 +125,8 @@ namespace Aeon.Emulator.Launcher.Debugger
         /// Rebuilds the displayed content.
         /// </summary>
         /// <param name="operand">Operand to display.</param>
-        /// <returns>FrameworkElement to display as content.</returns>
-        private FrameworkElement BuildContent(CodeOperand operand)
+        /// <returns>Control to display as content.</returns>
+        private Control BuildContent(CodeOperand operand)
         {
             return operand.Type switch
             {
@@ -137,7 +137,7 @@ namespace Aeon.Emulator.Launcher.Debugger
                 _ => null
             };
         }
-        private FrameworkElement BuildJumpTargetContent(uint offset)
+        private Control BuildJumpTargetContent(uint offset)
         {
             var textBlock = new TextBlock();
             var run = new Run(offset.ToString("X8"))
@@ -152,7 +152,7 @@ namespace Aeon.Emulator.Launcher.Debugger
             textBlock.Inlines.Add(link);
             return textBlock;
         }
-        private FrameworkElement BuildAddress16Content(CodeOperand operand)
+        private Control BuildAddress16Content(CodeOperand operand)
         {
             bool includeDisplacement = true;
             var textBlock = new TextBlock();
@@ -260,7 +260,7 @@ namespace Aeon.Emulator.Launcher.Debugger
 
             return run;
         }
-        private FrameworkElement BuildImmediateContent(uint value)
+        private Control BuildImmediateContent(uint value)
         {
             var textBlock = new TextBlock();
             if (this.IsHexFormat)
@@ -273,7 +273,7 @@ namespace Aeon.Emulator.Launcher.Debugger
 
             return textBlock;
         }
-        private FrameworkElement BuildRegisterContent(CodeRegister register)
+        private Control BuildRegisterContent(CodeRegister register)
         {
             var textBlock = new TextBlock() { Text = register.ToString().ToLower() };
 

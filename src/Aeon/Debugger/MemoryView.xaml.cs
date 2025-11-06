@@ -83,7 +83,7 @@ namespace Aeon.Emulator.Launcher.Debugger
         /// Invoked when the mouse wheel has changed position.
         /// </summary>
         /// <param name="e">Information about the event.</param>
-        protected override void OnMouseWheel(MouseWheelEventArgs e)
+        protected override void OnMouseWheel(PointerWheelEventArgs e)
         {
             base.OnMouseWheel(e);
 
@@ -213,7 +213,7 @@ namespace Aeon.Emulator.Launcher.Debugger
         /// </summary>
         /// <param name="sender">Source of the event.</param>
         /// <param name="e">Information about the event.</param>
-        private void ScrollBar_ValueChanged(object sender, RoutedPropertyChangedEventArgs<double> e)
+        private void ScrollBar_ValueChanged(object sender, AvaloniaPropertyChangedEventArgs<double> e)
         {
             var current = this.StartAddress;
             if ((uint)e.NewValue != this.StartAddress.Offset)

@@ -14,7 +14,7 @@ namespace Aeon.Emulator.Launcher.Debugger
         /// <summary>
         /// The RegisterProvider dependency property key definition.
         /// </summary>
-        private static readonly StyledPropertyKey RegisterProviderPropertyKey = StyledProperty.RegisterReadOnly("RegisterProvider", typeof(RegisterStringProvider), typeof(RegisterViewer), new PropertyMetadata(null));
+        private static readonly StyledProperty<IRegisterContainer> RegisterProviderPropertyKey = StyledProperty.RegisterReadOnly("RegisterProvider", typeof(RegisterStringProvider), typeof(RegisterViewer), new PropertyMetadata(null));
 
         /// <summary>
         /// The RegisterSource dependency property definition.
@@ -77,7 +77,7 @@ namespace Aeon.Emulator.Launcher.Debugger
         /// Invoked when a property value has changed.
         /// </summary>
         /// <param name="e">Information about the event.</param>
-        protected override void OnPropertyChanged(StyledPropertyChangedEventArgs e)
+        protected override void OnPropertyChanged(AvaloniaPropertyChangedEventArgs e)
         {
             base.OnPropertyChanged(e);
 
