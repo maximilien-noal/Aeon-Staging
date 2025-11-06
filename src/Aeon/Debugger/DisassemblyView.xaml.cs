@@ -23,7 +23,7 @@ namespace Aeon.Emulator.Launcher.Debugger
         /// <summary>
         /// The InstructionsSource dependency property definition.
         /// </summary>
-        public static readonly StyledProperty InstructionsSourceProperty = AvaloniaProperty.Register<nameof(InstructionsSource), typeof(IEnumerable<Instruction>), typeof(DisassemblyView));
+        public static readonly StyledProperty<typeof(IEnumerable<Instruction> InstructionsSourceProperty = AvaloniaProperty.Register<nameof(InstructionsSource), typeof(IEnumerable<Instruction>), typeof(DisassemblyView));
         /// <summary>
         /// The IsHexFormat dependency property definition.
         /// </summary>

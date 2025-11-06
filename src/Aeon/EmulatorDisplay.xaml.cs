@@ -22,7 +22,31 @@ namespace Aeon.Emulator.Launcher
 
         public static readonly StyledProperty EmulatorStateProperty = EmulatorStatePropertyKey.StyledProperty;
         public static readonly StyledProperty CurrentProcessProperty = CurrentProcessPropertyKey.StyledProperty;
-        public static readonly StyledProperty MouseInputModeProperty = AvaloniaProperty.Register<nameof(MouseInputMode), typeof(MouseInputMode), typeof(EmulatorDisplay), new PropertyMetadata(MouseInputMode.Relative));
+        public static readonly StyledProperty<typeof(MouseInputMode), typeof(EmulatorDisplay), new PropertyMetadata(MouseInputMode.Relative));
+        public static readonly StyledProperty IsMouseCursorCapturedProperty = IsMouseCursorCapturedPropertyKey.StyledProperty;
+        public static readonly StyledProperty EmulationSpeedProperty = AvaloniaProperty.Register<nameof(EmulationSpeed), typeof(int), typeof(EmulatorDisplay), new PropertyMetadata(20_000_000, OnEmulationSpeedChanged), EmulationSpeedChangedValidate);
+        public static readonly StyledProperty IsAspectRatioLockedProperty = AvaloniaProperty.Register<nameof(IsAspectRatioLocked), typeof(bool), typeof(EmulatorDisplay), new PropertyMetadata(true, OnIsAspectRatioLockedChanged));
+        public static readonly StyledProperty ScalingAlgorithmProperty = AvaloniaProperty.Register<nameof(ScalingAlgorithm), typeof(ScalingAlgorithm), typeof(EmulatorDisplay), new PropertyMetadata(ScalingAlgorithm.None, OnScalingAlgorithmChanged));
+        public static readonly RoutedEvent EmulatorStateChangedEvent = RoutedEvent.Register(nameof(EmulatorStateChanged), RoutingStrategy.Bubble, typeof(RoutedEventHandler), typeof(EmulatorDisplay));
+        public static readonly RoutedEvent EmulationErrorEvent = RoutedEvent.Register(nameof(EmulationError), RoutingStrategy.Bubble, typeof(EmulationErrorRoutedEventHandler), typeof(EmulatorDisplay));
+        public static readonly RoutedEvent CurrentProcessChangedEvent = RoutedEvent.Register(nameof(CurrentProcessChanged), RoutingStrategy.Bubble, typeof(RoutedEventHandler), typeof(EmulatorDisplay));
+        public static readonly RoutedCommand FullScreenCommand = new();
+
+        private EmulatorHost emulator;
+        private bool mouseJustCaptured;
+        private bool isMouseCaptured;
+        private System.Windows.Point centerPoint;
+        private DispatcherTimer timer;
+        private readonly EventHandler updateHandler;
+        private int cursorBlink;
+        private Video.Point cursorPosition = new(0, 1);
+        private readonly SimpleCommand resumeCommand;
+        private readonly SimpleCommand pauseCommand;
+        private Presenter currentPresenter;
+        private int physicalMemorySize = 16;
+        private FastBitmap renderTarget;
+
+        /// <summary> MouseInputModeProperty = AvaloniaProperty.Register<nameof(MouseInputMode), typeof(MouseInputMode), typeof(EmulatorDisplay), new PropertyMetadata(MouseInputMode.Relative));
         public static readonly StyledProperty IsMouseCursorCapturedProperty = IsMouseCursorCapturedPropertyKey.StyledProperty;
         public static readonly StyledProperty EmulationSpeedProperty = AvaloniaProperty.Register<nameof(EmulationSpeed), typeof(int), typeof(EmulatorDisplay), new PropertyMetadata(20_000_000, OnEmulationSpeedChanged), EmulationSpeedChangedValidate);
         public static readonly StyledProperty IsAspectRatioLockedProperty = AvaloniaProperty.Register<nameof(IsAspectRatioLocked), typeof(bool), typeof(EmulatorDisplay), new PropertyMetadata(true, OnIsAspectRatioLockedChanged));

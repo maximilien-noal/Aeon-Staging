@@ -81,24 +81,8 @@
                                     </LinearGradientBrush>
                                 </Setter.Value>
                             </Setter>
-                            <!-- Triggers need to be converted to Styles with Selectors in Avalonia
-<Style.Triggers>
-                                <Trigger Property="Control.IsEnabled" Value="False">
-                                    <Setter Property="Shape.Stroke" Value="DimGray" />
-                                    <Setter Property="Shape.Fill">
-                                        <Setter.Value>
-                                            <LinearGradientBrush StartPoint="0.0%,0.0%" EndPoint="100.0%,100.0%">
-                                                <GradientStop Color="LightGray" Offset="0.0" />
-                                                <GradientStop Color="DimGray" Offset="1.0" />
-                                            </LinearGradientBrush>
-                                        </Setter.Value>
-                                    </Setter>
-                                </Trigger>
-                                <Trigger Property="Control.IsEnabled" Value="True">
-                                    <!-- BitmapEffect not supported in Avalonia -->
-                                </Trigger>
-                            </Style.Triggers>
--->
+                            <!-- TODO: Convert WPF Style.Triggers to Avalonia Styles with Selectors -->
+                            <!-- WPF triggers for IsEnabled states need to be rewritten as separate Styles -->
                         </Style>
                     </ToolBar.Resources>
                     <ToolBar.Template>

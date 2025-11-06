@@ -15,11 +15,12 @@ namespace Aeon.Emulator.Launcher
         /// <summary>
         /// The Caption dependency property definition.
         /// </summary>
-        public static readonly StyledProperty CaptionProperty = AvaloniaProperty.Register<nameof(Caption), typeof(string), typeof(TaskDialog));
+        public static readonly StyledProperty<typeof(string), typeof(TaskDialog));
+        /// <summary> CaptionProperty = AvaloniaProperty.Register<nameof(Caption), typeof(string), typeof(TaskDialog));
         /// <summary>
         /// The Items dependency property definition.
         /// </summary>
-        public static readonly StyledProperty ItemsProperty = AvaloniaProperty.Register<nameof(Items), typeof(IEnumerable<TaskDialogItem>), typeof(TaskDialog));
+        public static readonly StyledProperty<typeof(IEnumerable<TaskDialogItem> ItemsProperty = AvaloniaProperty.Register<nameof(Items), typeof(IEnumerable<TaskDialogItem>), typeof(TaskDialog));
 
         /// <summary>
         /// Initializes a new instance of the <see cref="TaskDialog"/> class.

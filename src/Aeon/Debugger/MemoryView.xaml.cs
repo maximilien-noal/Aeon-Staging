@@ -1,13 +1,10 @@
 ﻿using System.Collections.Generic;
 using System.Text;
-using Avalonia;
-using Avalonia.Controls;
-using Avalonia.Interactivity;
-using Avalonia.Controls;
-using Avalonia.Input;
-using Avalonia.Media;
+using System.Windows;
+using System.Windows.Controls;
+using System.Windows.Input;
+using System.Windows.Media;
 using Aeon.Emulator.DebugSupport;
-using Avalonia.Markup.Xaml;
 
 namespace Aeon.Emulator.Launcher.Debugger
 {
@@ -19,11 +16,11 @@ namespace Aeon.Emulator.Launcher.Debugger
         /// <summary>
         /// The MemorySource dependency property definition.
         /// </summary>
-        public static readonly StyledProperty MemorySourceProperty = AvaloniaProperty.Register<nameof(MemorySource), typeof(IMemorySource), typeof(MemoryView));
+        public static readonly DependencyProperty MemorySourceProperty = DependencyProperty.Register(nameof(MemorySource), typeof(IMemorySource), typeof(MemoryView));
         /// <summary>
         /// The StartAddress dependency property definition.
         /// </summary>
-        public static readonly StyledProperty StartAddressProperty = AvaloniaProperty.Register<nameof(StartAddress), typeof(QualifiedAddress), typeof(MemoryView), new PropertyMetadata(QualifiedAddress.FromRealModeAddress(0, 0)));
+        public static readonly DependencyProperty StartAddressProperty = DependencyProperty.Register(nameof(StartAddress), typeof(QualifiedAddress), typeof(MemoryView), new PropertyMetadata(QualifiedAddress.FromRealModeAddress(0, 0)));
 
         private const double RowHeight = 14;
         private readonly List<RowControls> rows = new();
@@ -31,15 +28,7 @@ namespace Aeon.Emulator.Launcher.Debugger
         /// <summary>
         /// Initializes a new instance of the <see cref="MemoryView"/> class.
         /// </summary>
-        public MemoryView()
-        {
-            InitializeComponent();
-        }
-
-        private void InitializeComponent()
-        {
-            AvaloniaXamlLoader.Load(this);
-        }
+        public MemoryView() => this.InitializeComponent();
 
         /// <summary>
         /// Gets or sets the source memory to display. This is a dependency property.
@@ -62,7 +51,7 @@ namespace Aeon.Emulator.Launcher.Debugger
         /// Invoked when a property value has changed.
         /// </summary>
         /// <param name="e">Information about the event.</param>
-        protected override void OnPropertyChanged(StyledPropertyChangedEventArgs e)
+        protected override void OnPropertyChanged(DependencyPropertyChangedEventArgs e)
         {
             base.OnPropertyChanged(e);
 

@@ -18,11 +18,13 @@ namespace Aeon.Emulator.Launcher.Debugger
         /// <summary>
         /// The Operand dependency property definition.
         /// </summary>
-        public static readonly StyledProperty OperandProperty = AvaloniaProperty.Register<nameof(Operand), typeof(CodeOperand), typeof(OperandDisplay));
+        public static readonly StyledProperty<typeof(CodeOperand), typeof(OperandDisplay));
+        /// <summary> OperandProperty = AvaloniaProperty.Register<nameof(Operand), typeof(CodeOperand), typeof(OperandDisplay));
         /// <summary>
         /// The RegisterSource dependency property definition.
         /// </summary>
-        public static readonly StyledProperty RegisterSourceProperty = AvaloniaProperty.Register<nameof(RegisterSource), typeof(IRegisterContainer), typeof(OperandDisplay));
+        public static readonly StyledProperty<typeof(IRegisterContainer), typeof(OperandDisplay));
+        /// <summary> RegisterSourceProperty = AvaloniaProperty.Register<nameof(RegisterSource), typeof(IRegisterContainer), typeof(OperandDisplay));
         /// <summary>
         /// The DebuggerTextFormat dependency property definition.
         /// </summary>
@@ -30,7 +32,8 @@ namespace Aeon.Emulator.Launcher.Debugger
         /// <summary>
         /// The Instruction dependency property definition.
         /// </summary>
-        public static readonly StyledProperty InstructionProperty = AvaloniaProperty.Register<nameof(Instruction), typeof(Instruction), typeof(OperandDisplay));
+        public static readonly StyledProperty<typeof(Instruction), typeof(OperandDisplay));
+        /// <summary> InstructionProperty = AvaloniaProperty.Register<nameof(Instruction), typeof(Instruction), typeof(OperandDisplay));
         /// <summary>
         /// The IsHexFormat dependency property definition.
         /// </summary>

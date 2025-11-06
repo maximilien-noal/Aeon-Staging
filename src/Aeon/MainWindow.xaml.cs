@@ -11,26 +11,26 @@ using Aeon.DiskImages;
 using Aeon.DiskImages.Archives;
 using Aeon.Emulator.Dos.VirtualFileSystem;
 using Aeon.Emulator.Launcher.Configuration;
-using Microsoft.Win32;
 using Avalonia.Markup.Xaml;
+using System.Threading.Tasks;
 
 namespace Aeon.Emulator.Launcher
 {
-    public sealed partial class MainWindow : Window, System.Windows.Forms.IWin32Window
+    public sealed partial class MainWindow : Window
     {
         private PerformanceWindow performanceWindow;
         private AeonConfiguration currentConfig;
         private bool hasActivated;
         private PaletteDialog paletteWindow;
-        private readonly Lazy<WindowInteropHelper> interopHelper;
+        // WindowInteropHelper not needed in Avalonia
 
         public MainWindow()
         {
-            this.interopHelper = new Lazy<WindowInteropHelper>(() => new WindowInteropHelper(this));
+            // WindowInteropHelper initialization removed
             AvaloniaXamlLoader.Load(this);
         }
 
-        IntPtr System.Windows.Forms.IWin32Window.Handle => this.interopHelper.Value.Handle;
+        // IWin32Window.Handle property removed
 
         protected override void OnActivated(EventArgs e)
         {
@@ -181,33 +181,25 @@ namespace Aeon.Emulator.Launcher
                 return null;
         }
 
-        private void QuickLaunch_Click(object sender, RoutedEventArgs e)
+        private async void QuickLaunch_Click(object? sender, RoutedEventArgs e)
         {
-            var fileDialog = new OpenFileDialog
-            {
-                Filter = "Programs (*.exe,*.com;*.AeonConfig;*.AeonPack)|*.exe;*.com;*.AeonConfig;*.AeonPack|All files (*.*)|*.*",
-                Title = "Run DOS program..."
-            };
+            // TODO: Implement Avalonia file picker
 
-            if (fileDialog.ShowDialog(this) == true)
-                this.QuickLaunch(fileDialog.FileName);
+            // var files = await StorageProvider.OpenFilePickerAsync(new FilePickerOpenOptions {...});
+
+            await Task.CompletedTask; // Placeholder
         }
-        private void CommandPrompt_Click(object sender, RoutedEventArgs e)
+        private async void CommandPrompt_Click(object? sender, RoutedEventArgs e)
         {
-            var dialog = new System.Windows.Forms.FolderBrowserDialog
-            {
-                Description = "Select folder for C:\\ drive...",
-                UseDescriptionForTitle = true
-            };
+            // TODO: Implement Avalonia folder picker
 
-            if (dialog.ShowDialog(this) == System.Windows.Forms.DialogResult.OK)
-            {
-                this.currentConfig = AeonConfiguration.GetQuickLaunchConfiguration(dialog.SelectedPath, null);
-                this.LaunchCurrentConfig();
+            // var folders = await StorageProvider.OpenFolderPickerAsync(new FolderPickerOpenOptions {...});
+
+            await Task.CompletedTask; // Placeholder
             }
         }
-        private void Close_CanExecute(object sender, CanExecuteRoutedEventArgs e) => e.CanExecute = true;
-        private void Close_Executed(object sender, ExecutedRoutedEventArgs e) => this.Close();
+        // Command handler Close_CanExecute - needs Avalonia command implementation
+        private void Close_Executed(object? sender, RoutedEventArgs e) => this.Close();
         private void MapDrives_CanExecute(object sender, CanExecuteRoutedEventArgs e)
         {
             if (this.emulatorDisplay != null)
@@ -245,7 +237,7 @@ namespace Aeon.Emulator.Launcher
             if (emulatorDisplay != null && emulatorDisplay.DisplayBitmap != null)
                 e.CanExecute = true;
         }
-        private void Copy_Executed(object sender, ExecutedRoutedEventArgs e)
+        private void Copy_Executed(object? sender, RoutedEventArgs e)
         {
             if (emulatorDisplay != null)
             {
@@ -340,7 +332,7 @@ namespace Aeon.Emulator.Launcher
                 paletteWindow.Show();
             }
         }
-        private void OpenInstructionLog_Click(object sender, RoutedEventArgs e)
+        private async void OpenInstructionLog_Click(object? sender, RoutedEventArgs e)
         {
             var openFile = new OpenFileDialog
             {
