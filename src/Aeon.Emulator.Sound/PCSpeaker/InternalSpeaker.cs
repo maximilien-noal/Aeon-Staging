@@ -4,7 +4,7 @@ using System.Collections.Generic;
 using System.Diagnostics;
 using System.Threading;
 using System.Threading.Tasks;
-using TinyAudio;
+using Ownaudio.Core;
 
 namespace Aeon.Emulator.Sound.PCSpeaker
 {
@@ -166,13 +166,15 @@ namespace Aeon.Emulator.Sound.PCSpeaker
             var buffer = new byte[4096];
             var writeBuffer = buffer;
             bool expandToStereo = false;
-            if (player.Format.Channels == 2)
+            // OwnAudioSharp uses stereo by default (2 channels)
+            int channels = 2;
+            if (channels == 2)
             {
                 writeBuffer = new byte[buffer.Length * 2];
                 expandToStereo = true;
             }
 
-            player.BeginPlayback();
+            // OwnAudioSharp engine is already started in CreatePlayer()
 
             int idleCount = 0;
 
@@ -210,11 +212,10 @@ namespace Aeon.Emulator.Sound.PCSpeaker
             }
         }
 
-        private void FillWithSilence(AudioPlayer player)
+        private void FillWithSilence(IAudioEngine player)
         {
-            while (player.WriteData(this.emptyBuffer) > 0)
-            {
-            }
+            // Send silence to prevent audio glitches
+            Audio.WriteFullBuffer(player, this.emptyBuffer.AsSpan());
         }
     }
 }

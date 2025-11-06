@@ -135,7 +135,7 @@ namespace Aeon.Emulator.Sound
             {
                 MidiEngine.MeltySynth when !string.IsNullOrWhiteSpace(this.Options.SoundFontPath) => new MeltySynthMidiMapper(this.Options.SoundFontPath),
                 MidiEngine.Mt32 when !string.IsNullOrWhiteSpace(this.Options.Mt32RomsPath) => new Mt32MidiDevice(this.Options.Mt32RomsPath),
-                _ => OperatingSystem.IsWindows() ? new WindowsMidiMapper() : null
+                _ => null // Note: Windows MIDI mapper removed for cross-platform support. Use MeltySynth with a SoundFont instead.
             };
         }
 

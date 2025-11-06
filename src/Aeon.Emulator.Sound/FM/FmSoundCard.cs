@@ -3,7 +3,7 @@ using System.Collections.Generic;
 using System.Runtime.CompilerServices;
 using System.Threading;
 using System.Threading.Tasks;
-using TinyAudio;
+using Ownaudio.Core;
 using Ymf262Emu;
 
 namespace Aeon.Emulator.Sound.FM
@@ -16,7 +16,7 @@ namespace Aeon.Emulator.Sound.FM
         private const byte Timer1Mask = 0xC0;
         private const byte Timer2Mask = 0xA0;
 
-        private readonly AudioPlayer audioPlayer = Audio.CreatePlayer();
+        private readonly IAudioEngine audioPlayer = Audio.CreatePlayer();
         private int currentAddress;
         private readonly FmSynthesizer synth;
         private Task generateTask;
@@ -30,7 +30,8 @@ namespace Aeon.Emulator.Sound.FM
 
         public FmSoundCard()
         {
-            this.synth = new FmSynthesizer(this.audioPlayer.Format.SampleRate);
+            // OwnAudioSharp uses 48kHz by default
+            this.synth = new FmSynthesizer(48000);
         }
 
         IEnumerable<int> IInputPort.InputPorts => new int[] { 0x388 };
