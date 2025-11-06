@@ -4,6 +4,7 @@ using Avalonia.Controls;
 using Avalonia.Interactivity;
 using Avalonia.Controls;
 using Avalonia.Input;
+using System.Windows.Input;
 using Avalonia.Media;
 using Avalonia.Media.Imaging;
 using Avalonia.Threading;
@@ -16,21 +17,21 @@ namespace Aeon.Emulator.Launcher
 {
     public sealed partial class EmulatorDisplay : ContentControl
     {
-        private static readonly StyledPropertyKey EmulatorStatePropertyKey = StyledProperty.RegisterReadOnly(nameof(EmulatorState), typeof(EmulatorState), typeof(EmulatorDisplay), new PropertyMetadata(EmulatorState.NoProgram));
+        private static readonly StyledProperty<EmulatorState> EmulatorStatePropertyKey = StyledProperty.RegisterReadOnly(nameof(EmulatorState), typeof(EmulatorState), typeof(EmulatorDisplay), new PropertyMetadata(EmulatorState.NoProgram));
         private static readonly StyledProperty<bool> IsMouseCursorCapturedPropertyKey = AvaloniaProperty.Register<EmulatorDisplay, bool>(nameof(IsMouseCursorCaptured), false);
         private static readonly StyledProperty<Dos.DosProcess?> CurrentProcessPropertyKey = AvaloniaProperty.Register<EmulatorDisplay, Dos.DosProcess?>(nameof(CurrentProcess));
 
         //         public static readonly StyledProperty EmulatorStateProperty = EmulatorStatePropertyKey.StyledProperty;
         //         public static readonly StyledProperty CurrentProcessProperty = CurrentProcessPropertyKey.StyledProperty;
         public static readonly StyledProperty<MouseInputMode> MouseInputModeProperty = AvaloniaProperty.Register<EmulatorDisplay, MouseInputMode>(nameof(MouseInputMode), MouseInputMode.Relative);
-        public static readonly StyledProperty IsMouseCursorCapturedProperty = IsMouseCursorCapturedPropertyKey.StyledProperty;
+        public static readonly StyledProperty<bool> IsMouseCursorCapturedProperty = IsMouseCursorCapturedPropertyKey.StyledProperty;
         public static readonly StyledProperty<int> EmulationSpeedProperty = AvaloniaProperty.Register<EmulatorDisplay, int>(nameof(EmulationSpeed), 20_000_000);
         public static readonly StyledProperty<bool> IsAspectRatioLockedProperty = AvaloniaProperty.Register<EmulatorDisplay, bool>(nameof(IsAspectRatioLocked), true);
         public static readonly StyledProperty<ScalingAlgorithm> ScalingAlgorithmProperty = AvaloniaProperty.Register<EmulatorDisplay, ScalingAlgorithm>(nameof(ScalingAlgorithm), ScalingAlgorithm.None);
-        public static readonly RoutedEvent EmulatorStateChangedEvent = RoutedEvent.Register(nameof(EmulatorStateChanged), RoutingStrategy.Bubble, typeof(RoutedEventHandler), typeof(EmulatorDisplay));
-        public static readonly RoutedEvent EmulationErrorEvent = RoutedEvent.Register(nameof(EmulationError), RoutingStrategy.Bubble, typeof(EmulationErrorRoutedEventHandler), typeof(EmulatorDisplay));
-        public static readonly RoutedEvent CurrentProcessChangedEvent = RoutedEvent.Register(nameof(CurrentProcessChanged), RoutingStrategy.Bubble, typeof(RoutedEventHandler), typeof(EmulatorDisplay));
-        public static readonly RoutedCommand FullScreenCommand = new();
+        public static readonly RoutedEvent EmulatorStateChangedEvent = RoutedEvent.Register(nameof(EmulatorStateChanged), RoutingStrategy.Bubble, typeof(EventHandler<RoutedEventArgs>), typeof(EmulatorDisplay));
+        public static readonly RoutedEvent EmulationErrorEvent = RoutedEvent.Register(nameof(EmulationError), RoutingStrategy.Bubble, typeof(EmulationErrorEventHandler<RoutedEventArgs>), typeof(EmulatorDisplay));
+        public static readonly RoutedEvent CurrentProcessChangedEvent = RoutedEvent.Register(nameof(CurrentProcessChanged), RoutingStrategy.Bubble, typeof(EventHandler<RoutedEventArgs>), typeof(EmulatorDisplay));
+        public static readonly System.Windows.Input.ICommand FullScreenCommand = null!; // TODO: Implement command
 
         private EmulatorHost emulator;
         private bool mouseJustCaptured;
@@ -41,25 +42,10 @@ namespace Aeon.Emulator.Launcher
         private int cursorBlink;
         private Video.Point cursorPosition = new(0, 1);
         private readonly SimpleCommand resumeCommand;
+        private readonly SimpleCommand pauseCommand;
         private Presenter currentPresenter;
         private int physicalMemorySize = 16;
         private FastBitmap renderTarget;
-
-        public static readonly StyledProperty<MouseInputMode> MouseInputModeProperty = AvaloniaProperty.Register<EmulatorDisplay, MouseInputMode>(nameof(MouseInputMode), MouseInputMode.Relative);
-        // Duplicate removed
-        public static readonly StyledProperty<int> EmulationSpeedProperty = AvaloniaProperty.Register<EmulatorDisplay, int>(nameof(EmulationSpeed), 20_000_000);
-        public static readonly StyledProperty<bool> IsAspectRatioLockedProperty = AvaloniaProperty.Register<EmulatorDisplay, bool>(nameof(IsAspectRatioLocked), true);
-        public static readonly StyledProperty<ScalingAlgorithm> ScalingAlgorithmProperty = AvaloniaProperty.Register<EmulatorDisplay, ScalingAlgorithm>(nameof(ScalingAlgorithm), ScalingAlgorithm.None);
-        public static readonly RoutedEvent EmulatorStateChangedEvent = RoutedEvent.Register(nameof(EmulatorStateChanged), RoutingStrategy.Bubble, typeof(RoutedEventHandler), typeof(EmulatorDisplay));
-        public static readonly RoutedEvent EmulationErrorEvent = RoutedEvent.Register(nameof(EmulationError), RoutingStrategy.Bubble, typeof(EmulationErrorRoutedEventHandler), typeof(EmulatorDisplay));
-        public static readonly RoutedEvent CurrentProcessChangedEvent = RoutedEvent.Register(nameof(CurrentProcessChanged), RoutingStrategy.Bubble, typeof(RoutedEventHandler), typeof(EmulatorDisplay));
-        public static readonly RoutedCommand FullScreenCommand = new();
-
-        private EmulatorHost emulator;
-        private bool mouseJustCaptured;
-        private bool isMouseCaptured;
-        private Avalonia.Point centerPoint;
-        private DispatcherTimer timer;
 
         /// <summary>
         /// Initializes a new instance of the <see cref="EmulatorDisplay"/> class.
@@ -75,7 +61,7 @@ namespace Aeon.Emulator.Launcher
         /// <summary>
         /// Occurs when the emulator's state has changed.
         /// </summary>
-        public event RoutedEventHandler EmulatorStateChanged
+        public event EventHandler<RoutedEventArgs> EmulatorStateChanged
         {
             add { this.AddHandler(EmulatorStateChangedEvent, value); }
             remove { this.RemoveHandler(EmulatorStateChangedEvent, value); }
@@ -83,7 +69,7 @@ namespace Aeon.Emulator.Launcher
         /// <summary>
         /// Occurs when an error in emulation causes the emulator to halt.
         /// </summary>
-        public event EmulationErrorRoutedEventHandler EmulationError
+        public event EmulationErrorEventHandler<RoutedEventArgs> EmulationError
         {
             add { this.AddHandler(EmulationErrorEvent, value); }
             remove { this.RemoveHandler(EmulationErrorEvent, value); }
@@ -91,7 +77,7 @@ namespace Aeon.Emulator.Launcher
         /// <summary>
         /// Occurs when the current process has changed.
         /// </summary>
-        public event RoutedEventHandler CurrentProcessChanged
+        public event EventHandler<RoutedEventArgs> CurrentProcessChanged
         {
             add { this.AddHandler(CurrentProcessChangedEvent, value); }
             remove { this.RemoveHandler(CurrentProcessChangedEvent, value); }
@@ -162,9 +148,9 @@ namespace Aeon.Emulator.Launcher
             set => this.SetValue(ScalingAlgorithmProperty, value);
         }
         /// <summary>
-        /// Gets the BitmapSource used for rendering the output display.
+        /// Gets the Avalonia.Media.Imaging.Bitmap used for rendering the output display.
         /// </summary>
-        public BitmapSource DisplayBitmap => this.renderTarget?.InteropBitmap;
+        public Avalonia.Media.Imaging.Bitmap DisplayBitmap => this.renderTarget?.InteropBitmap;
         /// <summary>
         /// Gets information about the current process. This is a dependency property.
         /// </summary>
@@ -202,7 +188,7 @@ namespace Aeon.Emulator.Launcher
             }
         }
 
-        protected override void OnInitialized(EventArgs e)
+        protected override void OnAttachedToVisualTree(Avalonia.VisualTreeAttachmentEventArgs e)
         {
             this.timer = new DispatcherTimer(TimeSpan.FromSeconds(1.0 / 60.0), DispatcherPriority.Render, updateHandler, this.Dispatcher);
             base.OnInitialized(e);
@@ -244,16 +230,17 @@ namespace Aeon.Emulator.Launcher
 
             base.OnKeyUp(e);
         }
-        protected override void OnLostKeyboardFocus(KeyboardFocusChangedEventArgs e)
+        protected override void OnLostFocus(RoutedEventArgs e)
         {
             this.isMouseCaptured = false;
             this.SetValue(IsMouseCursorCapturedPropertyKey, false);
             if (this.emulator != null && this.emulator.State == EmulatorState.Running)
                 this.emulator.ReleaseAllKeys();
 
-            base.OnLostKeyboardFocus(e);
+            base.OnLostFocus(e);
         }
-        protected override void OnContentChanged(object oldContent, object newContent)
+        // OnContentChanged not available in Avalonia
+        private void OnContentChanged(object oldContent, object newContent)
         {
             if (oldContent != null)
                 throw new InvalidOperationException("EmulatorDisplay does not support content.");
@@ -363,7 +350,7 @@ namespace Aeon.Emulator.Launcher
             }
         }
 
-        private static void OnEmulationSpeedChanged(DependencyObject d, StyledPropertyChangedEventArgs e)
+        private static void OnEmulationSpeedChanged(AvaloniaObject d, AvaloniaPropertyChangedEventArgs e)
         {
             var obj = (EmulatorDisplay)d;
             if (obj.emulator != null)
@@ -374,13 +361,13 @@ namespace Aeon.Emulator.Launcher
             int n = (int)value;
             return n >= EmulatorHost.MinimumSpeed;
         }
-        private static void OnIsAspectRatioLockedChanged(DependencyObject d, StyledPropertyChangedEventArgs e)
+        private static void OnIsAspectRatioLockedChanged(AvaloniaObject d, AvaloniaPropertyChangedEventArgs e)
         {
             var obj = (EmulatorDisplay)d;
             bool value = (bool)e.NewValue;
             obj.outerViewbox.Stretch = value ? Stretch.Uniform : Stretch.Fill;
         }
-        private static void OnScalingAlgorithmChanged(DependencyObject d, StyledPropertyChangedEventArgs e)
+        private static void OnScalingAlgorithmChanged(AvaloniaObject d, AvaloniaPropertyChangedEventArgs e)
         {
             var obj = (EmulatorDisplay)d;
             obj.InitializePresenter();
@@ -411,7 +398,7 @@ namespace Aeon.Emulator.Launcher
 
             this.RaiseEvent(new RoutedEventArgs(CurrentProcessChangedEvent));
         }
-        private void DisplayImage_MouseDown(object sender, MouseButtonEventArgs e)
+        private void DisplayImage_MouseDown(object sender, PointerPressedEventArgs e)
         {
             if (this.emulator != null && this.emulator.State == EmulatorState.Running)
             {
@@ -434,7 +421,7 @@ namespace Aeon.Emulator.Launcher
                 }
             }
         }
-        private void DisplayImage_MouseUp(object sender, MouseButtonEventArgs e)
+        private void DisplayImage_MouseUp(object sender, PointerPressedEventArgs e)
         {
             if (this.emulator != null && this.emulator.State == EmulatorState.Running)
             {
@@ -452,7 +439,7 @@ namespace Aeon.Emulator.Launcher
                 }
             }
         }
-        private void DisplayImage_MouseMove(object sender, MouseEventArgs e)
+        private void DisplayImage_MouseMove(object sender, PointerEventArgs e)
         {
             if (this.emulator != null && this.emulator.State == EmulatorState.Running)
             {
@@ -481,5 +468,5 @@ namespace Aeon.Emulator.Launcher
         }
     }
 
-    public delegate void EmulationErrorRoutedEventHandler(object sender, EmulationErrorRoutedEventArgs e);
+    public delegate void EmulationErrorEventHandler<RoutedEventArgs>(object sender, EmulationErrorRoutedEventArgs e);
 }

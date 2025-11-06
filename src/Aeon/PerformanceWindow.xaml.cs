@@ -24,7 +24,7 @@ namespace Aeon.Emulator.Launcher
 
         public EmulatorDisplay EmulatorDisplay { get; set; }
 
-        protected override void OnInitialized(EventArgs e)
+        protected override void OnOpened(EventArgs e)
         {
             timer = new DispatcherTimer(TimeSpan.FromSeconds(1), DispatcherPriority.Normal, Timer_Tick, this.Dispatcher);
             timer.Start();

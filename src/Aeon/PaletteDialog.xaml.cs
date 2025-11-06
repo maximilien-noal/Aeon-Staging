@@ -62,7 +62,7 @@ namespace Aeon.Emulator.Launcher
         /// Invoked when the window is initialized.
         /// </summary>
         /// <param name="e">Unused EventArgs instance.</param>
-        protected override void OnInitialized(EventArgs e)
+        protected override void OnOpened(EventArgs e)
         {
             base.OnInitialized(e);
             for (int i = 0; i < 256; i++)

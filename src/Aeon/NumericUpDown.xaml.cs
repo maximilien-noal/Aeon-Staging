@@ -1,8 +1,8 @@
 ﻿using System;
 using Avalonia;
+using Avalonia.Metadata;
 using Avalonia.Controls;
 using Avalonia.Interactivity;
-using Avalonia.Controls;
 using Avalonia.Input;
 using Avalonia.Markup.Xaml;
 
@@ -11,7 +11,7 @@ namespace Aeon.Emulator.Launcher
     /// <summary>
     /// A simple integer numeric up/down control.
     /// </summary>
-    [ContentProperty(nameof(Value))]
+    // [ContentProperty(nameof(Value))] // Not available in Avalonia
     public partial class NumericUpDown : UserControl
     {
         /// <summary>
@@ -97,7 +97,7 @@ namespace Aeon.Emulator.Launcher
         {
             SetCurrentValue(ValueProperty, Math.Max(this.Value - this.StepValue, this.MinimumValue));
         }
-        private static void MinimumValue_PropertyChanged(DependencyObject d, StyledPropertyChangedEventArgs e)
+        private static void MinimumValue_PropertyChanged(AvaloniaObject d, AvaloniaPropertyChangedEventArgs e)
         {
             NumericUpDown control = (NumericUpDown)d;
 
@@ -105,7 +105,7 @@ namespace Aeon.Emulator.Launcher
             if (newValue > control.Value)
                 control.SetCurrentValue(ValueProperty, newValue);
         }
-        private static void MaximumValue_PropertyChanged(DependencyObject d, StyledPropertyChangedEventArgs e)
+        private static void MaximumValue_PropertyChanged(AvaloniaObject d, AvaloniaPropertyChangedEventArgs e)
         {
             NumericUpDown control = (NumericUpDown)d;
 
@@ -113,7 +113,7 @@ namespace Aeon.Emulator.Launcher
             if (newValue < control.Value)
                 control.SetCurrentValue(ValueProperty, newValue);
         }
-        private static void Value_PropertyChanged(DependencyObject d, StyledPropertyChangedEventArgs e)
+        private static void Value_PropertyChanged(AvaloniaObject d, AvaloniaPropertyChangedEventArgs e)
         {
             NumericUpDown control = (NumericUpDown)d;
 
@@ -126,7 +126,7 @@ namespace Aeon.Emulator.Launcher
 
             control.valueText.Text = e.NewValue.ToString();
         }
-        private static object Value_CoerceValue(DependencyObject d, object baseValue)
+        private static object Value_CoerceValue(AvaloniaObject d, object baseValue)
         {
             NumericUpDown control = (NumericUpDown)d;
 

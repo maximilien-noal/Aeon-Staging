@@ -14,21 +14,21 @@ namespace Aeon.Emulator.Launcher.Debugger
         /// <summary>
         /// The RegisterProvider dependency property key definition.
         /// </summary>
-        private static readonly StyledProperty<IRegisterContainer> RegisterProviderPropertyKey = StyledProperty.RegisterReadOnly("RegisterProvider", typeof(RegisterStringProvider), typeof(RegisterViewer), new PropertyMetadata(null));
+        private static readonly StyledProperty<RegisterStringProvider?> RegisterProviderPropertyKey = AvaloniaProperty.Register<RegisterViewer, RegisterStringProvider?>(nameof(RegisterProvider));
 
         /// <summary>
         /// The RegisterSource dependency property definition.
         /// </summary>
-        public static readonly StyledProperty<IRegisterContainer> RegisterSourceProperty = AvaloniaProperty.Register<RegisterViewer, IRegisterContainer>(nameof(RegisterSource));
+        public static readonly StyledProperty<IRegisterContainer?> RegisterSourceProperty = AvaloniaProperty.Register<RegisterViewer, IRegisterContainer?>(nameof(RegisterSource));
         /// <summary>
         /// The IsHexFormat dependency property definition.
         /// </summary>
-        public static readonly StyledProperty IsHexFormatProperty = AeonDebug.IsHexFormatProperty.AddOwner(typeof(RegisterViewer));
+        public static readonly StyledProperty<bool> IsHexFormatProperty = AeonDebug.IsHexFormatProperty.AddOwner<RegisterViewer>();
 
         /// <summary>
         /// The RegisterProvider dependency property definition.
         /// </summary>
-        internal static StyledProperty RegisterProviderProperty = RegisterProviderPropertyKey.StyledProperty;
+        internal static StyledProperty<RegisterStringProvider?> RegisterProviderProperty = RegisterProviderPropertyKey;
 
         /// <summary>
         /// Initializes a new instance of the RegisterViewer class.

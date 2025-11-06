@@ -46,7 +46,7 @@ namespace Aeon.Emulator.Launcher
             return true;
         }
 
-        private void HistoryList_SelectionChanged(object sender, System.Windows.Controls.SelectionChangedEventArgs e)
+        private void HistoryList_SelectionChanged(object sender, Avalonia.Controls.SelectionChangedEventArgs e)
         {
             if (this.historyList.SelectedItem is DebugLogItem item)
                 this.registerText.Text = item.RegisterText;

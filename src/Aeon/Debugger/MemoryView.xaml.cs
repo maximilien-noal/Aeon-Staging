@@ -83,7 +83,7 @@ namespace Aeon.Emulator.Launcher.Debugger
         /// Invoked when the mouse wheel has changed position.
         /// </summary>
         /// <param name="e">Information about the event.</param>
-        protected override void OnMouseWheel(PointerWheelEventArgs e)
+        protected override void OnPointerWheelChanged(PointerWheelEventArgs e)
         {
             base.OnMouseWheel(e);
 

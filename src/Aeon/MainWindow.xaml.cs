@@ -32,7 +32,7 @@ namespace Aeon.Emulator.Launcher
 
         // IWin32Window.Handle property removed
 
-        protected override void OnActivated(EventArgs e)
+        protected override void OnOpened(EventArgs e)
         {
             base.OnActivated(e);
 
@@ -199,6 +199,7 @@ namespace Aeon.Emulator.Launcher
         }
         // Command handler Close_CanExecute - needs Avalonia command implementation
         private void Close_Executed(object? sender, RoutedEventArgs e) => this.Close();
+        /* Avalonia doesn't use CanExecuteRoutedEventArgs
         private void MapDrives_CanExecute(object sender, CanExecuteRoutedEventArgs e)
         {
             if (this.emulatorDisplay != null)
@@ -207,6 +208,8 @@ namespace Aeon.Emulator.Launcher
                 e.CanExecute = state == EmulatorState.Running || state == EmulatorState.Paused;
             }
         }
+        */
+        
         private void EmulatorDisplay_EmulatorStateChanged(object sender, RoutedEventArgs e)
         {
             CommandManager.InvalidateRequerySuggested();
@@ -231,11 +234,13 @@ namespace Aeon.Emulator.Launcher
                     emulatorDisplay.EmulationSpeed = newSpeed;
             }
         }
-        private void Copy_CanExecute(object sender, CanExecuteRoutedEventArgs e)
+        /* Avalonia doesn\'t use CanExecuteRoutedEventArgs
+private void Copy_CanExecute(object sender, CanExecuteRoutedEventArgs e)
         {
             if (emulatorDisplay != null && emulatorDisplay.DisplayBitmap != null)
                 e.CanExecute = true;
         }
+*/
         private void Copy_Executed(object? sender, RoutedEventArgs e)
         {
             if (emulatorDisplay != null)
@@ -245,7 +250,7 @@ namespace Aeon.Emulator.Launcher
                     Clipboard.SetImage(bmp);
             }
         }
-        private void FullScreen_Executed(object sener, ExecutedRoutedEventArgs e)
+        private void FullScreen_Executed(object sener, RoutedEventArgs e)
         {
             if (this.WindowStyle != WindowStyle.None)
             {

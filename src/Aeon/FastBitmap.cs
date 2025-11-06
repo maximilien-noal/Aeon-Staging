@@ -30,7 +30,7 @@ namespace Aeon.Emulator.Launcher
         /// <summary>
         /// Gets the InteropBitmap instance.
         /// </summary>
-        public InteropBitmap InteropBitmap { get; private set; }
+        // public InteropBitmap InteropBitmap { get; private set; } // TODO: Rewrite for Avalonia - InteropBitmap is WPF-specific
         /// <summary>
         /// Gets the pointer to the bitmap pixel data.
         /// </summary>

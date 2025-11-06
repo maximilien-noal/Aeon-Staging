@@ -34,7 +34,7 @@ namespace Aeon.Emulator.Launcher.Debugger
         /// <summary>
         /// The IsHexFormat dependency property definition.
         /// </summary>
-        public static readonly StyledProperty IsHexFormatProperty = AeonDebug.IsHexFormatProperty.AddOwner<OperandDisplay>();
+        public static readonly StyledProperty<bool> IsHexFormatProperty = AeonDebug.IsHexFormatProperty.AddOwner<OperandDisplay>();
 
         private const PrefixState SegmentPrefixes = PrefixState.CS | PrefixState.DS | PrefixState.ES | PrefixState.FS | PrefixState.GS | PrefixState.SS;
 
