@@ -1,44 +1,34 @@
 ﻿<Window x:Class="Aeon.Emulator.Launcher.PerformanceWindow"
         xmlns="https://github.com/avaloniaui"
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
-        Title="Aeon Performance" Height="300" Width="500" ShowInTaskbar="False" Icon="Aeon.ico" MinWidth="400" MinHeight="200" WindowStyle="SingleBorderWindow">
-    <Window.Resources>
-        <Style x:Key="expanderSeparator" TargetType="Rectangle">
-            <Setter Property="Height" Value="2" />
-            <Setter Property="Stroke" Value="Transparent" />
-            <Setter Property="Fill">
+        Title="Aeon Performance" Height="300" Width="500" ShowInTaskbar="False" Icon="Aeon.ico" MinWidth="400" MinHeight="200" SystemDecorations="BorderOnly">
+    <Window.Styles>
+        <!-- Expander hover style using Avalonia Selector syntax -->
+        <Style Selector="Expander:pointerover">
+            <Setter Property="Background">
                 <Setter.Value>
-                    <LinearGradientBrush StartPoint="0.0%,50.0%" EndPoint="100.0%,50.0%">
-                        <GradientStop Color="White" Offset="0" />
-                        <GradientStop Color="DarkGray" Offset="0.5" />
+                    <LinearGradientBrush StartPoint="50.0%,0.0%" EndPoint="50.0%,100.0%">
+                        <GradientStop Color="AliceBlue" Offset="0" />
                         <GradientStop Color="White" Offset="1" />
                     </LinearGradientBrush>
                 </Setter.Value>
             </Setter>
         </Style>
-        <Style x:Key="expanderStyle" TargetType="Expander">
-            <!-- Triggers need to be converted to Styles with Selectors in Avalonia
-<Style.Triggers>
-                <Trigger Property="IsMouseOver" Value="True">
-                    <Setter Property="Background">
-                        <Setter.Value>
-                            <LinearGradientBrush StartPoint="50.0%,0.0%" EndPoint="50.0%,100.0%">
-                                <GradientStop Color="AliceBlue" Offset="0" />
-                                <GradientStop Color="White" Offset="1" />
-                            </LinearGradientBrush>
-                        </Setter.Value>
-                    </Setter>
-                </Trigger>
-            </Style.Triggers>
--->
-        </Style>
-    </Window.Resources>
+    </Window.Styles>
     <DockPanel>
         <Label Content="Emulator Statistics" FontSize="20" Foreground="DarkBlue" DockPanel.Dock="Top" />
         <ScrollViewer VerticalScrollBarVisibility="Auto">
-            <StackPanel Margin="20,0,0,0" CanVerticallyScroll="True">
-                <Rectangle Style="{StaticResource expanderSeparator}" />
-                <Expander Name="processorExpander" Height="Auto" IsExpanded="True" Style="{StaticResource expanderStyle}">
+            <StackPanel Margin="20,0,0,0">
+                <Rectangle Height="2" Stroke="Transparent">
+                    <Rectangle.Fill>
+                        <LinearGradientBrush StartPoint="0.0%,50.0%" EndPoint="100.0%,50.0%">
+                            <GradientStop Color="White" Offset="0" />
+                            <GradientStop Color="DarkGray" Offset="0.5" />
+                            <GradientStop Color="White" Offset="1" />
+                        </LinearGradientBrush>
+                    </Rectangle.Fill>
+                </Rectangle>
+                <Expander Name="processorExpander" IsExpanded="True">
                     <Expander.Header>
                         <Label Content="Processor" FontSize="16" Foreground="SteelBlue" />
                     </Expander.Header>
@@ -51,14 +41,22 @@
                             <RowDefinition Height="Auto" />
                             <RowDefinition Height="Auto" />
                         </Grid.RowDefinitions>
-                        <Label Content="Instructions emulated:" Height="28" HorizontalAlignment="Left"  VerticalAlignment="Top" Width="Auto" />
-                        <Label Content="Instructions per second:" Height="28" HorizontalAlignment="Left" VerticalAlignment="Top" Width="Auto" Grid.Row="1" />
-                        <Label Name="instructionsLabel" Content="0" Height="28" HorizontalAlignment="Right" VerticalAlignment="Top" Width="Auto" Grid.Column="1" />
-                        <Label Name="ipsLabel" Content="0" Height="28" HorizontalAlignment="Right" VerticalAlignment="Top" Width="Auto" Grid.Column="1" Grid.Row="1" />
+                        <Label Content="Instructions emulated:" Height="28" HorizontalAlignment="Left"  VerticalAlignment="Top" />
+                        <Label Content="Instructions per second:" Height="28" HorizontalAlignment="Left" VerticalAlignment="Top" Grid.Row="1" />
+                        <Label Name="instructionsLabel" Content="0" Height="28" HorizontalAlignment="Right" VerticalAlignment="Top" Grid.Column="1" />
+                        <Label Name="ipsLabel" Content="0" Height="28" HorizontalAlignment="Right" VerticalAlignment="Top" Grid.Column="1" Grid.Row="1" />
                     </Grid>
                 </Expander>
-                <Rectangle Style="{StaticResource expanderSeparator}" />
-                <Expander Name="memoryExpander" Height="Auto" IsExpanded="True" Style="{StaticResource expanderStyle}">
+                <Rectangle Height="2" Stroke="Transparent">
+                    <Rectangle.Fill>
+                        <LinearGradientBrush StartPoint="0.0%,50.0%" EndPoint="100.0%,50.0%">
+                            <GradientStop Color="White" Offset="0" />
+                            <GradientStop Color="DarkGray" Offset="0.5" />
+                            <GradientStop Color="White" Offset="1" />
+                        </LinearGradientBrush>
+                    </Rectangle.Fill>
+                </Rectangle>
+                <Expander Name="memoryExpander" IsExpanded="True">
                     <Expander.Header>
                         <Label Content="Memory" FontSize="16" Foreground="SteelBlue" />
                     </Expander.Header>
@@ -80,8 +78,16 @@
                         <Label Name="extendedMemoryLabel" Grid.Column="1" Grid.Row="2" HorizontalAlignment="Right" />
                     </Grid>
                 </Expander>
-                <Rectangle Style="{StaticResource expanderSeparator}" />
-                <Expander Header="I/O" Height="Auto" Visibility="Collapsed">
+                <Rectangle Height="2" Stroke="Transparent">
+                    <Rectangle.Fill>
+                        <LinearGradientBrush StartPoint="0.0%,50.0%" EndPoint="100.0%,50.0%">
+                            <GradientStop Color="White" Offset="0" />
+                            <GradientStop Color="DarkGray" Offset="0.5" />
+                            <GradientStop Color="White" Offset="1" />
+                        </LinearGradientBrush>
+                    </Rectangle.Fill>
+                </Rectangle>
+                <Expander Header="I/O" IsVisible="False">
                 </Expander>
             </StackPanel>
         </ScrollViewer>
