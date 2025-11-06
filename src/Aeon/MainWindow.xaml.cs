@@ -196,7 +196,6 @@ namespace Aeon.Emulator.Launcher
             // var folders = await StorageProvider.OpenFolderPickerAsync(new FolderPickerOpenOptions {...});
 
             await Task.CompletedTask; // Placeholder
-            }
         }
         // Command handler Close_CanExecute - needs Avalonia command implementation
         private void Close_Executed(object? sender, RoutedEventArgs e) => this.Close();

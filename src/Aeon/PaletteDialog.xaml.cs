@@ -17,11 +17,7 @@ namespace Aeon.Emulator.Launcher
         /// <summary>
         /// The EmulatorDisplay dependency property definition.
         /// </summary>
-        public static readonly StyledProperty<typeof(EmulatorDisplay), typeof(PaletteDialog));
-
-        private DispatcherTimer timer;
-
-        /// <summary> EmulatorDisplayProperty = AvaloniaProperty.Register<nameof(EmulatorDisplay), typeof(EmulatorDisplay), typeof(PaletteDialog));
+        public static readonly StyledProperty<EmulatorDisplay?> EmulatorDisplayProperty = AvaloniaProperty.Register<PaletteDialog, EmulatorDisplay?>(nameof(EmulatorDisplay));
 
         private DispatcherTimer timer;
 

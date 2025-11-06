@@ -17,29 +17,23 @@ namespace Aeon.Emulator.Launcher
         /// <summary>
         /// Defines the Value dependency property.
         /// </summary>
-        public static readonly StyledProperty<typeof(int), typeof(NumericUpDown), new PropertyMetadata(0, Value_PropertyChanged, Value_CoerceValue));
-        /// <summary> ValueProperty = AvaloniaProperty.Register<"Value", typeof(int), typeof(NumericUpDown), new PropertyMetadata(0, Value_PropertyChanged, Value_CoerceValue));
+        public static readonly StyledProperty<int> ValueProperty = AvaloniaProperty.Register<NumericUpDown, int>(nameof(Value), 0);
         /// <summary>
         /// Defines the MinimumValue dependency property.
         /// </summary>
-        public static readonly StyledProperty<typeof(int), typeof(NumericUpDown), new PropertyMetadata(0, MinimumValue_PropertyChanged));
-        /// <summary> MinimumValueProperty = AvaloniaProperty.Register<"MinimumValue", typeof(int), typeof(NumericUpDown), new PropertyMetadata(0, MinimumValue_PropertyChanged));
+        public static readonly StyledProperty<int> MinimumValueProperty = AvaloniaProperty.Register<NumericUpDown, int>(nameof(MinimumValue), 0);
         /// <summary>
         /// Defines the MaximumValue dependency property.
         /// </summary>
-        public static readonly StyledProperty<typeof(int), typeof(NumericUpDown), new PropertyMetadata(100, MaximumValue_PropertyChanged));
-        /// <summary> MaximumValueProperty = AvaloniaProperty.Register<"MaximumValue", typeof(int), typeof(NumericUpDown), new PropertyMetadata(100, MaximumValue_PropertyChanged));
+        public static readonly StyledProperty<int> MaximumValueProperty = AvaloniaProperty.Register<NumericUpDown, int>(nameof(MaximumValue), 100);
         /// <summary>
         /// Defines the StepValue dependency property.
         /// </summary>
-        public static readonly StyledProperty<typeof(int), typeof(NumericUpDown), new PropertyMetadata(1));
-        /// <summary> StepValueProperty = AvaloniaProperty.Register<"StepValue", typeof(int), typeof(NumericUpDown), new PropertyMetadata(1));
+        public static readonly StyledProperty<int> StepValueProperty = AvaloniaProperty.Register<NumericUpDown, int>(nameof(StepValue), 1);
         /// <summary>
         /// Defines the IsReadOnly dependency property.
         /// </summary>
-        public static readonly StyledProperty<typeof(bool), typeof(NumericUpDown), new PropertyMetadata(false));
-
-        /// <summary> IsReadOnlyProperty = AvaloniaProperty.Register<"IsReadOnly", typeof(bool), typeof(NumericUpDown), new PropertyMetadata(false));
+        public static readonly StyledProperty<bool> IsReadOnlyProperty = AvaloniaProperty.Register<NumericUpDown, bool>(nameof(IsReadOnly), false);
 
         /// <summary>
         /// Initializes a new instance of the NumericUpDown class.

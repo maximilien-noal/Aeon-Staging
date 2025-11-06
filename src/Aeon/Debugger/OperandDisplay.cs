@@ -18,22 +18,19 @@ namespace Aeon.Emulator.Launcher.Debugger
         /// <summary>
         /// The Operand dependency property definition.
         /// </summary>
-        public static readonly StyledProperty<typeof(CodeOperand), typeof(OperandDisplay));
-        /// <summary> OperandProperty = AvaloniaProperty.Register<nameof(Operand), typeof(CodeOperand), typeof(OperandDisplay));
+        public static readonly StyledProperty<CodeOperand?> OperandProperty = AvaloniaProperty.Register<OperandDisplay, CodeOperand?>(nameof(Operand));
         /// <summary>
         /// The RegisterSource dependency property definition.
         /// </summary>
-        public static readonly StyledProperty<typeof(IRegisterContainer), typeof(OperandDisplay));
-        /// <summary> RegisterSourceProperty = AvaloniaProperty.Register<nameof(RegisterSource), typeof(IRegisterContainer), typeof(OperandDisplay));
+        public static readonly StyledProperty<IRegisterContainer?> RegisterSourceProperty = AvaloniaProperty.Register<OperandDisplay, IRegisterContainer?>(nameof(RegisterSource));
         /// <summary>
         /// The DebuggerTextFormat dependency property definition.
         /// </summary>
-        public static readonly StyledProperty DebuggerTextFormatProperty = AeonDebug.DebuggerTextFormatProperty.AddOwner(typeof(OperandDisplay));
+        public static readonly StyledProperty<IDebuggerTextSettings> DebuggerTextFormatProperty = AeonDebug.DebuggerTextFormatProperty.AddOwner<OperandDisplay>();
         /// <summary>
         /// The Instruction dependency property definition.
         /// </summary>
-        public static readonly StyledProperty<typeof(Instruction), typeof(OperandDisplay));
-        /// <summary> InstructionProperty = AvaloniaProperty.Register<nameof(Instruction), typeof(Instruction), typeof(OperandDisplay));
+        public static readonly StyledProperty<Instruction> InstructionProperty = AvaloniaProperty.Register<OperandDisplay, Instruction>(nameof(Instruction));
         /// <summary>
         /// The IsHexFormat dependency property definition.
         /// </summary>

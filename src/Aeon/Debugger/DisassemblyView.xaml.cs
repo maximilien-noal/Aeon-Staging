@@ -23,15 +23,15 @@ namespace Aeon.Emulator.Launcher.Debugger
         /// <summary>
         /// The InstructionsSource dependency property definition.
         /// </summary>
-        public static readonly StyledProperty<typeof(IEnumerable<Instruction> InstructionsSourceProperty = AvaloniaProperty.Register<nameof(InstructionsSource), typeof(IEnumerable<Instruction>), typeof(DisassemblyView));
+        public static readonly StyledProperty<IEnumerable<Instruction>?> InstructionsSourceProperty = AvaloniaProperty.Register<DisassemblyView, IEnumerable<Instruction>?>(nameof(InstructionsSource));
         /// <summary>
         /// The IsHexFormat dependency property definition.
         /// </summary>
-        public static readonly StyledProperty IsHexFormatProperty = AeonDebug.IsHexFormatProperty.AddOwner(typeof(DisassemblyView));
+        public static readonly StyledProperty<bool> IsHexFormatProperty = AeonDebug.IsHexFormatProperty.AddOwner<DisassemblyView>();
         /// <summary>
         /// The DebuggerTextFormat dependency property definition.
         /// </summary>
-        public static readonly StyledProperty DebuggerTextFormatProperty = AeonDebug.DebuggerTextFormatProperty.AddOwner(typeof(DisassemblyView));
+        public static readonly StyledProperty<IDebuggerTextSettings> DebuggerTextFormatProperty = AeonDebug.DebuggerTextFormatProperty.AddOwner<DisassemblyView>();
 
         /// <summary>
         /// Initializes a new instance of the <see cref="DisassemblyView"/> class.
