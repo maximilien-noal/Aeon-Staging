@@ -29,9 +29,9 @@ namespace Aeon.Emulator.Launcher
         public static readonly StyledProperty<int> EmulationSpeedProperty = AvaloniaProperty.Register<EmulatorDisplay, int>(nameof(EmulationSpeed), 20_000_000);
         public static readonly StyledProperty<bool> IsAspectRatioLockedProperty = AvaloniaProperty.Register<EmulatorDisplay, bool>(nameof(IsAspectRatioLocked), true);
         public static readonly StyledProperty<ScalingAlgorithm> ScalingAlgorithmProperty = AvaloniaProperty.Register<EmulatorDisplay, ScalingAlgorithm>(nameof(ScalingAlgorithm), ScalingAlgorithm.None);
-        public static readonly RoutedEvent EmulatorStateChangedEvent = RoutedEvent.Register<EmulatorDisplay>(nameof(EmulatorStateChanged), Avalonia.Interactivity.RoutingStrategies.Bubble, typeof(EventHandler<RoutedEventArgs>));
-        public static readonly RoutedEvent EmulationErrorEvent = RoutedEvent.Register<EmulatorDisplay>(nameof(EmulationError), Avalonia.Interactivity.RoutingStrategies.Bubble, typeof(EmulationErrorEventHandler<RoutedEventArgs>));
-        public static readonly RoutedEvent CurrentProcessChangedEvent = RoutedEvent.Register<EmulatorDisplay>(nameof(CurrentProcessChanged), Avalonia.Interactivity.RoutingStrategies.Bubble, typeof(EventHandler<RoutedEventArgs>));
+        public static readonly RoutedEvent<RoutedEventArgs> EmulatorStateChangedEvent = RoutedEvent.Register<RoutedEventArgs>(nameof(EmulatorStateChanged), Avalonia.Interactivity.RoutingStrategies.Bubble, typeof(EmulatorDisplay));
+        public static readonly RoutedEvent<RoutedEventArgs> EmulationErrorEvent = RoutedEvent.Register<RoutedEventArgs>(nameof(EmulationError), Avalonia.Interactivity.RoutingStrategies.Bubble, typeof(EmulatorDisplay));
+        public static readonly RoutedEvent<RoutedEventArgs> CurrentProcessChangedEvent = RoutedEvent.Register<RoutedEventArgs>(nameof(CurrentProcessChanged), Avalonia.Interactivity.RoutingStrategies.Bubble, typeof(EmulatorDisplay));
         public static readonly System.Windows.Input.ICommand FullScreenCommand = null!; // TODO: Implement command
 
         private EmulatorHost emulator;
@@ -308,8 +308,8 @@ namespace Aeon.Emulator.Launcher
             this.displayArea.Width = pixelWidth;
             this.displayArea.Height = pixelHeight;
 
-            this.centerPoint = new Point(pixelWidth / 2, this.centerPoint.Y);
-            this.centerPoint = new Point(this.centerPoint.X, pixelHeight / 2);
+            this.centerPoint = new Avalonia.Point(pixelWidth / 2, this.centerPoint.Y);
+            this.centerPoint = new Avalonia.Point(this.centerPoint.X, pixelHeight / 2);
         }
         private void EnsureRenderTarget(Presenter presenter)
         {
@@ -410,8 +410,8 @@ namespace Aeon.Emulator.Launcher
                     this.mouseJustCaptured = true;
                     this.isMouseCaptured = true;
 
-                    this.centerPoint = new Point(displayImage.Width / 2, this.centerPoint.Y);
-                    this.centerPoint = new Point(this.centerPoint.X, displayImage.Height / 2);
+                    this.centerPoint = new Avalonia.Point(displayImage.Width / 2, this.centerPoint.Y);
+                    this.centerPoint = new Avalonia.Point(this.centerPoint.X, displayImage.Height / 2);
                     return;
                 }
 

@@ -125,12 +125,14 @@ namespace Aeon.Emulator.Launcher
                     )
                 )
             );
+#if WINDOWS
             vm.RegisterVirtualDevice(new Input.JoystickDevice());
+#endif
 
             emulatorDisplay.EmulationSpeed = config.EmulationSpeed ?? 100_000_000;
             emulatorDisplay.MouseInputMode = config.IsMouseAbsolute ? MouseInputMode.Absolute : MouseInputMode.Relative;
-            toolBar.Visibility = config.HideUserInterface ? Visibility.Collapsed : Visibility.Visible;
-            mainMenu.Visibility = config.HideUserInterface ? Visibility.Collapsed : Visibility.Visible;
+            toolBar.IsVisible = !config.HideUserInterface;
+            mainMenu.IsVisible = !config.HideUserInterface;
             if (!string.IsNullOrEmpty(config.Title))
                 this.Title = config.Title;
 
@@ -212,7 +214,7 @@ namespace Aeon.Emulator.Launcher
         
         private void EmulatorDisplay_EmulatorStateChanged(object sender, RoutedEventArgs e)
         {
-            CommandManager.InvalidateRequerySuggested();
+            // CommandManager.InvalidateRequerySuggested(); // Not in Avalonia
             if (this.emulatorDisplay.EmulatorState == EmulatorState.ProgramExited && this.currentConfig != null && this.currentConfig.HideUserInterface)
                 this.Close();
         }
@@ -254,16 +256,16 @@ private void Copy_CanExecute(object sender, CanExecuteRoutedEventArgs e)
         {
             if (this.WindowStyle != WindowStyle.None)
             {
-                this.menuContainer.Visibility = Visibility.Collapsed;
-                this.WindowStyle = WindowStyle.None;
+                this.menuContainer.IsVisible = false;
+                this.SystemDecorations = Avalonia.Controls.SystemDecorations.None;
                 this.WindowState = WindowState.Maximized;
                 this.SetCurrentValue(BackgroundProperty, Brushes.Black);
             }
             else
             {
-                this.menuContainer.Visibility = Visibility.Visible;
+                this.menuContainer.IsVisible = true;
                 this.WindowState = WindowState.Normal;
-                this.WindowStyle = WindowStyle.SingleBorderWindow;
+                this.SystemDecorations = Avalonia.Controls.SystemDecorations.Full;
                 this.SetCurrentValue(BackgroundProperty, this.FindResource("backgroundGradient"));
             }
         }
@@ -304,7 +306,7 @@ private void Copy_CanExecute(object sender, CanExecuteRoutedEventArgs e)
             {
                 performanceWindow = new PerformanceWindow();
                 performanceWindow.Closed += this.PerformanceWindow_Closed;
-                performanceWindow.Owner = this;
+                // performanceWindow.Owner = this; // TODO: Set parent window in Avalonia differently
                 performanceWindow.EmulatorDisplay = emulatorDisplay;
                 performanceWindow.Show();
             }
