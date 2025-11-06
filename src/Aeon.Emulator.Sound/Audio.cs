@@ -6,6 +6,9 @@ namespace Aeon.Emulator.Sound
 {
     internal static class Audio
     {
+        // OwnAudioSharp uses 48kHz sample rate by default
+        public const int SampleRate = 48000;
+
         public static IAudioEngine CreatePlayer(bool useCallback = false)
         {
             var engine = AudioEngineFactory.CreateDefault();
@@ -16,7 +19,10 @@ namespace Aeon.Emulator.Sound
 
         public static void WriteFullBuffer(IAudioEngine player, ReadOnlySpan<float> buffer)
         {
-            player.Send(buffer);
+            // OwnAudioSharp requires Span<float>, so we need to copy
+            Span<float> temp = stackalloc float[buffer.Length];
+            buffer.CopyTo(temp);
+            player.Send(temp);
         }
         public static void WriteFullBuffer(IAudioEngine player, ReadOnlySpan<short> buffer)
         {

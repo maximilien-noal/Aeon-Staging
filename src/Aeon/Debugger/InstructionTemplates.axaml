@@ -2,7 +2,7 @@
                     xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
                     xmlns:local="clr-namespace:Aeon.Emulator.Launcher.Debugger"
                     xmlns:dbg="clr-namespace:Aeon.Emulator.DebugSupport;assembly=Aeon.Emulator">
-    <Styles>
+    
     <Style Selector="CheckBox.miniExpanderButton">
         <Setter Property="Template">
             <Setter.Value>
@@ -31,7 +31,6 @@
     <Style Selector="CheckBox:pointerover /template/ Border#border">
         <Setter Property="Background" Value="Gainsboro" />
     </Style>
-    </Styles>
     
     <DataTemplate x:Key="instructionTemplate" DataType="{x:Type dbg:Instruction}">
         <StackPanel Orientation="Horizontal">
@@ -78,5 +77,4 @@
     </DataTemplate>
     
     <local:InstructionTemplateSelector x:Key="instructionTemplateSelector" />
-
 </ResourceDictionary>

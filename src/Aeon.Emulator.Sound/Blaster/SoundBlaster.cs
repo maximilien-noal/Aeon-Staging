@@ -359,8 +359,8 @@ namespace Aeon.Emulator.Sound.Blaster
             short[] writeBuffer = new short[65536 * 2];
 
             using var player = Audio.CreatePlayer();
-            int sampleRate = (int)player.Format.SampleRate;
-            player.BeginPlayback();
+            int sampleRate = Audio.SampleRate; // OwnAudioSharp uses 48kHz
+            // OwnAudioSharp engine starts automatically
 
             while (!this.endPlayback)
             {
@@ -379,15 +379,13 @@ namespace Aeon.Emulator.Sound.Blaster
 
                 if (this.pausePlayback)
                 {
-                    player.StopPlayback();
+                    // Pause handled by not sending audio
                     while (this.pausePlayback)
                     {
                         Thread.Sleep(1);
                         if (this.endPlayback)
                             return;
                     }
-
-                    player.BeginPlayback();
                 }
 
                 if (this.pauseDuration > 0)
