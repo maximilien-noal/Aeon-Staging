@@ -26,7 +26,9 @@ namespace Aeon.Emulator.Launcher
 
         protected override void OnOpened(EventArgs e)
         {
-            timer = new DispatcherTimer(TimeSpan.FromSeconds(1), DispatcherPriority.Normal, Timer_Tick, Avalonia.Threading.Dispatcher.UIThread);
+            timer = new DispatcherTimer();
+            timer.Interval = TimeSpan.FromSeconds(0.5);
+            timer.Tick += Timer_Tick;
             timer.Start();
 
             base.OnOpened(e);

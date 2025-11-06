@@ -24,7 +24,9 @@ namespace Aeon.Emulator.Launcher
 
         public static void ShowDialog(LogAccessor log)
         {
-            var window = new InstructionLogWindow { Owner = App.Current.MainWindow };
+            var mainWindow = (Application.Current?.ApplicationLifetime as Avalonia.Controls.ApplicationLifetimes.IClassicDesktopStyleApplicationLifetime)?.MainWindow as MainWindow;
+            var window = new InstructionLogWindow();
+            // window.Owner = mainWindow; // TODO: Set parent window in Avalonia
             window.historyList.ItemsSource = log;
             window.Show();
         }

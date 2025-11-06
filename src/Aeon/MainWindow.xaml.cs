@@ -131,7 +131,7 @@ namespace Aeon.Emulator.Launcher
 
             emulatorDisplay.EmulationSpeed = config.EmulationSpeed ?? 100_000_000;
             emulatorDisplay.MouseInputMode = config.IsMouseAbsolute ? MouseInputMode.Absolute : MouseInputMode.Relative;
-            toolBar.IsVisible = !config.HideUserInterface;
+            // toolBar.IsVisible = !config.HideUserInterface;
             mainMenu.IsVisible = !config.HideUserInterface;
             if (!string.IsNullOrEmpty(config.Title))
                 this.Title = config.Title;
@@ -176,8 +176,9 @@ namespace Aeon.Emulator.Launcher
         }
         private TaskDialogItem ShowTaskDialog(string title, string caption, params TaskDialogItem[] items)
         {
-            var taskDialog = new TaskDialog { Owner = this, Items = items, Icon = this.Icon, Title = title, Caption = caption };
-            if (taskDialog.ShowDialog() == true)
+            var taskDialog = new TaskDialog { /* Owner = this, */ Items = items, Icon = this.Icon, Title = title, Caption = caption };
+            // if (taskDialog.ShowDialog() == true) // TODO: Use await ShowDialog(this)
+            if (false)
                 return taskDialog.SelectedItem;
             else
                 return null;
@@ -249,12 +250,14 @@ private void Copy_CanExecute(object sender, CanExecuteRoutedEventArgs e)
             {
                 var bmp = emulatorDisplay.DisplayBitmap;
                 if (bmp != null)
-                    Clipboard.SetImage(bmp);
+                {
+                    // Clipboard.SetImage(bmp); // TODO: Avalonia clipboard API
+                }
             }
         }
         private void FullScreen_Executed(object sener, RoutedEventArgs e)
         {
-            if (this.WindowStyle != WindowStyle.None)
+            if (this.SystemDecorations != Avalonia.Controls.SystemDecorations.None)
             {
                 this.menuContainer.IsVisible = false;
                 this.SystemDecorations = Avalonia.Controls.SystemDecorations.None;
@@ -282,7 +285,7 @@ private void Copy_CanExecute(object sender, CanExecuteRoutedEventArgs e)
             }
             else if (selection == debug)
             {
-                var debuggerWindow = new DebuggerWindow { Owner = this, EmulatorHost = this.emulatorDisplay.EmulatorHost };
+                var debuggerWindow = new DebuggerWindow { /* Owner = this, */ EmulatorHost = this.emulatorDisplay.EmulatorHost };
                 debuggerWindow.Show();
                 debuggerWindow.UpdateDebugger();
             }
@@ -306,7 +309,7 @@ private void Copy_CanExecute(object sender, CanExecuteRoutedEventArgs e)
             {
                 performanceWindow = new PerformanceWindow();
                 performanceWindow.Closed += this.PerformanceWindow_Closed;
-                // performanceWindow.Owner = this; // TODO: Set parent window in Avalonia differently
+                // // performanceWindow.Owner = this; // TODO: Set parent in Avalonia // TODO: Set parent window in Avalonia differently
                 performanceWindow.EmulatorDisplay = emulatorDisplay;
                 performanceWindow.Show();
             }
@@ -321,7 +324,7 @@ private void Copy_CanExecute(object sender, CanExecuteRoutedEventArgs e)
         }
         private void ShowDebugger_Click(object sender, RoutedEventArgs e)
         {
-            var debuggerWindow = new DebuggerWindow { Owner = this, EmulatorHost = this.emulatorDisplay.EmulatorHost };
+            var debuggerWindow = new DebuggerWindow { /* Owner = this, */ EmulatorHost = this.emulatorDisplay.EmulatorHost };
             debuggerWindow.Show();
             debuggerWindow.UpdateDebugger();
         }
@@ -333,23 +336,24 @@ private void Copy_CanExecute(object sender, CanExecuteRoutedEventArgs e)
             }
             else
             {
-                this.paletteWindow = new PaletteDialog { Owner = this, EmulatorDisplay = this.emulatorDisplay, Icon = this.Icon };
+                this.paletteWindow = new PaletteDialog { /* Owner = this, */ EmulatorDisplay = this.emulatorDisplay, Icon = this.Icon };
                 this.paletteWindow.Closed += PaletteWindow_Closed;
                 paletteWindow.Show();
             }
         }
         private async void OpenInstructionLog_Click(object? sender, RoutedEventArgs e)
         {
-            var openFile = new OpenFileDialog
-            {
-                Filter = "Log files (*.AeonLog)|*.AeonLog|All files (*.*)|*.*",
-                Title = "Open Log File..."
-            };
+            // var openFile = new OpenFileDialog // TODO: Use StorageProvider API
+            // {
+            //     Filter = "Log files (*.AeonLog)|*.AeonLog|All files (*.*)|*.*",
+            //     Title = "Open Log File..."
+            // };
 
-            if (openFile.ShowDialog(this) == true)
+            // if (openFile.ShowDialog(this) == true)
+            if (false)
             {
-                var log = LogAccessor.Open(openFile.FileName);
-                InstructionLogWindow.ShowDialog(log);
+                // var log = LogAccessor.Open(openFile.FileName);
+                // InstructionLogWindow.ShowDialog(log);
             }
         }
         private void PaletteWindow_Closed(object sender, EventArgs e)

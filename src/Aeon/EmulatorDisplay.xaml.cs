@@ -21,6 +21,7 @@ namespace Aeon.Emulator.Launcher
         public static readonly DirectProperty<EmulatorDisplay, EmulatorState> EmulatorStateProperty = EmulatorStatePropertyKey;
         private static readonly StyledProperty<bool> IsMouseCursorCapturedPropertyKey = AvaloniaProperty.Register<EmulatorDisplay, bool>(nameof(IsMouseCursorCaptured), false);
         private static readonly StyledProperty<Dos.DosProcess?> CurrentProcessPropertyKey = AvaloniaProperty.Register<EmulatorDisplay, Dos.DosProcess?>(nameof(CurrentProcess));
+        public static readonly StyledProperty<Dos.DosProcess?> CurrentProcessProperty = CurrentProcessPropertyKey;
 
         //         public static readonly StyledProperty EmulatorStateProperty = EmulatorStatePropertyKey.StyledProperty;
         //         public static readonly StyledProperty CurrentProcessProperty = CurrentProcessPropertyKey.StyledProperty;
@@ -151,7 +152,7 @@ namespace Aeon.Emulator.Launcher
         /// <summary>
         /// Gets the Avalonia.Media.Imaging.Bitmap used for rendering the output display.
         /// </summary>
-        public Avalonia.Media.Imaging.Bitmap DisplayBitmap => this.renderTarget?.InteropBitmap;
+        public Avalonia.Media.Imaging.Bitmap DisplayBitmap => null; // this.renderTarget?.InteropBitmap // TODO: Avalonia bitmap
         /// <summary>
         /// Gets information about the current process. This is a dependency property.
         /// </summary>
@@ -191,8 +192,10 @@ namespace Aeon.Emulator.Launcher
 
         protected override void OnAttachedToVisualTree(Avalonia.VisualTreeAttachmentEventArgs e)
         {
-            this.timer = new DispatcherTimer(TimeSpan.FromSeconds(1.0 / 60.0), DispatcherPriority.Render, updateHandler, Avalonia.Threading.Dispatcher.UIThread);
-            base.OnOpened(e);
+            this.timer = new DispatcherTimer();
+            this.timer.Interval = TimeSpan.FromMilliseconds(16.67); // ~60 FPS
+            this.timer.Tick += (s, args) => { }; // this.Update(null); // TODO: Implement Update method
+            // base.OnAttachedToVisualTree(e);
         }
         protected override void OnKeyDown(KeyEventArgs e)
         {
@@ -201,7 +204,7 @@ namespace Aeon.Emulator.Launcher
 
             if (this.emulator != null && this.emulator.State == EmulatorState.Running)
             {
-                if (e.Key == Key.F12 && (e.KeyModifiers & ModifierKeys.Control) != 0)
+                if (e.Key == Key.F12 && (e.KeyModifiers & Avalonia.Input.KeyModifiers.Control) != Avalonia.Input.KeyModifiers.None)
                 {
                     this.isMouseCaptured = false;
                     this.SetValue(IsMouseCursorCapturedPropertyKey, false);
@@ -278,7 +281,7 @@ namespace Aeon.Emulator.Launcher
                         Canvas.SetTop(this.cursorRectangle, (cursorPosition.Y * emulator.VirtualMachine.VideoMode.FontHeight) + emulator.VirtualMachine.VideoMode.FontHeight - 2);
                     }
                 }
-                else if (this.cursorRectangle.Visibility == true)
+                else if (this.cursorRectangle.IsVisible)
                 {
                     this.cursorRectangle.IsVisible = false;
                 }
@@ -387,7 +390,7 @@ namespace Aeon.Emulator.Launcher
         }
         private void Emulator_MouseVisibilityChanged(object sender, EventArgs e)
         {
-            this.mouseImage.Visibility = this.emulator.VirtualMachine.IsMouseVisible ? true : false;
+            this.mouseImage.IsVisible = this.emulator.VirtualMachine.IsMouseVisible;
         }
         private void Emulator_MouseMove(object sender, MouseMoveEventArgs e) => this.MoveMouseCursor(e.X, e.Y);
         private void Emulator_Error(object sender, ErrorEventArgs e) => this.RaiseEvent(new EmulationErrorRoutedEventArgs(EmulationErrorEvent, e.Message));
@@ -415,7 +418,8 @@ namespace Aeon.Emulator.Launcher
                     return;
                 }
 
-                var button = e.ChangedButton.ToEmulatorButtons();
+                // var button = e.ChangedButton.ToEmulatorButtons(); // TODO: Use e.GetCurrentPoint(this).Properties
+                var button = MouseButtons.None;
                 if (button != MouseButtons.None)
                 {
                     var mouseEvent = new MouseButtonDownEvent(button);
@@ -433,7 +437,8 @@ namespace Aeon.Emulator.Launcher
                     return;
                 }
 
-                var button = e.ChangedButton.ToEmulatorButtons();
+                // var button = e.ChangedButton.ToEmulatorButtons(); // TODO: Use e.GetCurrentPoint(this).Properties
+                var button = MouseButtons.None;
                 if (button != MouseButtons.None)
                 {
                     var mouseEvent = new MouseButtonUpEvent(button);

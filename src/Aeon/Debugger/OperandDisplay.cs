@@ -140,10 +140,9 @@ namespace Aeon.Emulator.Launcher.Debugger
         private Control BuildJumpTargetContent(uint offset)
         {
             var textBlock = new TextBlock();
-            var run = new Run(offset.ToString("X8"))
-            {
-                Tag = new TargetAddress(QualifiedAddress.FromRealModeAddress(this.Instruction.CS, (ushort)offset), TargetAddressType.Code)
-            };
+            var run = new Run(offset.ToString("X8"));
+            // Run.Tag not available in Avalonia
+            // run.Tag = new TargetAddress(QualifiedAddress.FromRealModeAddress(this.Instruction.CS, (ushort)offset), TargetAddressType.Code);
 
             var binding = new Binding("DebuggerTextFormat.Address") { Source = this, Mode = BindingMode.OneWay };
             // run.SetBinding(TextElement.ForegroundProperty, binding); // TODO: Rewrite binding for Avalonia

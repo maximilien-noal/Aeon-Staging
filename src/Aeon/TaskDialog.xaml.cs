@@ -53,7 +53,7 @@ namespace Aeon.Emulator.Launcher
 
         private void Item_Click(object source, RoutedEventArgs e)
         {
-            this.DialogResult = true;
+            // this.DialogResult = true; // TODO: Avalonia dialog result pattern
             this.SelectedItem = e.Source as TaskDialogItem;
             this.Close();
         }

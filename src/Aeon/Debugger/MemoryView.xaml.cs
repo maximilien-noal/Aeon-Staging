@@ -87,7 +87,7 @@ namespace Aeon.Emulator.Launcher.Debugger
         {
             base.OnPointerWheelChanged(e);
 
-            var newValue = this.scrollBar.Value - e.Delta;
+            var newValue = this.scrollBar.Value - e.Delta.Y;
             if (newValue < 0)
                 newValue = 0;
             if (newValue > this.scrollBar.Maximum)
@@ -216,8 +216,30 @@ namespace Aeon.Emulator.Launcher.Debugger
         private void ScrollBar_ValueChanged(object sender, AvaloniaPropertyChangedEventArgs<double> e)
         {
             var current = this.StartAddress;
-            if ((uint)e.NewValue != this.StartAddress.Offset)
-                this.SetValue(StartAddressProperty, new QualifiedAddress(current.AddressType, current.Segment ?? 0, (uint)e.NewValue));
+            // Handle both double and BindingValue<double>
+            double newValueDouble = 0.0;
+            if (e.NewValue != null)
+            {
+                try
+                {
+                    // Try direct conversion first
+                    newValueDouble = Convert.ToDouble(e.NewValue);
+                }
+                catch
+                {
+                    // If that fails, try accessing as BindingValue
+                    try
+                    {
+                        dynamic bindingValue = e.NewValue;
+                        if (bindingValue.HasValue)
+                            newValueDouble = Convert.ToDouble(bindingValue.Value);
+                    }
+                    catch { }
+                }
+            }
+            
+            if ((uint)newValueDouble != this.StartAddress.Offset)
+                this.SetValue(StartAddressProperty, new QualifiedAddress(current.AddressType, current.Segment ?? 0, (uint)newValueDouble));
         }
 
         /// <summary>
@@ -234,7 +256,7 @@ namespace Aeon.Emulator.Launcher.Debugger
             public RowControls()
             {
                 for (int i = 0; i < HexValues.Length; i++)
-                    this.HexValues[i] = new TextBlock { FontFamily = NumberFont, HorizontalAlignment = HorizontalAlignment.Center };
+                    this.HexValues[i] = new TextBlock { FontFamily = NumberFont, HorizontalAlignment = Avalonia.Layout.HorizontalAlignment.Center };
             }
 
             /// <summary>
