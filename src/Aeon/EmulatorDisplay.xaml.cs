@@ -28,9 +28,9 @@ namespace Aeon.Emulator.Launcher
         public static readonly StyledProperty<int> EmulationSpeedProperty = AvaloniaProperty.Register<EmulatorDisplay, int>(nameof(EmulationSpeed), 20_000_000);
         public static readonly StyledProperty<bool> IsAspectRatioLockedProperty = AvaloniaProperty.Register<EmulatorDisplay, bool>(nameof(IsAspectRatioLocked), true);
         public static readonly StyledProperty<ScalingAlgorithm> ScalingAlgorithmProperty = AvaloniaProperty.Register<EmulatorDisplay, ScalingAlgorithm>(nameof(ScalingAlgorithm), ScalingAlgorithm.None);
-        public static readonly RoutedEvent EmulatorStateChangedEvent = RoutedEvent.Register(nameof(EmulatorStateChanged), RoutingStrategy.Bubble, typeof(EventHandler<RoutedEventArgs>), typeof(EmulatorDisplay));
-        public static readonly RoutedEvent EmulationErrorEvent = RoutedEvent.Register(nameof(EmulationError), RoutingStrategy.Bubble, typeof(EmulationErrorEventHandler<RoutedEventArgs>), typeof(EmulatorDisplay));
-        public static readonly RoutedEvent CurrentProcessChangedEvent = RoutedEvent.Register(nameof(CurrentProcessChanged), RoutingStrategy.Bubble, typeof(EventHandler<RoutedEventArgs>), typeof(EmulatorDisplay));
+        public static readonly RoutedEvent EmulatorStateChangedEvent = RoutedEvent.Register(nameof(EmulatorStateChanged), Avalonia.Interactivity.RoutingStrategies.Bubble, typeof(EventHandler<RoutedEventArgs>), typeof(EmulatorDisplay));
+        public static readonly RoutedEvent EmulationErrorEvent = RoutedEvent.Register(nameof(EmulationError), Avalonia.Interactivity.RoutingStrategies.Bubble, typeof(EmulationErrorEventHandler<RoutedEventArgs>), typeof(EmulatorDisplay));
+        public static readonly RoutedEvent CurrentProcessChangedEvent = RoutedEvent.Register(nameof(CurrentProcessChanged), Avalonia.Interactivity.RoutingStrategies.Bubble, typeof(EventHandler<RoutedEventArgs>), typeof(EmulatorDisplay));
         public static readonly System.Windows.Input.ICommand FullScreenCommand = null!; // TODO: Implement command
 
         private EmulatorHost emulator;
@@ -92,7 +92,7 @@ namespace Aeon.Emulator.Launcher
             {
                 if (this.emulator == null)
                 {
-                    this.emulator = new EmulatorHost(this.physicalMemorySize) { EventSynchronizer = new WpfSynchronizer(this.Dispatcher) };
+                    this.emulator = new EmulatorHost(this.physicalMemorySize) { EventSynchronizer = new WpfSynchronizer(Avalonia.Threading.Dispatcher.UIThread) };
                     this.emulator.VideoModeChanged += this.HandleModeChange;
                     this.emulator.StateChanged += this.Emulator_StateChanged;
                     this.emulator.MouseVisibilityChanged += this.Emulator_MouseVisibilityChanged;
@@ -179,8 +179,8 @@ namespace Aeon.Emulator.Launcher
                 this.emulator.MouseMove -= this.Emulator_MouseMove;
                 this.emulator.Error -= this.Emulator_Error;
                 this.emulator.CurrentProcessChanged -= this.Emulator_CurrentProcessChanged;
-                this.mouseImage.Visibility = Visibility.Collapsed;
-                this.cursorRectangle.Visibility = Visibility.Collapsed;
+                this.mouseImage.IsVisible = Collapsed;
+                this.cursorRectangle.IsVisible = Collapsed;
                 this.timer.Stop();
 
                 this.emulator.Dispose();
@@ -190,7 +190,7 @@ namespace Aeon.Emulator.Launcher
 
         protected override void OnAttachedToVisualTree(Avalonia.VisualTreeAttachmentEventArgs e)
         {
-            this.timer = new DispatcherTimer(TimeSpan.FromSeconds(1.0 / 60.0), DispatcherPriority.Render, updateHandler, this.Dispatcher);
+            this.timer = new DispatcherTimer(TimeSpan.FromSeconds(1.0 / 60.0), DispatcherPriority.Render, updateHandler, Avalonia.Threading.Dispatcher.UIThread);
             base.OnInitialized(e);
         }
         protected override void OnKeyDown(KeyEventArgs e)
@@ -265,9 +265,9 @@ namespace Aeon.Emulator.Launcher
                 {
                     this.cursorBlink = (this.cursorBlink + 1) % 16;
                     if (this.cursorBlink == 8)
-                        this.cursorRectangle.Visibility = Visibility.Visible;
+                        this.cursorRectangle.IsVisible = Visible;
                     else if (cursorBlink == 0)
-                        this.cursorRectangle.Visibility = Visibility.Collapsed;
+                        this.cursorRectangle.IsVisible = Collapsed;
 
                     var cursorPosition = this.emulator.VirtualMachine.CursorPosition;
                     if (cursorPosition != this.cursorPosition)
@@ -277,9 +277,9 @@ namespace Aeon.Emulator.Launcher
                         Canvas.SetTop(this.cursorRectangle, (cursorPosition.Y * emulator.VirtualMachine.VideoMode.FontHeight) + emulator.VirtualMachine.VideoMode.FontHeight - 2);
                     }
                 }
-                else if (this.cursorRectangle.Visibility == Visibility.Visible)
+                else if (this.cursorRectangle.Visibility == true)
                 {
-                    this.cursorRectangle.Visibility = Visibility.Collapsed;
+                    this.cursorRectangle.IsVisible = Collapsed;
                 }
             }
         }
@@ -385,7 +385,7 @@ namespace Aeon.Emulator.Launcher
         }
         private void Emulator_MouseVisibilityChanged(object sender, EventArgs e)
         {
-            this.mouseImage.Visibility = this.emulator.VirtualMachine.IsMouseVisible ? Visibility.Visible : Visibility.Collapsed;
+            this.mouseImage.Visibility = this.emulator.VirtualMachine.IsMouseVisible ? true : false;
         }
         private void Emulator_MouseMove(object sender, MouseMoveEventArgs e) => this.MoveMouseCursor(e.X, e.Y);
         private void Emulator_Error(object sender, ErrorEventArgs e) => this.RaiseEvent(new EmulationErrorRoutedEventArgs(EmulationErrorEvent, e.Message));
@@ -452,7 +452,9 @@ namespace Aeon.Emulator.Launcher
                 }
                 else if (this.isMouseCaptured)
                 {
-                    var deltaPos = System.Windows.Input.Mouse.GetPosition(this.displayImage);
+                    // TODO: Use Avalonia pointer API instead of System.Windows.Input.Mouse.GetPosition
+                    var deltaPos = this.centerPoint; // Placeholder - needs proper implementation
+                    // Original: var deltaPos = Mouse.GetPosition(this.displayImage);
 
                     int dx = (int)(deltaPos.X - this.centerPoint.X) / presenter.WidthRatio;
                     int dy = (int)(deltaPos.Y - this.centerPoint.Y) / presenter.HeightRatio;

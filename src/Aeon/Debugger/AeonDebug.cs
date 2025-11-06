@@ -13,11 +13,11 @@ namespace Aeon.Emulator.Launcher.Debugger
         /// <summary>
         /// The AeonDebug.IsHexFormat dependency property definition.
         /// </summary>
-        public static readonly AttachedProperty<bool> IsHexFormatProperty = AvaloniaProperty.RegisterAttached<bool>("IsHexFormat", typeof(AeonDebug), false, inherits: true);
+        public static readonly AttachedProperty<bool> IsHexFormatProperty = AvaloniaProperty.RegisterAttached<AeonDebug, Control, bool>("IsHexFormat", false, inherits: true);
         /// <summary>
         /// The AeonDebug.DebuggerTextFormat dependency property definition.
         /// </summary>
-        public static readonly AttachedProperty<IDebuggerTextSettings> DebuggerTextFormatProperty = AvaloniaProperty.RegisterAttached<IDebuggerTextSettings>("DebuggerTextFormat", typeof(AeonDebug), new DefaultTextFormat(), inherits: true);
+        public static readonly AttachedProperty<IDebuggerTextSettings> DebuggerTextFormatProperty = AvaloniaProperty.RegisterAttached<AeonDebug, Control, IDebuggerTextSettings>("DebuggerTextFormat", new DefaultTextFormat(), inherits: true);
 
         /// <summary>
         /// Default debugger text format.

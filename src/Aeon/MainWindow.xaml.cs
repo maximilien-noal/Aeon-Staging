@@ -34,7 +34,7 @@ namespace Aeon.Emulator.Launcher
 
         protected override void OnOpened(EventArgs e)
         {
-            base.OnActivated(e);
+            // base.OnActivated(e); // Not in Avalonia
 
             if (!this.hasActivated)
             {
@@ -363,8 +363,9 @@ private void Copy_CanExecute(object sender, CanExecuteRoutedEventArgs e)
             using var bmp = this.emulatorDisplay?.CurrentPresenter?.Dump();
             if (bmp != null)
             {
-                var bmpSource = BitmapSource.Create(bmp.Width, bmp.Height, 96, 96, PixelFormats.Bgr32, null, bmp.PixelBuffer, bmp.Width * bmp.Height * 4, bmp.Width * 4);
-                Clipboard.SetImage(bmpSource);
+                // TODO: Implement clipboard image support for Avalonia
+                // var bmpSource = BitmapSource.Create(bmp.Width, bmp.Height, 96, 96, PixelFormats.Bgr32, null, bmp.PixelBuffer, bmp.Width * bmp.Height * 4, bmp.Width * 4);
+                // Clipboard.SetImage(bmpSource);
             }
         }
     }

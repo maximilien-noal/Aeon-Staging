@@ -19,7 +19,7 @@ namespace Aeon.Emulator.Launcher.Debugger
         /// <summary>
         /// The AddressClick routed event definition.
         /// </summary>
-        public static readonly RoutedEvent AddressClickEvent = RoutedEvent.Register(nameof(AddressClick), RoutingStrategy.Bubble, typeof(EventHandler<AddressClickEventArgs>), typeof(DisassemblyView));
+        public static readonly RoutedEvent AddressClickEvent = RoutedEvent.Register(nameof(AddressClick), Avalonia.Interactivity.RoutingStrategies.Bubble, typeof(EventHandler<AddressClickEventArgs>), typeof(DisassemblyView));
         /// <summary>
         /// The InstructionsSource dependency property definition.
         /// </summary>
@@ -106,7 +106,7 @@ namespace Aeon.Emulator.Launcher.Debugger
         /// <param name="e">Information about the event.</param>
         private void Hyperlink_Click(object source, RoutedEventArgs e)
         {
-            if (e.OriginalSource is not Hyperlink hyperlink)
+            if (e.Source is not Hyperlink hyperlink)
                 return;
 
             if (hyperlink.Tag is not TargetAddress address)

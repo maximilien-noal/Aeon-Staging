@@ -3,6 +3,7 @@ using System.Buffers.Binary;
 using System.Globalization;
 using Avalonia;
 using Avalonia.Controls;
+using Avalonia.Controls.ApplicationLifetimes;
 using Avalonia.Interactivity;
 using Aeon.Emulator.Memory;
 using Avalonia.Markup.Xaml;

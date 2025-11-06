@@ -64,7 +64,7 @@ namespace Aeon.Emulator.Launcher.Debugger
         {
             base.OnPropertyChanged(e);
 
-            if (e.Property == ActualHeightProperty)
+            if (e.Property == BoundsProperty)
             {
                 if (rows.Count != CalculateVisibleRows())
                 {
@@ -85,7 +85,7 @@ namespace Aeon.Emulator.Launcher.Debugger
         /// <param name="e">Information about the event.</param>
         protected override void OnPointerWheelChanged(PointerWheelEventArgs e)
         {
-            base.OnMouseWheel(e);
+            base.OnPointerWheelChanged(e);
 
             var newValue = this.scrollBar.Value - e.Delta;
             if (newValue < 0)
@@ -206,7 +206,7 @@ namespace Aeon.Emulator.Launcher.Debugger
         /// Returns the number of currently visible whole rows.
         /// </summary>
         /// <returns>Number of whole rows visible.</returns>
-        private int CalculateVisibleRows() => (int)(this.ActualHeight / RowHeight);
+        private int CalculateVisibleRows() => (int)(this.Bounds.Height / RowHeight);
 
         /// <summary>
         /// Invoked when the scroll bar's value has changed.
