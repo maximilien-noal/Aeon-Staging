@@ -64,11 +64,12 @@ namespace Aeon.Emulator.Launcher
         /// <param name="e">Unused EventArgs instance.</param>
         protected override void OnOpened(EventArgs e)
         {
-            base.OnInitialized(e);
+            base.OnOpened(e);
             for (int i = 0; i < 256; i++)
                 this.grid.Children.Add(new Rectangle() { Fill = new SolidColorBrush() });
 
-            this.timer = new DispatcherTimer(TimeSpan.FromSeconds(1.0 / 30.0), DispatcherPriority.Normal, UpdateColors, this.Dispatcher);
+            this.timer = new DispatcherTimer { Interval = TimeSpan.FromSeconds(1.0 / 30.0) };
+            this.timer.Tick += UpdateColors;
             this.timer.Start();
         }
 

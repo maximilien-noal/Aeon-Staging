@@ -39,7 +39,7 @@ namespace Aeon.Emulator.Launcher.Debugger
         public DisassemblyView()
         {
             AvaloniaXamlLoader.Load(this);
-            this.AddHandler(Hyperlink.ClickEvent, new RoutedEventHandler(this.Hyperlink_Click));
+            // this.AddHandler(Hyperlink.ClickEvent, new EventHandler<RoutedEventArgs>(this.Hyperlink_Click)); // TODO: Implement hyperlink handling in Avalonia
         }
 
         /// <summary>

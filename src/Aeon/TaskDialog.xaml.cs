@@ -27,7 +27,7 @@ namespace Aeon.Emulator.Launcher
         public TaskDialog()
         {
             AvaloniaXamlLoader.Load(this);
-            this.AddHandler(ButtonBase.ClickEvent, new RoutedEventHandler(this.Item_Click));
+            this.AddHandler(Button.ClickEvent, new EventHandler<RoutedEventArgs>(this.Item_Click));
         }
 
         /// <summary>
@@ -54,7 +54,7 @@ namespace Aeon.Emulator.Launcher
         private void Item_Click(object source, RoutedEventArgs e)
         {
             this.DialogResult = true;
-            this.SelectedItem = e.OriginalSource as TaskDialogItem;
+            this.SelectedItem = e.Source as TaskDialogItem;
             this.Close();
         }
     }

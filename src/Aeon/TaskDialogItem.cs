@@ -15,7 +15,7 @@ namespace Aeon.Emulator.Launcher
         /// <summary>
         /// The Icon dependency property definition.
         /// </summary>
-        public static readonly StyledProperty<Avalonia.Media.IImage?> IconProperty = AvaloniaProperty.Register<TaskDialogItem, ImageSource>(nameof(Icon));
+        public static readonly StyledProperty<Avalonia.Media.IImage?> IconProperty = AvaloniaProperty.Register<TaskDialogItem, Avalonia.Media.IImage>(nameof(Icon));
         /// <summary>
         /// The Text depdendency property definition.
         /// </summary>
@@ -50,7 +50,7 @@ namespace Aeon.Emulator.Launcher
         /// </summary>
         public Avalonia.Media.IImage? Icon
         {
-            get => (ImageSource)this.GetValue(IconProperty);
+            get => (Avalonia.Media.IImage)this.GetValue(IconProperty);
             set => this.SetValue(IconProperty, value);
         }
         /// <summary>

@@ -29,7 +29,7 @@ namespace Aeon.Emulator.Launcher
             timer = new DispatcherTimer(TimeSpan.FromSeconds(1), DispatcherPriority.Normal, Timer_Tick, this.Dispatcher);
             timer.Start();
 
-            base.OnInitialized(e);
+            base.OnOpened(e);
         }
 
         private void UpdateProcessorFields(EmulatorHost host)

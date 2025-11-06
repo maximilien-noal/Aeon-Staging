@@ -146,9 +146,9 @@ namespace Aeon.Emulator.Launcher.Debugger
             };
 
             var binding = new Binding("DebuggerTextFormat.Address") { Source = this, Mode = BindingMode.OneWay };
-            run.SetBinding(TextElement.ForegroundProperty, binding);
+            // run.SetBinding(TextElement.ForegroundProperty, binding); // TODO: Rewrite binding for Avalonia
 
-            var link = new Hyperlink(run);
+            var link = new Run(); // TODO: Hyperlink support in Avalonia
             textBlock.Inlines.Add(link);
             return textBlock;
         }
@@ -238,7 +238,7 @@ namespace Aeon.Emulator.Launcher.Debugger
             var run = new Run(text);
 
             var binding = new Binding("DebuggerTextFormat.Immediate") { Source = this, Mode = BindingMode.OneWay };
-            run.SetBinding(TextElement.ForegroundProperty, binding);
+            // run.SetBinding(TextElement.ForegroundProperty, binding); // TODO: Rewrite binding for Avalonia
 
             return run;
         }
@@ -247,7 +247,7 @@ namespace Aeon.Emulator.Launcher.Debugger
             var run = new Run(text);
 
             var binding = new Binding("DebuggerTextFormat.Address") { Source = this, Mode = BindingMode.OneWay };
-            run.SetBinding(TextElement.ForegroundProperty, binding);
+            // run.SetBinding(TextElement.ForegroundProperty, binding); // TODO: Rewrite binding for Avalonia
 
             return run;
         }
@@ -256,7 +256,7 @@ namespace Aeon.Emulator.Launcher.Debugger
             var run = new Run(text);
 
             var binding = new Binding("DebuggerTextFormat.Register") { Source = this, Mode = BindingMode.OneWay };
-            run.SetBinding(TextElement.ForegroundProperty, binding);
+            // run.SetBinding(TextElement.ForegroundProperty, binding); // TODO: Rewrite binding for Avalonia
 
             return run;
         }
@@ -269,7 +269,7 @@ namespace Aeon.Emulator.Launcher.Debugger
                 textBlock.Text = value.ToString();
 
             var binding = new Binding("DebuggerTextFormat.Immediate") { Source = this, Mode = BindingMode.OneWay };
-            textBlock.SetBinding(TextBlock.ForegroundProperty, binding);
+            // textBlock.SetBinding(TextBlock.ForegroundProperty, binding); // TODO: Rewrite binding for Avalonia
 
             return textBlock;
         }
@@ -278,7 +278,7 @@ namespace Aeon.Emulator.Launcher.Debugger
             var textBlock = new TextBlock() { Text = register.ToString().ToLower() };
 
             var binding = new Binding("DebuggerTextFormat.Register") { Source = this, Mode = BindingMode.OneWay };
-            textBlock.SetBinding(TextBlock.ForegroundProperty, binding);
+            // textBlock.SetBinding(TextBlock.ForegroundProperty, binding); // TODO: Rewrite binding for Avalonia
 
             return textBlock;
         }

@@ -17,14 +17,14 @@ namespace Aeon.Emulator.Launcher
 {
     public sealed partial class EmulatorDisplay : ContentControl
     {
-        private static readonly StyledProperty<EmulatorState> EmulatorStatePropertyKey = StyledProperty.RegisterReadOnly(nameof(EmulatorState), typeof(EmulatorState), typeof(EmulatorDisplay), new PropertyMetadata(EmulatorState.NoProgram));
+        private static readonly DirectProperty<EmulatorDisplay, EmulatorState> EmulatorStatePropertyKey = AvaloniaProperty.RegisterDirect<EmulatorDisplay, EmulatorState>(nameof(EmulatorState), o => o.EmulatorState);
         private static readonly StyledProperty<bool> IsMouseCursorCapturedPropertyKey = AvaloniaProperty.Register<EmulatorDisplay, bool>(nameof(IsMouseCursorCaptured), false);
         private static readonly StyledProperty<Dos.DosProcess?> CurrentProcessPropertyKey = AvaloniaProperty.Register<EmulatorDisplay, Dos.DosProcess?>(nameof(CurrentProcess));
 
         //         public static readonly StyledProperty EmulatorStateProperty = EmulatorStatePropertyKey.StyledProperty;
         //         public static readonly StyledProperty CurrentProcessProperty = CurrentProcessPropertyKey.StyledProperty;
         public static readonly StyledProperty<MouseInputMode> MouseInputModeProperty = AvaloniaProperty.Register<EmulatorDisplay, MouseInputMode>(nameof(MouseInputMode), MouseInputMode.Relative);
-        public static readonly StyledProperty<bool> IsMouseCursorCapturedProperty = IsMouseCursorCapturedPropertyKey.StyledProperty;
+        public static readonly StyledProperty<bool> IsMouseCursorCapturedProperty = IsMouseCursorCapturedPropertyKey;
         public static readonly StyledProperty<int> EmulationSpeedProperty = AvaloniaProperty.Register<EmulatorDisplay, int>(nameof(EmulationSpeed), 20_000_000);
         public static readonly StyledProperty<bool> IsAspectRatioLockedProperty = AvaloniaProperty.Register<EmulatorDisplay, bool>(nameof(IsAspectRatioLocked), true);
         public static readonly StyledProperty<ScalingAlgorithm> ScalingAlgorithmProperty = AvaloniaProperty.Register<EmulatorDisplay, ScalingAlgorithm>(nameof(ScalingAlgorithm), ScalingAlgorithm.None);
