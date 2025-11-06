@@ -1,5 +1,5 @@
 ﻿using System;
-using System.Windows.Data;
+using Avalonia.Data;
 
 namespace Aeon.Emulator.Launcher
 {

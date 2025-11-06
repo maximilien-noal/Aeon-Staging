@@ -1,5 +1,7 @@
-﻿using System.Windows;
-using System.Windows.Controls;
+﻿using Avalonia;
+using Avalonia.Controls;
+using Avalonia.Interactivity;
+using Avalonia.Controls;
 using Aeon.Emulator.DebugSupport;
 
 namespace Aeon.Emulator.Launcher.Debugger

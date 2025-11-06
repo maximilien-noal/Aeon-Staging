@@ -1,5 +1,7 @@
-﻿using System.Windows;
-using System.Windows.Controls;
+﻿using Avalonia;
+using Avalonia.Controls;
+using Avalonia.Interactivity;
+using Avalonia.Controls;
 using Aeon.Emulator.DebugSupport;
 
 namespace Aeon.Emulator.Launcher.Debugger
@@ -12,21 +14,21 @@ namespace Aeon.Emulator.Launcher.Debugger
         /// <summary>
         /// The RegisterProvider dependency property key definition.
         /// </summary>
-        private static readonly DependencyPropertyKey RegisterProviderPropertyKey = DependencyProperty.RegisterReadOnly("RegisterProvider", typeof(RegisterStringProvider), typeof(RegisterViewer), new PropertyMetadata(null));
+        private static readonly StyledPropertyKey RegisterProviderPropertyKey = StyledProperty.RegisterReadOnly("RegisterProvider", typeof(RegisterStringProvider), typeof(RegisterViewer), new PropertyMetadata(null));
 
         /// <summary>
         /// The RegisterSource dependency property definition.
         /// </summary>
-        public static readonly DependencyProperty RegisterSourceProperty = DependencyProperty.Register("RegisterSource", typeof(IRegisterContainer), typeof(RegisterViewer));
+        public static readonly StyledProperty<IRegisterContainer> RegisterSourceProperty = AvaloniaProperty.Register<RegisterViewer, IRegisterContainer>(nameof(RegisterSource));
         /// <summary>
         /// The IsHexFormat dependency property definition.
         /// </summary>
-        public static readonly DependencyProperty IsHexFormatProperty = AeonDebug.IsHexFormatProperty.AddOwner(typeof(RegisterViewer));
+        public static readonly StyledProperty IsHexFormatProperty = AeonDebug.IsHexFormatProperty.AddOwner(typeof(RegisterViewer));
 
         /// <summary>
         /// The RegisterProvider dependency property definition.
         /// </summary>
-        internal static DependencyProperty RegisterProviderProperty = RegisterProviderPropertyKey.DependencyProperty;
+        internal static StyledProperty RegisterProviderProperty = RegisterProviderPropertyKey.StyledProperty;
 
         /// <summary>
         /// Initializes a new instance of the RegisterViewer class.
@@ -75,7 +77,7 @@ namespace Aeon.Emulator.Launcher.Debugger
         /// Invoked when a property value has changed.
         /// </summary>
         /// <param name="e">Information about the event.</param>
-        protected override void OnPropertyChanged(DependencyPropertyChangedEventArgs e)
+        protected override void OnPropertyChanged(StyledPropertyChangedEventArgs e)
         {
             base.OnPropertyChanged(e);
 

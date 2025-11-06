@@ -1,15 +1,16 @@
-﻿<ResourceDictionary xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+﻿<ResourceDictionary xmlns="https://github.com/avaloniaui"
                     xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
                     xmlns:local="clr-namespace:Aeon.Emulator.Launcher.Debugger"
                     xmlns:dbg="clr-namespace:Aeon.Emulator.DebugSupport;assembly=Aeon.Emulator">
-    <ControlTemplate x:Key="miniExpanderButtonTemplate" TargetType="{x:Type CheckBox}">
+    <ControlTemplate x:Key="miniExpanderButtonTemplate" TargetType="CheckBox">
         <Border Name="border" Width="12" Height="12" BorderThickness="1" BorderBrush="Black" Background="Transparent" Margin="2" CornerRadius="2">
             <Grid>
                 <Rectangle Name="horizontalLine" StrokeThickness="0" Fill="Black" Width="8" Height="2" VerticalAlignment="Center" />
                 <Rectangle Name="verticalLine" StrokeThickness="0" Fill="Black" Width="2" Height="8" HorizontalAlignment="Center" Visibility="Collapsed" />
             </Grid>
         </Border>
-        <ControlTemplate.Triggers>
+        <!-- ControlTemplate.Triggers need to be handled differently in Avalonia
+<ControlTemplate.Triggers>
             <Trigger Property="IsChecked" Value="False">
                 <Setter TargetName="verticalLine" Property="Visibility" Value="Visible" />
             </Trigger>
@@ -19,6 +20,7 @@
                 <Setter TargetName="border" Property="Background" Value="Gainsboro" />
             </Trigger>
         </ControlTemplate.Triggers>
+-->
     </ControlTemplate>
 
     <DataTemplate x:Key="instructionTemplate" DataType="{x:Type dbg:Instruction}">

@@ -1,15 +1,18 @@
 ﻿using System;
 using System.IO;
-using System.Windows;
-using System.Windows.Input;
-using System.Windows.Interop;
-using System.Windows.Media;
-using System.Windows.Media.Imaging;
+using Avalonia;
+using Avalonia.Controls;
+using Avalonia.Interactivity;
+using Avalonia.Input;
+// using System.Windows.Interop; // Not directly available in Avalonia
+using Avalonia.Media;
+using Avalonia.Media.Imaging;
 using Aeon.DiskImages;
 using Aeon.DiskImages.Archives;
 using Aeon.Emulator.Dos.VirtualFileSystem;
 using Aeon.Emulator.Launcher.Configuration;
 using Microsoft.Win32;
+using Avalonia.Markup.Xaml;
 
 namespace Aeon.Emulator.Launcher
 {
@@ -24,7 +27,7 @@ namespace Aeon.Emulator.Launcher
         public MainWindow()
         {
             this.interopHelper = new Lazy<WindowInteropHelper>(() => new WindowInteropHelper(this));
-            this.InitializeComponent();
+            AvaloniaXamlLoader.Load(this);
         }
 
         IntPtr System.Windows.Forms.IWin32Window.Handle => this.interopHelper.Value.Handle;

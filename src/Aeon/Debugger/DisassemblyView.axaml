@@ -1,5 +1,5 @@
 ﻿<UserControl x:Class="Aeon.Emulator.Launcher.Debugger.DisassemblyView"
-             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+             xmlns="https://github.com/avaloniaui"
              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
              xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006" 
              xmlns:d="http://schemas.microsoft.com/expression/blend/2008" 
@@ -10,10 +10,10 @@
     <UserControl.Resources>
         <ResourceDictionary>
             <ResourceDictionary.MergedDictionaries>
-                <ResourceDictionary Source="InstructionTemplates.xaml" />
-                <ResourceDictionary Source="ListBoxTemplates.xaml" />
+                <ResourceInclude Source="InstructionTemplates.axaml" />
+                <ResourceInclude Source="ListBoxTemplates.axaml" />
             </ResourceDictionary.MergedDictionaries>
-            <Style x:Key="loggedInstructionStyle" TargetType="{x:Type ListBoxItem}" BasedOn="{StaticResource listBoxItemStyle}">
+            <Style x:Key="loggedInstructionStyle" TargetType="ListBoxItem" BasedOn="{StaticResource listBoxItemStyle}">
                 <Setter Property="Background" Value="Gainsboro" />
             </Style>
             <debug:InstructionStyleSelector x:Key="styleSelector" />

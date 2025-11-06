@@ -1,14 +1,25 @@
 ﻿using System;
 using System.Buffers.Binary;
 using System.Globalization;
-using System.Windows;
+using Avalonia;
+using Avalonia.Controls;
+using Avalonia.Interactivity;
 using Aeon.Emulator.Memory;
+using Avalonia.Markup.Xaml;
 
 namespace Aeon.Emulator.Launcher
 {
     internal sealed partial class InstructionLogWindow : Window
     {
-        public InstructionLogWindow() => this.InitializeComponent();
+        public InstructionLogWindow()
+        {
+            InitializeComponent();
+        }
+
+        private void InitializeComponent()
+        {
+            AvaloniaXamlLoader.Load(this);
+        }
 
         public static void ShowDialog(LogAccessor log)
         {

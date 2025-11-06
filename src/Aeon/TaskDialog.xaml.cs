@@ -1,6 +1,9 @@
 ﻿using System.Collections.Generic;
-using System.Windows;
-using System.Windows.Controls.Primitives;
+using Avalonia;
+using Avalonia.Controls;
+using Avalonia.Interactivity;
+using Avalonia.Controls.Primitives;
+using Avalonia.Markup.Xaml;
 
 namespace Aeon.Emulator.Launcher
 {
@@ -12,18 +15,18 @@ namespace Aeon.Emulator.Launcher
         /// <summary>
         /// The Caption dependency property definition.
         /// </summary>
-        public static readonly DependencyProperty CaptionProperty = DependencyProperty.Register(nameof(Caption), typeof(string), typeof(TaskDialog));
+        public static readonly StyledProperty CaptionProperty = AvaloniaProperty.Register<nameof(Caption), typeof(string), typeof(TaskDialog));
         /// <summary>
         /// The Items dependency property definition.
         /// </summary>
-        public static readonly DependencyProperty ItemsProperty = DependencyProperty.Register(nameof(Items), typeof(IEnumerable<TaskDialogItem>), typeof(TaskDialog));
+        public static readonly StyledProperty ItemsProperty = AvaloniaProperty.Register<nameof(Items), typeof(IEnumerable<TaskDialogItem>), typeof(TaskDialog));
 
         /// <summary>
         /// Initializes a new instance of the <see cref="TaskDialog"/> class.
         /// </summary>
         public TaskDialog()
         {
-            this.InitializeComponent();
+            AvaloniaXamlLoader.Load(this);
             this.AddHandler(ButtonBase.ClickEvent, new RoutedEventHandler(this.Item_Click));
         }
 

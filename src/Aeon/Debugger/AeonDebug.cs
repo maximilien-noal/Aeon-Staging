@@ -1,5 +1,7 @@
-﻿using System.Windows;
-using System.Windows.Media;
+﻿using Avalonia;
+using Avalonia.Controls;
+using Avalonia.Interactivity;
+using Avalonia.Media;
 
 namespace Aeon.Emulator.Launcher.Debugger
 {
@@ -11,11 +13,11 @@ namespace Aeon.Emulator.Launcher.Debugger
         /// <summary>
         /// The AeonDebug.IsHexFormat dependency property definition.
         /// </summary>
-        public static readonly DependencyProperty IsHexFormatProperty = DependencyProperty.RegisterAttached("IsHexFormat", typeof(bool), typeof(AeonDebug), new FrameworkPropertyMetadata(false, FrameworkPropertyMetadataOptions.Inherits));
+        public static readonly StyledProperty IsHexFormatProperty = AvaloniaProperty.RegisterAttached<"IsHexFormat", typeof(bool), typeof(AeonDebug), new FrameworkPropertyMetadata(false, FrameworkPropertyMetadataOptions.Inherits));
         /// <summary>
         /// The AeonDebug.DebuggerTextFormat dependency property definition.
         /// </summary>
-        public static readonly DependencyProperty DebuggerTextFormatProperty = DependencyProperty.RegisterAttached("DebuggerTextFormat", typeof(IDebuggerTextSettings), typeof(AeonDebug), new FrameworkPropertyMetadata(new DefaultTextFormat(), FrameworkPropertyMetadataOptions.Inherits));
+        public static readonly StyledProperty DebuggerTextFormatProperty = AvaloniaProperty.RegisterAttached<"DebuggerTextFormat", typeof(IDebuggerTextSettings), typeof(AeonDebug), new FrameworkPropertyMetadata(new DefaultTextFormat(), FrameworkPropertyMetadataOptions.Inherits));
 
         /// <summary>
         /// Default debugger text format.

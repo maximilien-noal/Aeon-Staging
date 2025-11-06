@@ -1,0 +1,20 @@
+﻿<Application xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             x:Class="Aeon.Emulator.Launcher.App"
+             RequestedThemeVariant="Default">
+    <Application.Styles>
+        <FluentTheme />
+    </Application.Styles>
+    <Application.Resources>
+        <ResourceDictionary>
+            <ResourceDictionary.MergedDictionaries>
+                <ResourceInclude Source="EmulatorDisplayResources.axaml" />
+                <ResourceInclude Source="RoundButtonResources.axaml" />
+            </ResourceDictionary.MergedDictionaries>
+            <LinearGradientBrush x:Key="backgroundGradient" StartPoint="50%,0%" EndPoint="50%,100%">
+                <GradientStop Color="SteelBlue" Offset="0" />
+                <GradientStop Color="#FF1D4461" Offset="1" />
+            </LinearGradientBrush>
+        </ResourceDictionary>
+    </Application.Resources>
+</Application>

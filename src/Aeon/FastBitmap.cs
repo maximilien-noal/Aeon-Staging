@@ -1,7 +1,7 @@
 ﻿using System;
 using System.Runtime.InteropServices;
-using System.Windows.Interop;
-using System.Windows.Media;
+// using System.Windows.Interop; // Not directly available in Avalonia
+using Avalonia.Media;
 
 namespace Aeon.Emulator.Launcher
 {

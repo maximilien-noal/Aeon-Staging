@@ -1,8 +1,11 @@
 ﻿using System;
-using System.Windows;
-using System.Windows.Media;
-using System.Windows.Shapes;
-using System.Windows.Threading;
+using Avalonia;
+using Avalonia.Controls;
+using Avalonia.Interactivity;
+using Avalonia.Media;
+using Avalonia.Controls.Shapes;
+using Avalonia.Threading;
+using Avalonia.Markup.Xaml;
 
 namespace Aeon.Emulator.Launcher
 {
@@ -14,14 +17,22 @@ namespace Aeon.Emulator.Launcher
         /// <summary>
         /// The EmulatorDisplay dependency property definition.
         /// </summary>
-        public static readonly DependencyProperty EmulatorDisplayProperty = DependencyProperty.Register(nameof(EmulatorDisplay), typeof(EmulatorDisplay), typeof(PaletteDialog));
+        public static readonly StyledProperty EmulatorDisplayProperty = AvaloniaProperty.Register<nameof(EmulatorDisplay), typeof(EmulatorDisplay), typeof(PaletteDialog));
 
         private DispatcherTimer timer;
 
         /// <summary>
         /// Initializes a new instance of the <see cref="PaletteDialog"/> class.
         /// </summary>
-        public PaletteDialog() => this.InitializeComponent();
+        public PaletteDialog()
+        {
+            InitializeComponent();
+        }
+
+        private void InitializeComponent()
+        {
+            AvaloniaXamlLoader.Load(this);
+        }
 
         /// <summary>
         /// Gets or sets the current EmulatorDisplay control. This is a dependency property.

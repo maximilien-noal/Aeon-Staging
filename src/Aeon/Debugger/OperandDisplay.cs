@@ -1,8 +1,10 @@
 ﻿using System;
-using System.Windows;
-using System.Windows.Controls;
-using System.Windows.Data;
-using System.Windows.Documents;
+using Avalonia;
+using Avalonia.Controls;
+using Avalonia.Interactivity;
+using Avalonia.Controls;
+using Avalonia.Data;
+using Avalonia.Controls.Documents;
 using Aeon.Emulator;
 using Aeon.Emulator.DebugSupport;
 
@@ -16,23 +18,23 @@ namespace Aeon.Emulator.Launcher.Debugger
         /// <summary>
         /// The Operand dependency property definition.
         /// </summary>
-        public static readonly DependencyProperty OperandProperty = DependencyProperty.Register(nameof(Operand), typeof(CodeOperand), typeof(OperandDisplay));
+        public static readonly StyledProperty OperandProperty = AvaloniaProperty.Register<nameof(Operand), typeof(CodeOperand), typeof(OperandDisplay));
         /// <summary>
         /// The RegisterSource dependency property definition.
         /// </summary>
-        public static readonly DependencyProperty RegisterSourceProperty = DependencyProperty.Register(nameof(RegisterSource), typeof(IRegisterContainer), typeof(OperandDisplay));
+        public static readonly StyledProperty RegisterSourceProperty = AvaloniaProperty.Register<nameof(RegisterSource), typeof(IRegisterContainer), typeof(OperandDisplay));
         /// <summary>
         /// The DebuggerTextFormat dependency property definition.
         /// </summary>
-        public static readonly DependencyProperty DebuggerTextFormatProperty = AeonDebug.DebuggerTextFormatProperty.AddOwner(typeof(OperandDisplay));
+        public static readonly StyledProperty DebuggerTextFormatProperty = AeonDebug.DebuggerTextFormatProperty.AddOwner(typeof(OperandDisplay));
         /// <summary>
         /// The Instruction dependency property definition.
         /// </summary>
-        public static readonly DependencyProperty InstructionProperty = DependencyProperty.Register(nameof(Instruction), typeof(Instruction), typeof(OperandDisplay));
+        public static readonly StyledProperty InstructionProperty = AvaloniaProperty.Register<nameof(Instruction), typeof(Instruction), typeof(OperandDisplay));
         /// <summary>
         /// The IsHexFormat dependency property definition.
         /// </summary>
-        public static readonly DependencyProperty IsHexFormatProperty = AeonDebug.IsHexFormatProperty.AddOwner(typeof(OperandDisplay));
+        public static readonly StyledProperty IsHexFormatProperty = AeonDebug.IsHexFormatProperty.AddOwner(typeof(OperandDisplay));
 
         private const PrefixState SegmentPrefixes = PrefixState.CS | PrefixState.DS | PrefixState.ES | PrefixState.FS | PrefixState.GS | PrefixState.SS;
 
@@ -88,7 +90,7 @@ namespace Aeon.Emulator.Launcher.Debugger
         /// Invoked when a property value has changed.
         /// </summary>
         /// <param name="e">Information about the event.</param>
-        protected override void OnPropertyChanged(DependencyPropertyChangedEventArgs e)
+        protected override void OnPropertyChanged(StyledPropertyChangedEventArgs e)
         {
             base.OnPropertyChanged(e);
 

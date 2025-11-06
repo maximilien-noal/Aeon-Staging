@@ -1,32 +1,35 @@
 ﻿using System;
-using System.Windows;
-using System.Windows.Controls;
-using System.Windows.Input;
-using System.Windows.Media;
-using System.Windows.Media.Imaging;
-using System.Windows.Threading;
+using Avalonia;
+using Avalonia.Controls;
+using Avalonia.Interactivity;
+using Avalonia.Controls;
+using Avalonia.Input;
+using Avalonia.Media;
+using Avalonia.Media.Imaging;
+using Avalonia.Threading;
 using Aeon.Emulator;
 using Aeon.Emulator.Video;
 using Aeon.Emulator.Video.Rendering;
+using Avalonia.Markup.Xaml;
 
 namespace Aeon.Emulator.Launcher
 {
     public sealed partial class EmulatorDisplay : ContentControl
     {
-        private static readonly DependencyPropertyKey EmulatorStatePropertyKey = DependencyProperty.RegisterReadOnly(nameof(EmulatorState), typeof(EmulatorState), typeof(EmulatorDisplay), new PropertyMetadata(EmulatorState.NoProgram));
-        private static readonly DependencyPropertyKey IsMouseCursorCapturedPropertyKey = DependencyProperty.RegisterReadOnly(nameof(IsMouseCursorCaptured), typeof(bool), typeof(EmulatorDisplay), new PropertyMetadata(false));
-        private static readonly DependencyPropertyKey CurrentProcessPropertyKey = DependencyProperty.RegisterReadOnly(nameof(CurrentProcess), typeof(Dos.DosProcess), typeof(EmulatorDisplay), new PropertyMetadata(null));
+        private static readonly StyledPropertyKey EmulatorStatePropertyKey = StyledProperty.RegisterReadOnly(nameof(EmulatorState), typeof(EmulatorState), typeof(EmulatorDisplay), new PropertyMetadata(EmulatorState.NoProgram));
+        private static readonly StyledPropertyKey IsMouseCursorCapturedPropertyKey = StyledProperty.RegisterReadOnly(nameof(IsMouseCursorCaptured), typeof(bool), typeof(EmulatorDisplay), new PropertyMetadata(false));
+        private static readonly StyledPropertyKey CurrentProcessPropertyKey = StyledProperty.RegisterReadOnly(nameof(CurrentProcess), typeof(Dos.DosProcess), typeof(EmulatorDisplay), new PropertyMetadata(null));
 
-        public static readonly DependencyProperty EmulatorStateProperty = EmulatorStatePropertyKey.DependencyProperty;
-        public static readonly DependencyProperty CurrentProcessProperty = CurrentProcessPropertyKey.DependencyProperty;
-        public static readonly DependencyProperty MouseInputModeProperty = DependencyProperty.Register(nameof(MouseInputMode), typeof(MouseInputMode), typeof(EmulatorDisplay), new PropertyMetadata(MouseInputMode.Relative));
-        public static readonly DependencyProperty IsMouseCursorCapturedProperty = IsMouseCursorCapturedPropertyKey.DependencyProperty;
-        public static readonly DependencyProperty EmulationSpeedProperty = DependencyProperty.Register(nameof(EmulationSpeed), typeof(int), typeof(EmulatorDisplay), new PropertyMetadata(20_000_000, OnEmulationSpeedChanged), EmulationSpeedChangedValidate);
-        public static readonly DependencyProperty IsAspectRatioLockedProperty = DependencyProperty.Register(nameof(IsAspectRatioLocked), typeof(bool), typeof(EmulatorDisplay), new PropertyMetadata(true, OnIsAspectRatioLockedChanged));
-        public static readonly DependencyProperty ScalingAlgorithmProperty = DependencyProperty.Register(nameof(ScalingAlgorithm), typeof(ScalingAlgorithm), typeof(EmulatorDisplay), new PropertyMetadata(ScalingAlgorithm.None, OnScalingAlgorithmChanged));
-        public static readonly RoutedEvent EmulatorStateChangedEvent = EventManager.RegisterRoutedEvent(nameof(EmulatorStateChanged), RoutingStrategy.Bubble, typeof(RoutedEventHandler), typeof(EmulatorDisplay));
-        public static readonly RoutedEvent EmulationErrorEvent = EventManager.RegisterRoutedEvent(nameof(EmulationError), RoutingStrategy.Bubble, typeof(EmulationErrorRoutedEventHandler), typeof(EmulatorDisplay));
-        public static readonly RoutedEvent CurrentProcessChangedEvent = EventManager.RegisterRoutedEvent(nameof(CurrentProcessChanged), RoutingStrategy.Bubble, typeof(RoutedEventHandler), typeof(EmulatorDisplay));
+        public static readonly StyledProperty EmulatorStateProperty = EmulatorStatePropertyKey.StyledProperty;
+        public static readonly StyledProperty CurrentProcessProperty = CurrentProcessPropertyKey.StyledProperty;
+        public static readonly StyledProperty MouseInputModeProperty = AvaloniaProperty.Register<nameof(MouseInputMode), typeof(MouseInputMode), typeof(EmulatorDisplay), new PropertyMetadata(MouseInputMode.Relative));
+        public static readonly StyledProperty IsMouseCursorCapturedProperty = IsMouseCursorCapturedPropertyKey.StyledProperty;
+        public static readonly StyledProperty EmulationSpeedProperty = AvaloniaProperty.Register<nameof(EmulationSpeed), typeof(int), typeof(EmulatorDisplay), new PropertyMetadata(20_000_000, OnEmulationSpeedChanged), EmulationSpeedChangedValidate);
+        public static readonly StyledProperty IsAspectRatioLockedProperty = AvaloniaProperty.Register<nameof(IsAspectRatioLocked), typeof(bool), typeof(EmulatorDisplay), new PropertyMetadata(true, OnIsAspectRatioLockedChanged));
+        public static readonly StyledProperty ScalingAlgorithmProperty = AvaloniaProperty.Register<nameof(ScalingAlgorithm), typeof(ScalingAlgorithm), typeof(EmulatorDisplay), new PropertyMetadata(ScalingAlgorithm.None, OnScalingAlgorithmChanged));
+        public static readonly RoutedEvent EmulatorStateChangedEvent = RoutedEvent.Register(nameof(EmulatorStateChanged), RoutingStrategy.Bubble, typeof(RoutedEventHandler), typeof(EmulatorDisplay));
+        public static readonly RoutedEvent EmulationErrorEvent = RoutedEvent.Register(nameof(EmulationError), RoutingStrategy.Bubble, typeof(EmulationErrorRoutedEventHandler), typeof(EmulatorDisplay));
+        public static readonly RoutedEvent CurrentProcessChangedEvent = RoutedEvent.Register(nameof(CurrentProcessChanged), RoutingStrategy.Bubble, typeof(RoutedEventHandler), typeof(EmulatorDisplay));
         public static readonly RoutedCommand FullScreenCommand = new();
 
         private EmulatorHost emulator;
@@ -51,7 +54,7 @@ namespace Aeon.Emulator.Launcher
             updateHandler = new EventHandler(this.GraphicalUpdate);
             this.resumeCommand = new SimpleCommand(() => this.EmulatorState == EmulatorState.Paused, () => { this.EmulatorHost.Run(); });
             this.pauseCommand = new SimpleCommand(() => this.EmulatorState == EmulatorState.Running, () => { this.EmulatorHost.Pause(); });
-            this.InitializeComponent();
+            AvaloniaXamlLoader.Load(this);
         }
 
         /// <summary>
@@ -345,7 +348,7 @@ namespace Aeon.Emulator.Launcher
             }
         }
 
-        private static void OnEmulationSpeedChanged(DependencyObject d, DependencyPropertyChangedEventArgs e)
+        private static void OnEmulationSpeedChanged(DependencyObject d, StyledPropertyChangedEventArgs e)
         {
             var obj = (EmulatorDisplay)d;
             if (obj.emulator != null)
@@ -356,13 +359,13 @@ namespace Aeon.Emulator.Launcher
             int n = (int)value;
             return n >= EmulatorHost.MinimumSpeed;
         }
-        private static void OnIsAspectRatioLockedChanged(DependencyObject d, DependencyPropertyChangedEventArgs e)
+        private static void OnIsAspectRatioLockedChanged(DependencyObject d, StyledPropertyChangedEventArgs e)
         {
             var obj = (EmulatorDisplay)d;
             bool value = (bool)e.NewValue;
             obj.outerViewbox.Stretch = value ? Stretch.Uniform : Stretch.Fill;
         }
-        private static void OnScalingAlgorithmChanged(DependencyObject d, DependencyPropertyChangedEventArgs e)
+        private static void OnScalingAlgorithmChanged(DependencyObject d, StyledPropertyChangedEventArgs e)
         {
             var obj = (EmulatorDisplay)d;
             obj.InitializePresenter();

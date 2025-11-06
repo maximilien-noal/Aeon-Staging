@@ -1,4 +1,7 @@
-﻿using System.Windows;
+﻿using Avalonia;
+using Avalonia.Controls;
+using Avalonia.Interactivity;
+using Avalonia.Markup.Xaml;
 using Aeon.Emulator.DebugSupport;
 using Aeon.Emulator.Launcher.Debugger;
 
@@ -6,45 +9,67 @@ namespace Aeon.Emulator.Launcher
 {
     public sealed partial class DebuggerWindow : Window
     {
-        public static readonly DependencyProperty EmulatorHostProperty = DependencyProperty.Register("EmulatorHost", typeof(EmulatorHost), typeof(DebuggerWindow));
-        public static readonly DependencyProperty IsHexFormatProperty = AeonDebug.IsHexFormatProperty.AddOwner(typeof(DebuggerWindow));
-        public static readonly DependencyProperty InstructionLogProperty = DependencyProperty.Register("InstructionLog", typeof(InstructionLog), typeof(DebuggerWindow));
+        public static readonly StyledProperty<EmulatorHost?> EmulatorHostProperty = 
+            AvaloniaProperty.Register<DebuggerWindow, EmulatorHost?>(nameof(EmulatorHost));
+        public static readonly StyledProperty<bool> IsHexFormatProperty = 
+            AeonDebug.IsHexFormatProperty.AddOwner<DebuggerWindow>();
+        public static readonly StyledProperty<InstructionLog?> InstructionLogProperty = 
+            AvaloniaProperty.Register<DebuggerWindow, InstructionLog?>(nameof(InstructionLog));
 
-        private Disassembler disassembler;
+        private Disassembler? disassembler;
 
-        public DebuggerWindow() => this.InitializeComponent();
-
-        public EmulatorHost EmulatorHost
+        public DebuggerWindow()
         {
-            get => (EmulatorHost)this.GetValue(EmulatorHostProperty);
-            set => this.SetValue(EmulatorHostProperty, value);
+            InitializeComponent();
         }
+
+        private void InitializeComponent()
+        {
+            AvaloniaXamlLoader.Load(this);
+            disassemblyView = this.FindControl<DisassemblyView>("disassemblyView")!;
+            registerView = this.FindControl<RegisterViewer>("registerView")!;
+            memoryView = this.FindControl<MemoryView>("memoryView")!;
+        }
+
+        private DisassemblyView disassemblyView = null!;
+        private RegisterViewer registerView = null!;
+        private MemoryView memoryView = null!;
+
+        public EmulatorHost? EmulatorHost
+        {
+            get => GetValue(EmulatorHostProperty);
+            set => SetValue(EmulatorHostProperty, value);
+        }
+        
         public bool IsHexFormat
         {
-            get => (bool)this.GetValue(IsHexFormatProperty);
-            set => this.SetValue(IsHexFormatProperty, value);
+            get => GetValue(IsHexFormatProperty);
+            set => SetValue(IsHexFormatProperty, value);
         }
-        public InstructionLog InstructionLog
+        
+        public InstructionLog? InstructionLog
         {
-            get => (InstructionLog)this.GetValue(InstructionLogProperty);
-            set => this.SetValue(InstructionLogProperty, value);
+            get => GetValue(InstructionLogProperty);
+            set => SetValue(InstructionLogProperty, value);
         }
 
         public void UpdateDebugger()
         {
-            var vm = this.EmulatorHost.VirtualMachine;
+            if (EmulatorHost == null) return;
+            
+            var vm = EmulatorHost.VirtualMachine;
 
-            this.disassembler = new Disassembler(this.EmulatorHost.VirtualMachine)
+            disassembler = new Disassembler(EmulatorHost.VirtualMachine)
             {
                 StartSegment = vm.Processor.CS,
                 StartOffset = vm.Processor.EIP,
                 MaximumInstructions = 1000
             };
 
-            var disasm = this.disassembler.Instructions;
-            this.disassemblyView.InstructionsSource = disasm;
-            this.registerView.RegisterSource = vm.Processor;
-            this.memoryView.MemorySource = vm.PhysicalMemory;
+            var disasm = disassembler.Instructions;
+            disassemblyView.InstructionsSource = disasm;
+            registerView.RegisterSource = vm.Processor;
+            memoryView.MemorySource = vm.PhysicalMemory;
         }
     }
 }
