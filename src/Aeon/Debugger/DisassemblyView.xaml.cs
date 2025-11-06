@@ -19,7 +19,7 @@ namespace Aeon.Emulator.Launcher.Debugger
         /// <summary>
         /// The AddressClick routed event definition.
         /// </summary>
-        public static readonly RoutedEvent AddressClickEvent = RoutedEvent.Register(nameof(AddressClick), Avalonia.Interactivity.RoutingStrategies.Bubble, typeof(EventHandler<AddressClickEventArgs>), typeof(DisassemblyView));
+        public static readonly RoutedEvent AddressClickEvent = RoutedEvent.Register<DisassemblyView>(nameof(AddressClick), Avalonia.Interactivity.RoutingStrategies.Bubble, typeof(EventHandler<AddressClickEventArgs>));
         /// <summary>
         /// The InstructionsSource dependency property definition.
         /// </summary>

@@ -8,7 +8,7 @@ namespace Aeon.Emulator.Launcher.Debugger
     /// <summary>
     /// Contains attached dependency properties for Aeon debugging.
     /// </summary>
-    public static class AeonDebug
+    public class AeonDebug
     {
         /// <summary>
         /// The AeonDebug.IsHexFormat dependency property definition.
