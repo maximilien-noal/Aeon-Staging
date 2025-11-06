@@ -7,9 +7,12 @@
         <debug:AddressValueConverter x:Key="addressConverter" />
     </Window.Resources>
     <DockPanel>
-        <ToolBar DockPanel.Dock="Top">
-            <CheckBox Name="hexCheckBox" Content="Hex" IsChecked="{Binding IsHexFormat, ElementName=root, Mode=TwoWay}" />
-        </ToolBar>
+        <!-- ToolBar not available in Avalonia - using Border + StackPanel -->
+        <Border DockPanel.Dock="Top" Background="WhiteSmoke" BorderThickness="0,0,0,1" BorderBrush="Gray">
+            <StackPanel Orientation="Horizontal" Margin="4,2">
+                <CheckBox Name="hexCheckBox" Content="Hex" IsChecked="{Binding IsHexFormat, ElementName=root, Mode=TwoWay}" />
+            </StackPanel>
+        </Border>
         <Grid>
             <Grid.RowDefinitions>
                 <RowDefinition />

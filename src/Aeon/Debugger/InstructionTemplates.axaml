@@ -6,22 +6,24 @@
         <Border Name="border" Width="12" Height="12" BorderThickness="1" BorderBrush="Black" Background="Transparent" Margin="2" CornerRadius="2">
             <Grid>
                 <Rectangle Name="horizontalLine" StrokeThickness="0" Fill="Black" Width="8" Height="2" VerticalAlignment="Center" />
-                <Rectangle Name="verticalLine" StrokeThickness="0" Fill="Black" Width="2" Height="8" HorizontalAlignment="Center" Visibility="Collapsed" />
+                <!-- Vertical line shown when not checked - using binding instead of trigger -->
+                <Rectangle Name="verticalLine" StrokeThickness="0" Fill="Black" Width="2" Height="8" HorizontalAlignment="Center" 
+                           IsVisible="{Binding !#expandCheckBox.IsChecked}" />
             </Grid>
         </Border>
-        <!-- ControlTemplate.Triggers need to be handled differently in Avalonia
-<ControlTemplate.Triggers>
-            <Trigger Property="IsChecked" Value="False">
-                <Setter TargetName="verticalLine" Property="Visibility" Value="Visible" />
-            </Trigger>
-            <Trigger Property="IsMouseOver" Value="True">
-                <Setter TargetName="horizontalLine" Property="Fill" Value="Blue" />
-                <Setter TargetName="verticalLine" Property="Fill" Value="Blue" />
-                <Setter TargetName="border" Property="Background" Value="Gainsboro" />
-            </Trigger>
-        </ControlTemplate.Triggers>
--->
+        <!-- ControlTemplate.Triggers not supported in Avalonia - using Styles with pseudo-classes -->
     </ControlTemplate>
+    
+    <!-- Styles for hover effects on miniExpander -->
+    <Style Selector="CheckBox:pointerover /template/ Rectangle#horizontalLine">
+        <Setter Property="Fill" Value="Blue" />
+    </Style>
+    <Style Selector="CheckBox:pointerover /template/ Rectangle#verticalLine">
+        <Setter Property="Fill" Value="Blue" />
+    </Style>
+    <Style Selector="CheckBox:pointerover /template/ Border#border">
+        <Setter Property="Background" Value="Gainsboro" />
+    </Style>
 
     <DataTemplate x:Key="instructionTemplate" DataType="{x:Type dbg:Instruction}">
         <StackPanel Orientation="Horizontal">
@@ -30,20 +32,12 @@
             <TextBlock Text="{Binding Opcode.Name}" />
             <TextBlock Text=" " />
             <local:OperandDisplay Operand="{Binding Operands.Operand1}" Instruction="{Binding}" />
-            <TextBlock Name="comma1" Text=", " Visibility="Collapsed" />
+            <!-- DataTriggers not supported in Avalonia - commas shown conditionally in OperandDisplay control -->
+            <TextBlock Text=", " IsVisible="{Binding Operands.Operand2, Converter={x:Static ObjectConverters.IsNotNull}}" />
             <local:OperandDisplay Operand="{Binding Operands.Operand2}" Instruction="{Binding}" />
-            <TextBlock Name="comma2" Text=", " Visibility="Collapsed" />
+            <TextBlock Text=", " IsVisible="{Binding Operands.Operand3, Converter={x:Static ObjectConverters.IsNotNull}}" />
             <local:OperandDisplay Operand="{Binding Operands.Operand3}" Instruction="{Binding}" />
         </StackPanel>
-        <DataTemplate.Triggers>
-            <DataTrigger Binding="{Binding Opcode.Operands.Count}" Value="2">
-                <Setter TargetName="comma1" Property="Visibility" Value="Visible" />
-            </DataTrigger>
-            <DataTrigger Binding="{Binding Opcode.Operands.Count}" Value="3">
-                <Setter TargetName="comma1" Property="Visibility" Value="Visible" />
-                <Setter TargetName="comma2" Property="Visibility" Value="Visible" />
-            </DataTrigger>
-        </DataTemplate.Triggers>
     </DataTemplate>
 
     <DataTemplate x:Key="loggedInstructionTemplate" DataType="{x:Type dbg:LoggedInstruction}">
@@ -63,25 +57,16 @@
                 <TextBlock Text="{Binding Opcode.Name}" />
                 <TextBlock Text=" " />
                 <local:OperandDisplay Operand="{Binding Operands.Operand1}" Instruction="{Binding}" />
-                <TextBlock Name="comma1" Text=", " Visibility="Collapsed" />
+                <!-- DataTriggers not supported in Avalonia - commas shown conditionally -->
+                <TextBlock Text=", " IsVisible="{Binding Operands.Operand2, Converter={x:Static ObjectConverters.IsNotNull}}" />
                 <local:OperandDisplay Operand="{Binding Operands.Operand2}" Instruction="{Binding}" />
-                <TextBlock Name="comma2" Text=", " Visibility="Collapsed" />
+                <TextBlock Text=", " IsVisible="{Binding Operands.Operand3, Converter={x:Static ObjectConverters.IsNotNull}}" />
                 <local:OperandDisplay Operand="{Binding Operands.Operand3}" Instruction="{Binding}" />
             </StackPanel>
-            <local:RegisterViewer x:Name="registerViewer" Grid.Column="1" Grid.Row="1" RegisterSource="{Binding}" />
+            <!-- Trigger for checkbox not supported - binding IsVisible to IsChecked -->
+            <local:RegisterViewer x:Name="registerViewer" Grid.Column="1" Grid.Row="1" RegisterSource="{Binding}" 
+                                  IsVisible="{Binding #expandCheckBox.IsChecked}" />
         </Grid>
-        <DataTemplate.Triggers>
-            <DataTrigger Binding="{Binding Opcode.Operands.Count}" Value="2">
-                <Setter TargetName="comma1" Property="Visibility" Value="Visible" />
-            </DataTrigger>
-            <DataTrigger Binding="{Binding Opcode.Operands.Count}" Value="3">
-                <Setter TargetName="comma1" Property="Visibility" Value="Visible" />
-                <Setter TargetName="comma2" Property="Visibility" Value="Visible" />
-            </DataTrigger>
-            <Trigger SourceName="expandCheckBox" Property="IsChecked" Value="False">
-                <Setter TargetName="registerViewer" Property="Visibility" Value="Collapsed" />
-            </Trigger>
-        </DataTemplate.Triggers>
     </DataTemplate>
     
     <local:InstructionTemplateSelector x:Key="instructionTemplateSelector" />

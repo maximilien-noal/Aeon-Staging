@@ -5,29 +5,17 @@
     xmlns:local="clr-namespace:Aeon.Emulator.Launcher"
     xmlns:sys="clr-namespace:System;assembly=System.Runtime"
     Title="Aeon" Width="800" Height="600" MinWidth="360" MinHeight="270" Icon="Aeon.ico" DataContext="{Binding ElementName=emulatorDisplay}" Background="{StaticResource backgroundGradient}">
-    <Window.CommandBindings>
-        <CommandBinding Command="Close" CanExecute="Close_CanExecute" Executed="Close_Executed" />
-        <CommandBinding Command="Copy" CanExecute="Copy_CanExecute" Executed="Copy_Executed" />
-        <CommandBinding Command="{x:Static local:EmulatorDisplay.FullScreenCommand}" Executed="FullScreen_Executed" />
-    </Window.CommandBindings>
+    <!-- CommandBindings not supported in Avalonia - using Click handlers and KeyBindings instead -->
+    <Window.KeyBindings>
+        <KeyBinding Gesture="Ctrl+W" Command="{Binding CloseCommand}" />
+        <KeyBinding Gesture="Ctrl+C" Command="{Binding CopyCommand}" />
+        <KeyBinding Gesture="F11" Command="{x:Static local:EmulatorDisplay.FullScreenCommand}" />
+    </Window.KeyBindings>
     <Window.Resources>
-        <Style x:Key="disableOnRunStyle">
-            <!-- Triggers need to be converted to Styles with Selectors in Avalonia
-<Style.Triggers>
-                <DataTrigger Binding="{Binding EmulatorState, ElementName=emulatorDisplay}" Value="Running">
-                    <Setter Property="Control.IsEnabled" Value="False" />
-                </DataTrigger>
-            </Style.Triggers>
--->
-        </Style>
         <local:MouseModeConverter x:Key="mouseModeConverter" />
         <local:SpeedConverter x:Key="speedConverter" />
-        <BoolToVisibilityConverter x:Key="booleanConverter" />
-        <ObjectDataProvider x:Key="scalerValues" MethodName="GetValues" ObjectType="{x:Type sys:Enum}">
-            <ObjectDataProvider.MethodParameters>
-                <x:Type TypeName="rendering:ScalingAlgorithm" />
-            </ObjectDataProvider.MethodParameters>
-        </ObjectDataProvider>
+        <!-- BoolToVisibilityConverter not needed in Avalonia - use IsVisible property directly -->
+        <!-- ObjectDataProvider not supported - moved to code-behind -->
     </Window.Resources>
     <DockPanel>
         <StackPanel Name="menuContainer" DockPanel.Dock="Top">
@@ -39,10 +27,10 @@
                     <MenuItem Header="_Pause" Command="{Binding PauseCommand}" />
                     <MenuItem Header="R_esume" Command="{Binding ResumeCommand}" />
                     <Separator />
-                    <MenuItem Header="E_xit" Command="Close" />
+                    <MenuItem Header="E_xit" Click="Close_Click" />
                 </MenuItem>
                 <MenuItem Header="_Edit">
-                    <MenuItem Header="_Copy Screen" Command="Copy" />
+                    <MenuItem Header="_Copy Screen" Click="Copy_Click" />
                 </MenuItem>
                 <MenuItem Header="_View">
                     <MenuItem Name="viewToolBarMenuItem" Header="_Toolbar" IsCheckable="True" IsChecked="True" />
@@ -59,106 +47,72 @@
                     <MenuItem Header="Open Instruction Log..." Click="OpenInstructionLog_Click" />
                 </MenuItem>
             </Menu>
-            <ToolBarTray Name="toolBar" IsLocked="True" Visibility="{Binding IsChecked, ElementName=viewToolBarMenuItem, Converter={StaticResource booleanConverter}}">
-                <ToolBarTray.Background>
+            <!-- Toolbar: ToolBarTray/ToolBar not available in Avalonia - using Border + StackPanel -->
+            <Border Name="toolBar" IsVisible="{Binding IsChecked, ElementName=viewToolBarMenuItem}"
+                    BorderThickness="0,0,0,1" BorderBrush="Gray">
+                <Border.Background>
                     <LinearGradientBrush StartPoint="50.0%,0.0%" EndPoint="50.0%,100.0%">
                         <GradientStop Color="WhiteSmoke" Offset="0.0" />
                         <GradientStop Color="DimGray" Offset="1.0" />
                     </LinearGradientBrush>
-                </ToolBarTray.Background>
-                <ToolBarTray.Effect>
-                    <!-- DropShadowEffect: use DropShadowDirectionEffect in Avalonia -->
-                </ToolBarTray.Effect>
-                <ToolBar Background="Transparent">
-                    <ToolBar.Resources>
-                        <Style x:Key="commandStyle">
-                            <Setter Property="Shape.Stroke" Value="DarkGreen" />
-                            <Setter Property="Shape.Fill">
-                                <Setter.Value>
-                                    <LinearGradientBrush StartPoint="0.0%,0.0%" EndPoint="100.0%,100.0%">
-                                        <GradientStop Color="LightGreen" Offset="0.0" />
-                                        <GradientStop Color="DarkGreen" Offset="1.0" />
-                                    </LinearGradientBrush>
-                                </Setter.Value>
+                </Border.Background>
+                <StackPanel Orientation="Horizontal" Margin="4,2">
+                    <StackPanel.Resources>
+                        <Style x:Key="commandStyle" Selector="Shape">
+                            <Setter Property="Stroke" Value="DarkGreen" />
+                            <Setter Property="Fill">
+                                <LinearGradientBrush StartPoint="0.0%,0.0%" EndPoint="100.0%,100.0%">
+                                    <GradientStop Color="LightGreen" Offset="0.0" />
+                                    <GradientStop Color="DarkGreen" Offset="1.0" />
+                                </LinearGradientBrush>
                             </Setter>
-                            <!-- TODO: Convert WPF Style.Triggers to Avalonia Styles with Selectors -->
-                            <!-- WPF triggers for IsEnabled states need to be rewritten as separate Styles -->
                         </Style>
-                    </ToolBar.Resources>
-                    <ToolBar.Template>
-                        <ControlTemplate>
-                            <ToolBarPanel IsItemsHost="True" Name="PART_ToolBarPanel" Margin="0,1,2,2" SnapsToDevicePixels="{TemplateBinding UIElement.SnapsToDevicePixels}" />
-                        </ControlTemplate>
-                    </ToolBar.Template>
-                    <Button ToolTip="Run Program..." Click="QuickLaunch_Click">
+                    </StackPanel.Resources>
+                    <Button ToolTip.Tip="Run Program..." Click="QuickLaunch_Click" Padding="2">
                         <Image Width="16" Height="16" Source="Resources/openfolderHS.png" />
                     </Button>
-                    <Separator />
-                    <Button Command="{Binding ResumeCommand}" ToolTip="Resume">
+                    <Separator Width="1" Margin="4,2" />
+                    <Button Command="{Binding ResumeCommand}" ToolTip.Tip="Resume" Padding="2">
                         <Canvas Width="16" Height="16">
-                            <Polygon Points="0,0 0,9 5,4 0,0" Style="{StaticResource commandStyle}">
+                            <Polygon Points="0,0 0,9 5,4 0,0" Classes="commandStyle">
                                 <Polygon.RenderTransform>
                                     <TranslateTransform X="6" Y="4" />
                                 </Polygon.RenderTransform>
                             </Polygon>
                         </Canvas>
                     </Button>
-                    <Button Command="{Binding PauseCommand}" ToolTip="Pause" ToolBar.OverflowMode="Never">
+                    <Button Command="{Binding PauseCommand}" ToolTip.Tip="Pause" Padding="2">
                         <Canvas Width="16" Height="16">
-                            <Rectangle Width="4" Height="10" Style="{StaticResource commandStyle}">
-                            </Rectangle>
-                            <Rectangle Width="4" Height="10" Canvas.Left="5" Style="{StaticResource commandStyle}">
-                            </Rectangle>
+                            <Rectangle Width="4" Height="10" Classes="commandStyle" />
+                            <Rectangle Width="4" Height="10" Canvas.Left="5" Classes="commandStyle" />
                             <Canvas.RenderTransform>
                                 <TranslateTransform X="3" Y="3" />
                             </Canvas.RenderTransform>
                         </Canvas>
                     </Button>
-                    <Separator />
-                    <ToggleButton Name="mouseIntegrationButton" ToolTip="Toggle Mouse Integration" ToolBar.OverflowMode="Never"
+                    <Separator Width="1" Margin="4,2" />
+                    <ToggleButton Name="mouseIntegrationButton" ToolTip.Tip="Toggle Mouse Integration" Padding="2"
                               IsChecked="{Binding MouseInputMode, Converter={StaticResource mouseModeConverter}}">
                         <Image Width="16" Height="16" Source="Resources/MouseIntegration.png" />
                     </ToggleButton>
-                    <Separator />
-                    <Label Content="Speed:" />
-                    <Button Template="{StaticResource roundButtonTemplate}" ToolTip="Slow Down Emulation"
+                    <Separator Width="1" Margin="4,2" />
+                    <TextBlock Text="Speed:" VerticalAlignment="Center" Margin="4,0" />
+                    <Button Template="{StaticResource roundButtonTemplate}" ToolTip.Tip="Slow Down Emulation"
                         Width="18" Height="18" Padding="0" Click="SlowerButton_Click">
-                        <Button.Style>
-                            <Style TargetType="Button">
-                                <!-- Triggers need to be converted to Styles with Selectors in Avalonia
-<Style.Triggers>
-                                    <DataTrigger Binding="{Binding EmulationSpeed}" Value="2">
-                                        <Setter Property="IsEnabled" Value="False" />
-                                    </DataTrigger>
-                                </Style.Triggers>
--->
-                            </Style>
-                        </Button.Style>
-                        <Label FontFamily="Courier New" FontWeight="Bold" Content="-" Padding="0" />
+                        <TextBlock FontFamily="Courier New" FontWeight="Bold" Text="-" />
                     </Button>
                     <TextBlock Width="50" Text="{Binding EmulationSpeed, Converter={StaticResource speedConverter}}"
-                           TextAlignment="Center" VerticalAlignment="Center" />
-                    <Button Template="{StaticResource roundButtonTemplate}" ToolTip="Speed Up Emulation"
-                        Width="18" Height="18" Padding="0" Click="FasterButton_Click" >
-                        <Button.Style>
-                            <Style TargetType="Button">
-                                <!-- Triggers need to be converted to Styles with Selectors in Avalonia
-<Style.Triggers>
-                                    <DataTrigger Binding="{Binding EmulationSpeed}" Value="20">
-                                        <Setter Property="IsEnabled" Value="False" />
-                                    </DataTrigger>
-                                </Style.Triggers>
--->
-                            </Style>
-                        </Button.Style>
-                        <Label FontFamily="Courier New" FontWeight="Bold" Content="+" Padding="0" />
+                           TextAlignment="Center" VerticalAlignment="Center" Margin="2,0" />
+                    <Button Template="{StaticResource roundButtonTemplate}" ToolTip.Tip="Speed Up Emulation"
+                        Width="18" Height="18" Padding="0" Click="FasterButton_Click">
+                        <TextBlock FontFamily="Courier New" FontWeight="Bold" Text="+" />
                     </Button>
-                    <Separator />
-                    <Label Content="Scaler:" />
-                    <ComboBox ItemsSource="{Binding Source={StaticResource scalerValues}}" SelectedValue="{Binding ScalingAlgorithm}"
-                          Background="LightGray" />
-                </ToolBar>
-            </ToolBarTray>
+                    <Separator Width="1" Margin="4,2" />
+                    <TextBlock Text="Scaler:" VerticalAlignment="Center" Margin="4,0" />
+                    <ComboBox Name="scalerComboBox" SelectedValue="{Binding ScalingAlgorithm}"
+                          Background="LightGray" MinWidth="100" />
+                </StackPanel>
+            </Border>
         </StackPanel>
         <local:EmulatorDisplay x:Name="emulatorDisplay" EmulatorStateChanged="EmulatorDisplay_EmulatorStateChanged"
                              EmulationError="EmulatorDisplay_EmulationError" CurrentProcessChanged="EmulatorDisplay_CurrentProcessChanged"

@@ -28,6 +28,18 @@ namespace Aeon.Emulator.Launcher
         {
             // WindowInteropHelper initialization removed
             AvaloniaXamlLoader.Load(this);
+            
+            // Populate scaler ComboBox - ObjectDataProvider not available in Avalonia
+            InitializeScalerValues();
+        }
+        
+        private void InitializeScalerValues()
+        {
+            var scalerComboBox = this.FindControl<ComboBox>("scalerComboBox");
+            if (scalerComboBox != null)
+            {
+                scalerComboBox.ItemsSource = Enum.GetValues(typeof(Aeon.Emulator.Video.Rendering.ScalingAlgorithm));
+            }
         }
 
         // IWin32Window.Handle property removed
@@ -202,6 +214,9 @@ namespace Aeon.Emulator.Launcher
         }
         // Command handler Close_CanExecute - needs Avalonia command implementation
         private void Close_Executed(object? sender, RoutedEventArgs e) => this.Close();
+        private void Close_Click(object? sender, RoutedEventArgs e) => Close_Executed(sender, e);
+        
+        private void Copy_Click(object? sender, RoutedEventArgs e) => Copy_Executed(sender, e);
         /* Avalonia doesn't use CanExecuteRoutedEventArgs
         private void MapDrives_CanExecute(object sender, CanExecuteRoutedEventArgs e)
         {
