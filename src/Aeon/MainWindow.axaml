@@ -33,9 +33,18 @@
                     <MenuItem Header="_Copy Screen" Click="Copy_Click" />
                 </MenuItem>
                 <MenuItem Header="_View">
-                    <MenuItem Name="viewToolBarMenuItem" Header="_Toolbar" IsCheckable="True" IsChecked="True" />
+                    <!-- In Avalonia, checkable MenuItems use ToggleType property -->
+                    <MenuItem Name="viewToolBarMenuItem" Header="_Toolbar">
+                        <MenuItem.Icon>
+                            <CheckBox IsChecked="True" IsHitTestVisible="False" />
+                        </MenuItem.Icon>
+                    </MenuItem>
                     <Separator />
-                    <MenuItem Header="_Lock Aspect Ratio" IsCheckable="True" IsChecked="{Binding IsAspectRatioLocked}" />
+                    <MenuItem Header="_Lock Aspect Ratio">
+                        <MenuItem.Icon>
+                            <CheckBox IsChecked="{Binding IsAspectRatioLocked}" IsHitTestVisible="False" />
+                        </MenuItem.Icon>
+                    </MenuItem>
                     <MenuItem Header="_Full Screen" Command="{x:Static local:EmulatorDisplay.FullScreenCommand}" />
                     <Separator />
                     <MenuItem Header="_Performance Window" Click="PerformanceWindow_Click" />

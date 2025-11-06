@@ -71,7 +71,7 @@ namespace Aeon.Emulator.Launcher
         /// <summary>
         /// Occurs when an error in emulation causes the emulator to halt.
         /// </summary>
-        public event EmulationErrorEventHandler<RoutedEventArgs> EmulationError
+        public event EventHandler<EmulationErrorRoutedEventArgs> EmulationError
         {
             add { this.AddHandler(EmulationErrorEvent, value); }
             remove { this.RemoveHandler(EmulationErrorEvent, value); }
@@ -477,5 +477,5 @@ namespace Aeon.Emulator.Launcher
         }
     }
 
-    public delegate void EmulationErrorEventHandler<RoutedEventArgs>(object sender, EmulationErrorRoutedEventArgs e);
+    // Delegate removed - using EventHandler<EmulationErrorRoutedEventArgs> directly
 }
