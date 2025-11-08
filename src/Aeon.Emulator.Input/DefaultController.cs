@@ -1,15 +1,22 @@
 ﻿using System;
 using System.Diagnostics;
+#if !WINDOWS
+using Silk.NET.SDL;
+#else
 using System.Linq;
+#endif
 
 namespace Aeon.Emulator.Input
 {
     internal sealed class DefaultController : IGameController
     {
+#if !WINDOWS
+        private static readonly Lazy<Sdl> sdlInstance = new Lazy<Sdl>(InitializeSdl);
+#endif
         private IGameController current;
         private readonly Stopwatch lastAttempt = new();
 
-        public string Name => this.current.Name;
+        public string Name => this.current?.Name ?? "No Controller";
 
         public bool TryGetState(out GameControllerState state)
         {
@@ -36,6 +43,59 @@ namespace Aeon.Emulator.Input
 
         public void Dispose() => this.current?.Dispose();
 
+#if !WINDOWS
+        private static Sdl InitializeSdl()
+        {
+            var sdl = Sdl.GetApi();
+            unsafe
+            {
+                // Initialize SDL joystick and game controller subsystems
+                if (sdl.Init(Sdl.InitJoystick | Sdl.InitGamecontroller) < 0)
+                {
+                    throw new InvalidOperationException($"Failed to initialize SDL: {System.Runtime.InteropServices.Marshal.PtrToStringUTF8((IntPtr)sdl.GetError())}");
+                }
+            }
+            return sdl;
+        }
+
+        private static IGameController GetDefaultController()
+        {
+            try
+            {
+                var sdl = sdlInstance.Value;
+
+                unsafe
+                {
+                    // Update SDL events to detect newly connected controllers
+                    sdl.GameControllerUpdate();
+
+                    // Find the first available game controller
+                    int numJoysticks = sdl.NumJoysticks();
+                    for (int i = 0; i < numJoysticks; i++)
+                    {
+                        var isGameController = sdl.IsGameController(i);
+                        if (isGameController == SdlBool.True)
+                        {
+                            var controller = sdl.GameControllerOpen(i);
+                            if (controller != null)
+                            {
+                                var joystick = sdl.GameControllerGetJoystick(controller);
+                                var instanceId = sdl.JoystickInstanceID(joystick);
+                                return new SdlGameController(sdl, controller, instanceId);
+                            }
+                        }
+                    }
+                }
+
+                return null;
+            }
+            catch
+            {
+                return null;
+            }
+        }
+#else
+        // Windows-only implementation using DirectInput/XInput
         private static IGameController GetDefaultController()
         {
             // first check for an XInput compatible controller
@@ -58,5 +118,6 @@ namespace Aeon.Emulator.Input
 
             return null;
         }
+#endif
     }
 }

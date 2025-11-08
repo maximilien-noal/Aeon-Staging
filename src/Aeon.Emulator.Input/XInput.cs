@@ -1,4 +1,5 @@
-﻿using System;
+﻿#if WINDOWS
+using System;
 using System.Diagnostics;
 
 namespace Aeon.Emulator.Input
@@ -124,3 +125,4 @@ namespace Aeon.Emulator.Input
         }
     }
 }
+#endif

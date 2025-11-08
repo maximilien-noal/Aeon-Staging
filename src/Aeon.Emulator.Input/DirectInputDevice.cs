@@ -1,4 +1,5 @@
-﻿using System;
+﻿#if WINDOWS
+using System;
 using System.Threading;
 
 namespace Aeon.Emulator.Input
@@ -134,3 +135,4 @@ namespace Aeon.Emulator.Input
         }
     }
 }
+#endif

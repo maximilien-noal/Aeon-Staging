@@ -1,4 +1,5 @@
-﻿using System;
+﻿#if WINDOWS
+using System;
 
 namespace Aeon.Emulator.Input
 {
@@ -22,3 +23,4 @@ namespace Aeon.Emulator.Input
         Y = 0x8000
     }
 }
+#endif

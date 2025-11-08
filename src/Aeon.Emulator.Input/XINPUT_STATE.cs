@@ -1,4 +1,5 @@
-﻿using System.Runtime.InteropServices;
+﻿#if WINDOWS
+using System.Runtime.InteropServices;
 
 namespace Aeon.Emulator.Input
 {
@@ -9,3 +10,4 @@ namespace Aeon.Emulator.Input
         public readonly XInputGamepadState Gamepad;
     }
 }
+#endif

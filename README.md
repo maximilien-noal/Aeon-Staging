@@ -1,7 +1,7 @@
 # What is Aeon?
 Aeon is an x86 with DOS emulator written in 100% C#. It was originally started in 2008 as an experiment
 in developing a high performance emulator fully in C#/.NET. So basically, it's like [DOSBox](https://www.dosbox.com/)
-but with worse compatibility and only for Windows.
+but with worse compatibility. Aeon now runs cross-platform on Windows, Linux, and macOS.
 
 # Who should use Aeon?
 C# developers might be interested in this, or fans of retro gaming that want to experiment with a different
@@ -11,8 +11,8 @@ emulator. If you're just looking to get an old game running, just use DOSBox :)
 See the [Releases](https://github.com/gregdivis/Aeon/releases) page for the latest builds, or
 get the source and build it yourself (see building instructions below).
 
-Aeon doesn't have an installer, but does require that the .NET 6 runtime is installed.
-You can download it from Microsoft at [https://dotnet.microsoft.com/download/dotnet/6.0](https://dotnet.microsoft.com/download/dotnet/6.0).
+Aeon doesn't have an installer, but does require that the .NET 9 runtime is installed.
+You can download it from Microsoft at [https://dotnet.microsoft.com/download/dotnet/9.0](https://dotnet.microsoft.com/download/dotnet/9.0).
 
 # Usage
 The easiest way to get started is just to use the "quick launch program" button in the toolbar, and
@@ -55,7 +55,8 @@ The following is currently emulated:
    - PS2 keyboard + interrupt handler
    - PS2 mouse + interrupt handler + mouse driver
    - Game port
-     - Limited, currently only using DirectInput/XInput
+     - Windows: DirectInput/XInput (native APIs)
+     - Linux/macOS: SDL2 gamepad support
  - DOS
    - Roughly equivalent to MS-DOS 5.0
    - Command/batch interpreter

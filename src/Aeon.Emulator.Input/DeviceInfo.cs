@@ -1,4 +1,5 @@
-﻿using System;
+﻿#if WINDOWS
+using System;
 
 namespace Aeon.Emulator.Input
 {
@@ -69,3 +70,4 @@ namespace Aeon.Emulator.Input
         public override bool Equals(object obj) => this.Equals(obj as DeviceInfo);
     }
 }
+#endif

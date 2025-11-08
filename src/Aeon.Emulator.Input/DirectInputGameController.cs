@@ -1,4 +1,5 @@
-﻿namespace Aeon.Emulator.Input
+﻿#if WINDOWS
+namespace Aeon.Emulator.Input
 {
     internal sealed class DirectInputGameController : IGameController
     {
@@ -45,3 +46,4 @@
         private static float ConvertPosition(int p) => (float)(p - short.MaxValue) / short.MaxValue;
     }
 }
+#endif

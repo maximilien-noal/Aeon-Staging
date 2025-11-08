@@ -1,4 +1,5 @@
-﻿using System;
+﻿#if WINDOWS
+using System;
 using System.Linq;
 using System.Collections.Generic;
 using System.Runtime.InteropServices;
@@ -156,3 +157,4 @@ namespace Aeon.Emulator.Input
         }
     }
 }
+#endif

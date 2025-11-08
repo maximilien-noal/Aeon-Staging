@@ -1,4 +1,5 @@
-﻿using System;
+﻿#if WINDOWS
+using System;
 using System.Runtime.InteropServices;
 
 namespace Aeon.Emulator.Input
@@ -26,3 +27,4 @@ namespace Aeon.Emulator.Input
         public static extern unsafe uint XInputGetState(uint dwUserIndex, XINPUT_STATE* pState);
     }
 }
+#endif
