@@ -1,7 +1,7 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
   <PropertyGroup>
     <OutputType>WinExe</OutputType>
-    <TargetFramework>net9.0</TargetFramework>
+    <TargetFrameworks>net9.0;net9.0-windows</TargetFrameworks>
     <RootNamespace>Aeon.Emulator.Launcher</RootNamespace>
     <LangVersion>latest</LangVersion>
     <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
@@ -26,8 +26,8 @@
     <ProjectReference Include="..\Aeon.DiskImages\Aeon.DiskImages.csproj" />
     <ProjectReference Include="..\Aeon.Emulator.Sound\Aeon.Emulator.Sound.csproj" />
   </ItemGroup>
-  <!-- Conditional Windows-specific dependencies -->
-  <ItemGroup Condition="$([MSBuild]::IsOSPlatform('Windows'))">
+  <!-- Windows-specific dependencies for net9.0-windows target -->
+  <ItemGroup Condition="'$(TargetFramework)' == 'net9.0-windows'">
     <ProjectReference Include="..\Aeon.Emulator.Input\Aeon.Emulator.Input.csproj" />
   </ItemGroup>
   <ItemGroup>
