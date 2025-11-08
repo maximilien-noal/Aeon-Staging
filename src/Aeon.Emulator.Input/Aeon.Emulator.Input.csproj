@@ -1,6 +1,6 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
   <PropertyGroup>
-    <TargetFramework>net9.0-windows</TargetFramework>
+    <TargetFramework>net9.0</TargetFramework>
     <LangVersion>latest</LangVersion>
     <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
     <Company>Aeon</Company>
@@ -9,6 +9,9 @@
     <Title>Aeon Joystick Emulation</Title>
     <Description>Emulates joysticks for Aeon</Description>
   </PropertyGroup>
+  <ItemGroup>
+    <PackageReference Include="Silk.NET.SDL" Version="2.22.0" />
+  </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\Aeon.Emulator\Aeon.Emulator.csproj" />
   </ItemGroup>

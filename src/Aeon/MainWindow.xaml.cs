@@ -146,9 +146,7 @@ namespace Aeon.Emulator.Launcher
                     )
                 )
             );
-#if WINDOWS
             vm.RegisterVirtualDevice(new Input.JoystickDevice());
-#endif
 
             emulatorDisplay.EmulationSpeed = config.EmulationSpeed ?? 100_000_000;
             emulatorDisplay.MouseInputMode = config.IsMouseAbsolute ? MouseInputMode.Absolute : MouseInputMode.Relative;

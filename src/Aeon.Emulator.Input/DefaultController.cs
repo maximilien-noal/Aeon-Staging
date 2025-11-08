@@ -1,15 +1,16 @@
 ﻿using System;
 using System.Diagnostics;
-using System.Linq;
+using Silk.NET.SDL;
 
 namespace Aeon.Emulator.Input
 {
     internal sealed class DefaultController : IGameController
     {
+        private static readonly Lazy<Sdl> sdlInstance = new Lazy<Sdl>(InitializeSdl);
         private IGameController current;
         private readonly Stopwatch lastAttempt = new();
 
-        public string Name => this.current.Name;
+        public string Name => this.current?.Name ?? "No Controller";
 
         public bool TryGetState(out GameControllerState state)
         {
@@ -36,27 +37,55 @@ namespace Aeon.Emulator.Input
 
         public void Dispose() => this.current?.Dispose();
 
+        private static Sdl InitializeSdl()
+        {
+            var sdl = Sdl.GetApi();
+            unsafe
+            {
+                // Initialize SDL joystick and game controller subsystems
+                if (sdl.Init(Sdl.InitJoystick | Sdl.InitGamecontroller) < 0)
+                {
+                    throw new InvalidOperationException($"Failed to initialize SDL: {System.Runtime.InteropServices.Marshal.PtrToStringUTF8((IntPtr)sdl.GetError())}");
+                }
+            }
+            return sdl;
+        }
+
         private static IGameController GetDefaultController()
         {
-            // first check for an XInput compatible controller
-            if (XInput.TryGetController(out var controller))
-                return controller;
-
-            IntPtr hwnd;
-
-            using (var p = Process.GetCurrentProcess())
+            try
             {
-                hwnd = p.MainWindowHandle;
+                var sdl = sdlInstance.Value;
+
+                unsafe
+                {
+                    // Update SDL events to detect newly connected controllers
+                    sdl.GameControllerUpdate();
+
+                    // Find the first available game controller
+                    int numJoysticks = sdl.NumJoysticks();
+                    for (int i = 0; i < numJoysticks; i++)
+                    {
+                        var isGameController = sdl.IsGameController(i);
+                        if (isGameController == SdlBool.True)
+                        {
+                            var controller = sdl.GameControllerOpen(i);
+                            if (controller != null)
+                            {
+                                var joystick = sdl.GameControllerGetJoystick(controller);
+                                var instanceId = sdl.JoystickInstanceID(joystick);
+                                return new SdlGameController(sdl, controller, instanceId);
+                            }
+                        }
+                    }
+                }
+
+                return null;
             }
-
-            var dinput = DirectInput.GetInstance(hwnd);
-
-            // if none found, try for the first DirectInput device
-            var d = dinput.GetDevices(DeviceClass.GameController, DeviceEnumFlags.All).FirstOrDefault();
-            if (d != null)
-                return new DirectInputGameController(dinput.CreateDevice(d.InstanceId));
-
-            return null;
+            catch
+            {
+                return null;
+            }
         }
     }
 }
