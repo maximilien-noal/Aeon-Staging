@@ -1,6 +1,9 @@
-﻿using System.Windows;
-using System.Windows.Controls;
-using System.Windows.Media;
+﻿using Avalonia;
+using Avalonia.Controls;
+using Avalonia.Interactivity;
+using Avalonia.Controls;
+using Avalonia.Media;
+using Avalonia.Media.Imaging;
 
 namespace Aeon.Emulator.Launcher
 {
@@ -12,15 +15,15 @@ namespace Aeon.Emulator.Launcher
         /// <summary>
         /// The Icon dependency property definition.
         /// </summary>
-        public static readonly DependencyProperty IconProperty = DependencyProperty.Register(nameof(Icon), typeof(ImageSource), typeof(TaskDialogItem));
+        public static readonly StyledProperty<Avalonia.Media.IImage?> IconProperty = AvaloniaProperty.Register<TaskDialogItem, Avalonia.Media.IImage>(nameof(Icon));
         /// <summary>
         /// The Text depdendency property definition.
         /// </summary>
-        public static readonly DependencyProperty TextProperty = DependencyProperty.Register(nameof(Text), typeof(string), typeof(TaskDialogItem));
+        public static readonly StyledProperty<string> TextProperty = AvaloniaProperty.Register<TaskDialogItem, string>(nameof(Text));
         /// <summary>
         /// The Description dependency property definition.
         /// </summary>
-        public static readonly DependencyProperty DescriptionProperty = DependencyProperty.Register(nameof(Description), typeof(string), typeof(TaskDialogItem));
+        public static readonly StyledProperty<string> DescriptionProperty = AvaloniaProperty.Register<TaskDialogItem, string>(nameof(Description));
 
         /// <summary>
         /// Initializes a new instance of the <see cref="TaskDialogItem"/> class.
@@ -45,9 +48,9 @@ namespace Aeon.Emulator.Launcher
         /// <summary>
         /// Gets or sets the icon to display. This is a dependency property.
         /// </summary>
-        public ImageSource Icon
+        public Avalonia.Media.IImage? Icon
         {
-            get => (ImageSource)this.GetValue(IconProperty);
+            get => (Avalonia.Media.IImage)this.GetValue(IconProperty);
             set => this.SetValue(IconProperty, value);
         }
         /// <summary>

@@ -1,5 +1,7 @@
 ﻿using System.Resources;
-using System.Windows;
+using Avalonia;
+using Avalonia.Controls;
+using Avalonia.Interactivity;
 
-[assembly: ThemeInfo(ResourceDictionaryLocation.None, ResourceDictionaryLocation.SourceAssembly)]
+// [assembly: ThemeInfo] - WPF-specific, not needed in Avalonia
 [assembly: NeutralResourcesLanguage("en-US")]

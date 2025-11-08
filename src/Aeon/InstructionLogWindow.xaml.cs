@@ -1,18 +1,32 @@
 ﻿using System;
 using System.Buffers.Binary;
 using System.Globalization;
-using System.Windows;
+using Avalonia;
+using Avalonia.Controls;
+using Avalonia.Controls.ApplicationLifetimes;
+using Avalonia.Interactivity;
 using Aeon.Emulator.Memory;
+using Avalonia.Markup.Xaml;
 
 namespace Aeon.Emulator.Launcher
 {
     internal sealed partial class InstructionLogWindow : Window
     {
-        public InstructionLogWindow() => this.InitializeComponent();
+        public InstructionLogWindow()
+        {
+            InitializeComponent();
+        }
+
+        private void InitializeComponent()
+        {
+            AvaloniaXamlLoader.Load(this);
+        }
 
         public static void ShowDialog(LogAccessor log)
         {
-            var window = new InstructionLogWindow { Owner = App.Current.MainWindow };
+            var mainWindow = (Application.Current?.ApplicationLifetime as Avalonia.Controls.ApplicationLifetimes.IClassicDesktopStyleApplicationLifetime)?.MainWindow as MainWindow;
+            var window = new InstructionLogWindow();
+            // window.Owner = mainWindow; // TODO: Set parent window in Avalonia
             window.historyList.ItemsSource = log;
             window.Show();
         }
@@ -35,7 +49,7 @@ namespace Aeon.Emulator.Launcher
             return true;
         }
 
-        private void HistoryList_SelectionChanged(object sender, System.Windows.Controls.SelectionChangedEventArgs e)
+        private void HistoryList_SelectionChanged(object sender, Avalonia.Controls.SelectionChangedEventArgs e)
         {
             if (this.historyList.SelectedItem is DebugLogItem item)
                 this.registerText.Text = item.RegisterText;

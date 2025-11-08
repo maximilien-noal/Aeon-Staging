@@ -1,5 +1,5 @@
 ﻿using System;
-using System.Windows.Threading;
+using Avalonia.Threading;
 using Aeon.Emulator;
 
 namespace Aeon.Emulator.Launcher
@@ -31,7 +31,7 @@ namespace Aeon.Emulator.Launcher
         /// <param name="e">Arguments to pass to the method.</param>
         public void BeginInvoke(Delegate method, object source, EventArgs e)
         {
-            this.dispatcher.BeginInvoke(method, source, e);
+            this.dispatcher.InvokeAsync(() => method.DynamicInvoke(e));
         }
     }
 }

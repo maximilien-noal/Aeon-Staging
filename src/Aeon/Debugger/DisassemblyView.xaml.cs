@@ -1,10 +1,13 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Windows;
-using System.Windows.Controls;
-using System.Windows.Documents;
+using Avalonia;
+using Avalonia.Controls;
+using Avalonia.Interactivity;
+using Avalonia.Controls;
+using Avalonia.Controls.Documents;
 using Aeon.Emulator.DebugSupport;
+using Avalonia.Markup.Xaml;
 
 namespace Aeon.Emulator.Launcher.Debugger
 {
@@ -16,27 +19,27 @@ namespace Aeon.Emulator.Launcher.Debugger
         /// <summary>
         /// The AddressClick routed event definition.
         /// </summary>
-        public static readonly RoutedEvent AddressClickEvent = EventManager.RegisterRoutedEvent(nameof(AddressClick), RoutingStrategy.Bubble, typeof(EventHandler<AddressClickEventArgs>), typeof(DisassemblyView));
+        public static readonly RoutedEvent<RoutedEventArgs> AddressClickEvent = RoutedEvent.Register<RoutedEventArgs>(nameof(AddressClick), Avalonia.Interactivity.RoutingStrategies.Bubble, typeof(DisassemblyView));
         /// <summary>
         /// The InstructionsSource dependency property definition.
         /// </summary>
-        public static readonly DependencyProperty InstructionsSourceProperty = DependencyProperty.Register(nameof(InstructionsSource), typeof(IEnumerable<Instruction>), typeof(DisassemblyView));
+        public static readonly StyledProperty<IEnumerable<Instruction>?> InstructionsSourceProperty = AvaloniaProperty.Register<DisassemblyView, IEnumerable<Instruction>?>(nameof(InstructionsSource));
         /// <summary>
         /// The IsHexFormat dependency property definition.
         /// </summary>
-        public static readonly DependencyProperty IsHexFormatProperty = AeonDebug.IsHexFormatProperty.AddOwner(typeof(DisassemblyView));
+        public static readonly StyledProperty<bool> IsHexFormatProperty = AeonDebug.IsHexFormatProperty.AddOwner<DisassemblyView>();
         /// <summary>
         /// The DebuggerTextFormat dependency property definition.
         /// </summary>
-        public static readonly DependencyProperty DebuggerTextFormatProperty = AeonDebug.DebuggerTextFormatProperty.AddOwner(typeof(DisassemblyView));
+        public static readonly StyledProperty<IDebuggerTextSettings> DebuggerTextFormatProperty = AeonDebug.DebuggerTextFormatProperty.AddOwner<DisassemblyView>();
 
         /// <summary>
         /// Initializes a new instance of the <see cref="DisassemblyView"/> class.
         /// </summary>
         public DisassemblyView()
         {
-            this.InitializeComponent();
-            this.AddHandler(Hyperlink.ClickEvent, new RoutedEventHandler(this.Hyperlink_Click));
+            AvaloniaXamlLoader.Load(this);
+            // this.AddHandler(Hyperlink.ClickEvent, new EventHandler<RoutedEventArgs>(this.Hyperlink_Click)); // TODO: Implement hyperlink handling in Avalonia
         }
 
         /// <summary>
@@ -103,14 +106,15 @@ namespace Aeon.Emulator.Launcher.Debugger
         /// <param name="e">Information about the event.</param>
         private void Hyperlink_Click(object source, RoutedEventArgs e)
         {
-            if (e.OriginalSource is not Hyperlink hyperlink)
-                return;
+            // Hyperlink not available in Avalonia - TODO: Implement alternative
+            // if (e.Source is not Hyperlink hyperlink)
+            //     return;
 
-            if (hyperlink.Tag is not TargetAddress address)
-                return;
+            // if (hyperlink.Tag is not TargetAddress address)
+            //     return;
 
-            e.Handled = true;
-            this.OnAddressClick(new AddressClickEventArgs(address, AddressClickEvent));
+            // e.Handled = true;
+            // this.OnAddressClick(new AddressClickEventArgs(address, AddressClickEvent)); // address variable commented out above
         }
     }
 }

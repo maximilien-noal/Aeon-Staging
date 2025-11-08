@@ -1,21 +1,23 @@
-﻿using System.Windows;
-using System.Windows.Media;
+﻿using Avalonia;
+using Avalonia.Controls;
+using Avalonia.Interactivity;
+using Avalonia.Media;
 
 namespace Aeon.Emulator.Launcher.Debugger
 {
     /// <summary>
     /// Contains attached dependency properties for Aeon debugging.
     /// </summary>
-    public static class AeonDebug
+    public class AeonDebug
     {
         /// <summary>
         /// The AeonDebug.IsHexFormat dependency property definition.
         /// </summary>
-        public static readonly DependencyProperty IsHexFormatProperty = DependencyProperty.RegisterAttached("IsHexFormat", typeof(bool), typeof(AeonDebug), new FrameworkPropertyMetadata(false, FrameworkPropertyMetadataOptions.Inherits));
+        public static readonly AttachedProperty<bool> IsHexFormatProperty = AvaloniaProperty.RegisterAttached<AeonDebug, Control, bool>("IsHexFormat", false, inherits: true);
         /// <summary>
         /// The AeonDebug.DebuggerTextFormat dependency property definition.
         /// </summary>
-        public static readonly DependencyProperty DebuggerTextFormatProperty = DependencyProperty.RegisterAttached("DebuggerTextFormat", typeof(IDebuggerTextSettings), typeof(AeonDebug), new FrameworkPropertyMetadata(new DefaultTextFormat(), FrameworkPropertyMetadataOptions.Inherits));
+        public static readonly AttachedProperty<IDebuggerTextSettings> DebuggerTextFormatProperty = AvaloniaProperty.RegisterAttached<AeonDebug, Control, IDebuggerTextSettings>("DebuggerTextFormat", new DefaultTextFormat(), inherits: true);
 
         /// <summary>
         /// Default debugger text format.
@@ -32,15 +34,15 @@ namespace Aeon.Emulator.Launcher.Debugger
             /// <summary>
             /// Gets the brush used for registers.
             /// </summary>
-            public Brush Register => Brushes.Blue;
+            public Brush Register => (Brush)Brushes.Blue;
             /// <summary>
             /// Gets the brush used for immediates.
             /// </summary>
-            public Brush Immediate => Brushes.Magenta;
+            public Brush Immediate => (Brush)Brushes.Magenta;
             /// <summary>
             /// Gets the brush used for addresses.
             /// </summary>
-            public Brush Address => Brushes.Maroon;
+            public Brush Address => (Brush)Brushes.Maroon;
         }
     }
 }

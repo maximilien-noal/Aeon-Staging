@@ -1,6 +1,9 @@
 ﻿using System.Collections.Generic;
-using System.Windows;
-using System.Windows.Controls.Primitives;
+using Avalonia;
+using Avalonia.Controls;
+using Avalonia.Interactivity;
+using Avalonia.Controls.Primitives;
+using Avalonia.Markup.Xaml;
 
 namespace Aeon.Emulator.Launcher
 {
@@ -12,19 +15,19 @@ namespace Aeon.Emulator.Launcher
         /// <summary>
         /// The Caption dependency property definition.
         /// </summary>
-        public static readonly DependencyProperty CaptionProperty = DependencyProperty.Register(nameof(Caption), typeof(string), typeof(TaskDialog));
+        public static readonly StyledProperty<string> CaptionProperty = AvaloniaProperty.Register<TaskDialog, string>(nameof(Caption));
         /// <summary>
         /// The Items dependency property definition.
         /// </summary>
-        public static readonly DependencyProperty ItemsProperty = DependencyProperty.Register(nameof(Items), typeof(IEnumerable<TaskDialogItem>), typeof(TaskDialog));
+        public static readonly StyledProperty<IEnumerable<TaskDialogItem>?> ItemsProperty = AvaloniaProperty.Register<TaskDialog, IEnumerable<TaskDialogItem>?>(nameof(Items));
 
         /// <summary>
         /// Initializes a new instance of the <see cref="TaskDialog"/> class.
         /// </summary>
         public TaskDialog()
         {
-            this.InitializeComponent();
-            this.AddHandler(ButtonBase.ClickEvent, new RoutedEventHandler(this.Item_Click));
+            AvaloniaXamlLoader.Load(this);
+            this.AddHandler(Button.ClickEvent, new EventHandler<RoutedEventArgs>(this.Item_Click));
         }
 
         /// <summary>
@@ -50,8 +53,8 @@ namespace Aeon.Emulator.Launcher
 
         private void Item_Click(object source, RoutedEventArgs e)
         {
-            this.DialogResult = true;
-            this.SelectedItem = e.OriginalSource as TaskDialogItem;
+            // this.DialogResult = true; // TODO: Avalonia dialog result pattern
+            this.SelectedItem = e.Source as TaskDialogItem;
             this.Close();
         }
     }

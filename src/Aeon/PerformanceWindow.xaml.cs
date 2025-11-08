@@ -1,6 +1,9 @@
 ﻿using System;
-using System.Windows;
-using System.Windows.Threading;
+using Avalonia;
+using Avalonia.Controls;
+using Avalonia.Interactivity;
+using Avalonia.Threading;
+using Avalonia.Markup.Xaml;
 
 namespace Aeon.Emulator.Launcher
 {
@@ -9,16 +12,26 @@ namespace Aeon.Emulator.Launcher
         private long lastCount;
         private DispatcherTimer timer;
 
-        public PerformanceWindow() => this.InitializeComponent();
+        public PerformanceWindow()
+        {
+            InitializeComponent();
+        }
+
+        private void InitializeComponent()
+        {
+            AvaloniaXamlLoader.Load(this);
+        }
 
         public EmulatorDisplay EmulatorDisplay { get; set; }
 
-        protected override void OnInitialized(EventArgs e)
+        protected override void OnOpened(EventArgs e)
         {
-            timer = new DispatcherTimer(TimeSpan.FromSeconds(1), DispatcherPriority.Normal, Timer_Tick, this.Dispatcher);
+            timer = new DispatcherTimer();
+            timer.Interval = TimeSpan.FromSeconds(0.5);
+            timer.Tick += Timer_Tick;
             timer.Start();
 
-            base.OnInitialized(e);
+            base.OnOpened(e);
         }
 
         private void UpdateProcessorFields(EmulatorHost host)

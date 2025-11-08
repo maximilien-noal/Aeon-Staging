@@ -1,42 +1,52 @@
 ﻿using System;
-using System.Windows;
-using System.Windows.Controls;
-using System.Windows.Input;
-using System.Windows.Markup;
+using Avalonia;
+using Avalonia.Metadata;
+using Avalonia.Controls;
+using Avalonia.Interactivity;
+using Avalonia.Input;
+using Avalonia.Markup.Xaml;
 
 namespace Aeon.Emulator.Launcher
 {
     /// <summary>
     /// A simple integer numeric up/down control.
     /// </summary>
-    [ContentProperty(nameof(Value))]
+    // [ContentProperty(nameof(Value))] // Not available in Avalonia
     public partial class NumericUpDown : UserControl
     {
         /// <summary>
         /// Defines the Value dependency property.
         /// </summary>
-        public static readonly DependencyProperty ValueProperty = DependencyProperty.Register("Value", typeof(int), typeof(NumericUpDown), new PropertyMetadata(0, Value_PropertyChanged, Value_CoerceValue));
+        public static readonly StyledProperty<int> ValueProperty = AvaloniaProperty.Register<NumericUpDown, int>(nameof(Value), 0);
         /// <summary>
         /// Defines the MinimumValue dependency property.
         /// </summary>
-        public static readonly DependencyProperty MinimumValueProperty = DependencyProperty.Register("MinimumValue", typeof(int), typeof(NumericUpDown), new PropertyMetadata(0, MinimumValue_PropertyChanged));
+        public static readonly StyledProperty<int> MinimumValueProperty = AvaloniaProperty.Register<NumericUpDown, int>(nameof(MinimumValue), 0);
         /// <summary>
         /// Defines the MaximumValue dependency property.
         /// </summary>
-        public static readonly DependencyProperty MaximumValueProperty = DependencyProperty.Register("MaximumValue", typeof(int), typeof(NumericUpDown), new PropertyMetadata(100, MaximumValue_PropertyChanged));
+        public static readonly StyledProperty<int> MaximumValueProperty = AvaloniaProperty.Register<NumericUpDown, int>(nameof(MaximumValue), 100);
         /// <summary>
         /// Defines the StepValue dependency property.
         /// </summary>
-        public static readonly DependencyProperty StepValueProperty = DependencyProperty.Register("StepValue", typeof(int), typeof(NumericUpDown), new PropertyMetadata(1));
+        public static readonly StyledProperty<int> StepValueProperty = AvaloniaProperty.Register<NumericUpDown, int>(nameof(StepValue), 1);
         /// <summary>
         /// Defines the IsReadOnly dependency property.
         /// </summary>
-        public static readonly DependencyProperty IsReadOnlyProperty = DependencyProperty.Register("IsReadOnly", typeof(bool), typeof(NumericUpDown), new PropertyMetadata(false));
+        public static readonly StyledProperty<bool> IsReadOnlyProperty = AvaloniaProperty.Register<NumericUpDown, bool>(nameof(IsReadOnly), false);
 
         /// <summary>
         /// Initializes a new instance of the NumericUpDown class.
         /// </summary>
-        public NumericUpDown() => this.InitializeComponent();
+        public NumericUpDown()
+        {
+            InitializeComponent();
+        }
+
+        private void InitializeComponent()
+        {
+            AvaloniaXamlLoader.Load(this);
+        }
 
         /// <summary>
         /// Gets or sets the current value. This is a dependency property.
@@ -87,7 +97,7 @@ namespace Aeon.Emulator.Launcher
         {
             SetCurrentValue(ValueProperty, Math.Max(this.Value - this.StepValue, this.MinimumValue));
         }
-        private static void MinimumValue_PropertyChanged(DependencyObject d, DependencyPropertyChangedEventArgs e)
+        private static void MinimumValue_PropertyChanged(AvaloniaObject d, AvaloniaPropertyChangedEventArgs e)
         {
             NumericUpDown control = (NumericUpDown)d;
 
@@ -95,7 +105,7 @@ namespace Aeon.Emulator.Launcher
             if (newValue > control.Value)
                 control.SetCurrentValue(ValueProperty, newValue);
         }
-        private static void MaximumValue_PropertyChanged(DependencyObject d, DependencyPropertyChangedEventArgs e)
+        private static void MaximumValue_PropertyChanged(AvaloniaObject d, AvaloniaPropertyChangedEventArgs e)
         {
             NumericUpDown control = (NumericUpDown)d;
 
@@ -103,7 +113,7 @@ namespace Aeon.Emulator.Launcher
             if (newValue < control.Value)
                 control.SetCurrentValue(ValueProperty, newValue);
         }
-        private static void Value_PropertyChanged(DependencyObject d, DependencyPropertyChangedEventArgs e)
+        private static void Value_PropertyChanged(AvaloniaObject d, AvaloniaPropertyChangedEventArgs e)
         {
             NumericUpDown control = (NumericUpDown)d;
 
@@ -116,7 +126,7 @@ namespace Aeon.Emulator.Launcher
 
             control.valueText.Text = e.NewValue.ToString();
         }
-        private static object Value_CoerceValue(DependencyObject d, object baseValue)
+        private static object Value_CoerceValue(AvaloniaObject d, object baseValue)
         {
             NumericUpDown control = (NumericUpDown)d;
 

@@ -1,5 +1,6 @@
 ﻿using System;
-using System.Windows.Data;
+using Avalonia.Data;
+using Avalonia.Data.Converters;
 
 namespace Aeon.Emulator.Launcher
 {

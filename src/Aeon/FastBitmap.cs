@@ -1,7 +1,7 @@
 ﻿using System;
 using System.Runtime.InteropServices;
-using System.Windows.Interop;
-using System.Windows.Media;
+// using System.Windows.Interop; // Not directly available in Avalonia
+using Avalonia.Media;
 
 namespace Aeon.Emulator.Launcher
 {
@@ -30,7 +30,7 @@ namespace Aeon.Emulator.Launcher
         /// <summary>
         /// Gets the InteropBitmap instance.
         /// </summary>
-        public InteropBitmap InteropBitmap { get; private set; }
+        // public // InteropBitmap InteropBitmap { get; private set; } // TODO: Rewrite for Avalonia - InteropBitmap is WPF-specific // WPF-specific, needs Avalonia rewrite
         /// <summary>
         /// Gets the pointer to the bitmap pixel data.
         /// </summary>
@@ -48,7 +48,7 @@ namespace Aeon.Emulator.Launcher
         /// <summary>
         /// Forces a redraw of the InteropBitmap.
         /// </summary>
-        public void Invalidate() => this.InteropBitmap.Invalidate();
+        // public void Invalidate() => this.InteropBitmap.Invalidate(); // WPF-specific, needs Avalonia rewrite
 
         /// <summary>
         /// Releases unmanaged resources used by the bitmp.
@@ -83,7 +83,7 @@ namespace Aeon.Emulator.Launcher
             int byteSize = pixelWidth * pixelHeight * 4;
             this.section = CreateFileMapping(INVALID_HANDLE_VALUE, IntPtr.Zero, PAGE_READWRITE, 0, (uint)byteSize + 4096u, null);
             this.PixelBuffer = MapViewOfFile(section, FILE_MAP_ALL_ACCESS, 0, 0, (uint)byteSize);
-            this.InteropBitmap = (InteropBitmap)Imaging.CreateBitmapSourceFromMemorySection(section, pixelWidth, pixelHeight, PixelFormats.Bgr32, pixelWidth * 4, 0);
+            // this.InteropBitmap = (InteropBitmap)Imaging.CreateBitmapSourceFromMemorySection(section, pixelWidth, pixelHeight, PixelFormats.Bgr32, pixelWidth * 4, 0); // WPF-specific InteropBitmap
         }
 
         [DllImport("kernel32.dll", SetLastError = true, CharSet = CharSet.Unicode)]

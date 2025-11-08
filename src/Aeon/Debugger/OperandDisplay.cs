@@ -1,8 +1,10 @@
 ﻿using System;
-using System.Windows;
-using System.Windows.Controls;
-using System.Windows.Data;
-using System.Windows.Documents;
+using Avalonia;
+using Avalonia.Controls;
+using Avalonia.Interactivity;
+using Avalonia.Controls;
+using Avalonia.Data;
+using Avalonia.Controls.Documents;
 using Aeon.Emulator;
 using Aeon.Emulator.DebugSupport;
 
@@ -16,23 +18,23 @@ namespace Aeon.Emulator.Launcher.Debugger
         /// <summary>
         /// The Operand dependency property definition.
         /// </summary>
-        public static readonly DependencyProperty OperandProperty = DependencyProperty.Register(nameof(Operand), typeof(CodeOperand), typeof(OperandDisplay));
+        public static readonly StyledProperty<CodeOperand?> OperandProperty = AvaloniaProperty.Register<OperandDisplay, CodeOperand?>(nameof(Operand));
         /// <summary>
         /// The RegisterSource dependency property definition.
         /// </summary>
-        public static readonly DependencyProperty RegisterSourceProperty = DependencyProperty.Register(nameof(RegisterSource), typeof(IRegisterContainer), typeof(OperandDisplay));
+        public static readonly StyledProperty<IRegisterContainer?> RegisterSourceProperty = AvaloniaProperty.Register<OperandDisplay, IRegisterContainer?>(nameof(RegisterSource));
         /// <summary>
         /// The DebuggerTextFormat dependency property definition.
         /// </summary>
-        public static readonly DependencyProperty DebuggerTextFormatProperty = AeonDebug.DebuggerTextFormatProperty.AddOwner(typeof(OperandDisplay));
+        public static readonly StyledProperty<IDebuggerTextSettings> DebuggerTextFormatProperty = AeonDebug.DebuggerTextFormatProperty.AddOwner<OperandDisplay>();
         /// <summary>
         /// The Instruction dependency property definition.
         /// </summary>
-        public static readonly DependencyProperty InstructionProperty = DependencyProperty.Register(nameof(Instruction), typeof(Instruction), typeof(OperandDisplay));
+        public static readonly StyledProperty<Instruction> InstructionProperty = AvaloniaProperty.Register<OperandDisplay, Instruction>(nameof(Instruction));
         /// <summary>
         /// The IsHexFormat dependency property definition.
         /// </summary>
-        public static readonly DependencyProperty IsHexFormatProperty = AeonDebug.IsHexFormatProperty.AddOwner(typeof(OperandDisplay));
+        public static readonly StyledProperty<bool> IsHexFormatProperty = AeonDebug.IsHexFormatProperty.AddOwner<OperandDisplay>();
 
         private const PrefixState SegmentPrefixes = PrefixState.CS | PrefixState.DS | PrefixState.ES | PrefixState.FS | PrefixState.GS | PrefixState.SS;
 
@@ -88,7 +90,7 @@ namespace Aeon.Emulator.Launcher.Debugger
         /// Invoked when a property value has changed.
         /// </summary>
         /// <param name="e">Information about the event.</param>
-        protected override void OnPropertyChanged(DependencyPropertyChangedEventArgs e)
+        protected override void OnPropertyChanged(AvaloniaPropertyChangedEventArgs e)
         {
             base.OnPropertyChanged(e);
 
@@ -123,8 +125,8 @@ namespace Aeon.Emulator.Launcher.Debugger
         /// Rebuilds the displayed content.
         /// </summary>
         /// <param name="operand">Operand to display.</param>
-        /// <returns>FrameworkElement to display as content.</returns>
-        private FrameworkElement BuildContent(CodeOperand operand)
+        /// <returns>Control to display as content.</returns>
+        private Control BuildContent(CodeOperand operand)
         {
             return operand.Type switch
             {
@@ -135,22 +137,21 @@ namespace Aeon.Emulator.Launcher.Debugger
                 _ => null
             };
         }
-        private FrameworkElement BuildJumpTargetContent(uint offset)
+        private Control BuildJumpTargetContent(uint offset)
         {
             var textBlock = new TextBlock();
-            var run = new Run(offset.ToString("X8"))
-            {
-                Tag = new TargetAddress(QualifiedAddress.FromRealModeAddress(this.Instruction.CS, (ushort)offset), TargetAddressType.Code)
-            };
+            var run = new Run(offset.ToString("X8"));
+            // Run.Tag not available in Avalonia
+            // run.Tag = new TargetAddress(QualifiedAddress.FromRealModeAddress(this.Instruction.CS, (ushort)offset), TargetAddressType.Code);
 
             var binding = new Binding("DebuggerTextFormat.Address") { Source = this, Mode = BindingMode.OneWay };
-            run.SetBinding(TextElement.ForegroundProperty, binding);
+            // run.SetBinding(TextElement.ForegroundProperty, binding); // TODO: Rewrite binding for Avalonia
 
-            var link = new Hyperlink(run);
+            var link = new Run(); // TODO: Hyperlink support in Avalonia
             textBlock.Inlines.Add(link);
             return textBlock;
         }
-        private FrameworkElement BuildAddress16Content(CodeOperand operand)
+        private Control BuildAddress16Content(CodeOperand operand)
         {
             bool includeDisplacement = true;
             var textBlock = new TextBlock();
@@ -236,7 +237,7 @@ namespace Aeon.Emulator.Launcher.Debugger
             var run = new Run(text);
 
             var binding = new Binding("DebuggerTextFormat.Immediate") { Source = this, Mode = BindingMode.OneWay };
-            run.SetBinding(TextElement.ForegroundProperty, binding);
+            // run.SetBinding(TextElement.ForegroundProperty, binding); // TODO: Rewrite binding for Avalonia
 
             return run;
         }
@@ -245,7 +246,7 @@ namespace Aeon.Emulator.Launcher.Debugger
             var run = new Run(text);
 
             var binding = new Binding("DebuggerTextFormat.Address") { Source = this, Mode = BindingMode.OneWay };
-            run.SetBinding(TextElement.ForegroundProperty, binding);
+            // run.SetBinding(TextElement.ForegroundProperty, binding); // TODO: Rewrite binding for Avalonia
 
             return run;
         }
@@ -254,11 +255,11 @@ namespace Aeon.Emulator.Launcher.Debugger
             var run = new Run(text);
 
             var binding = new Binding("DebuggerTextFormat.Register") { Source = this, Mode = BindingMode.OneWay };
-            run.SetBinding(TextElement.ForegroundProperty, binding);
+            // run.SetBinding(TextElement.ForegroundProperty, binding); // TODO: Rewrite binding for Avalonia
 
             return run;
         }
-        private FrameworkElement BuildImmediateContent(uint value)
+        private Control BuildImmediateContent(uint value)
         {
             var textBlock = new TextBlock();
             if (this.IsHexFormat)
@@ -267,16 +268,16 @@ namespace Aeon.Emulator.Launcher.Debugger
                 textBlock.Text = value.ToString();
 
             var binding = new Binding("DebuggerTextFormat.Immediate") { Source = this, Mode = BindingMode.OneWay };
-            textBlock.SetBinding(TextBlock.ForegroundProperty, binding);
+            // textBlock.SetBinding(TextBlock.ForegroundProperty, binding); // TODO: Rewrite binding for Avalonia
 
             return textBlock;
         }
-        private FrameworkElement BuildRegisterContent(CodeRegister register)
+        private Control BuildRegisterContent(CodeRegister register)
         {
             var textBlock = new TextBlock() { Text = register.ToString().ToLower() };
 
             var binding = new Binding("DebuggerTextFormat.Register") { Source = this, Mode = BindingMode.OneWay };
-            textBlock.SetBinding(TextBlock.ForegroundProperty, binding);
+            // textBlock.SetBinding(TextBlock.ForegroundProperty, binding); // TODO: Rewrite binding for Avalonia
 
             return textBlock;
         }

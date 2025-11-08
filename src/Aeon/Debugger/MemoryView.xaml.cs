@@ -1,10 +1,11 @@
 ﻿using System.Collections.Generic;
 using System.Text;
-using System.Windows;
-using System.Windows.Controls;
-using System.Windows.Input;
-using System.Windows.Media;
+using Avalonia;
+using Avalonia.Controls;
+using Avalonia.Input;
+using Avalonia.Media;
 using Aeon.Emulator.DebugSupport;
+using Avalonia.Markup.Xaml;
 
 namespace Aeon.Emulator.Launcher.Debugger
 {
@@ -16,11 +17,11 @@ namespace Aeon.Emulator.Launcher.Debugger
         /// <summary>
         /// The MemorySource dependency property definition.
         /// </summary>
-        public static readonly DependencyProperty MemorySourceProperty = DependencyProperty.Register(nameof(MemorySource), typeof(IMemorySource), typeof(MemoryView));
+        public static readonly StyledProperty<IMemorySource?> MemorySourceProperty = AvaloniaProperty.Register<MemoryView, IMemorySource?>(nameof(MemorySource));
         /// <summary>
         /// The StartAddress dependency property definition.
         /// </summary>
-        public static readonly DependencyProperty StartAddressProperty = DependencyProperty.Register(nameof(StartAddress), typeof(QualifiedAddress), typeof(MemoryView), new PropertyMetadata(QualifiedAddress.FromRealModeAddress(0, 0)));
+        public static readonly StyledProperty<QualifiedAddress> StartAddressProperty = AvaloniaProperty.Register<MemoryView, QualifiedAddress>(nameof(StartAddress), QualifiedAddress.FromRealModeAddress(0, 0));
 
         private const double RowHeight = 14;
         private readonly List<RowControls> rows = new();
@@ -28,7 +29,15 @@ namespace Aeon.Emulator.Launcher.Debugger
         /// <summary>
         /// Initializes a new instance of the <see cref="MemoryView"/> class.
         /// </summary>
-        public MemoryView() => this.InitializeComponent();
+        public MemoryView()
+        {
+            InitializeComponent();
+        }
+
+        private void InitializeComponent()
+        {
+            AvaloniaXamlLoader.Load(this);
+        }
 
         /// <summary>
         /// Gets or sets the source memory to display. This is a dependency property.
@@ -51,11 +60,11 @@ namespace Aeon.Emulator.Launcher.Debugger
         /// Invoked when a property value has changed.
         /// </summary>
         /// <param name="e">Information about the event.</param>
-        protected override void OnPropertyChanged(DependencyPropertyChangedEventArgs e)
+        protected override void OnPropertyChanged(AvaloniaPropertyChangedEventArgs e)
         {
             base.OnPropertyChanged(e);
 
-            if (e.Property == ActualHeightProperty)
+            if (e.Property == BoundsProperty)
             {
                 if (rows.Count != CalculateVisibleRows())
                 {
@@ -74,11 +83,11 @@ namespace Aeon.Emulator.Launcher.Debugger
         /// Invoked when the mouse wheel has changed position.
         /// </summary>
         /// <param name="e">Information about the event.</param>
-        protected override void OnMouseWheel(MouseWheelEventArgs e)
+        protected override void OnPointerWheelChanged(PointerWheelEventArgs e)
         {
-            base.OnMouseWheel(e);
+            base.OnPointerWheelChanged(e);
 
-            var newValue = this.scrollBar.Value - e.Delta;
+            var newValue = this.scrollBar.Value - e.Delta.Y;
             if (newValue < 0)
                 newValue = 0;
             if (newValue > this.scrollBar.Maximum)
@@ -197,18 +206,43 @@ namespace Aeon.Emulator.Launcher.Debugger
         /// Returns the number of currently visible whole rows.
         /// </summary>
         /// <returns>Number of whole rows visible.</returns>
-        private int CalculateVisibleRows() => (int)(this.ActualHeight / RowHeight);
+        private int CalculateVisibleRows() => (int)(this.Bounds.Height / RowHeight);
 
         /// <summary>
         /// Invoked when the scroll bar's value has changed.
         /// </summary>
         /// <param name="sender">Source of the event.</param>
         /// <param name="e">Information about the event.</param>
-        private void ScrollBar_ValueChanged(object sender, RoutedPropertyChangedEventArgs<double> e)
+        private void ScrollBar_PropertyChanged(object? sender, AvaloniaPropertyChangedEventArgs e)
         {
+            if (e.Property.Name != "Value" || sender is not Avalonia.Controls.Primitives.ScrollBar scrollBar)
+                return;
+                
             var current = this.StartAddress;
-            if ((uint)e.NewValue != this.StartAddress.Offset)
-                this.SetValue(StartAddressProperty, new QualifiedAddress(current.AddressType, current.Segment ?? 0, (uint)e.NewValue));
+            // Handle both double and BindingValue<double>
+            double newValueDouble = 0.0;
+            if (e.NewValue != null)
+            {
+                try
+                {
+                    // Try direct conversion first
+                    newValueDouble = Convert.ToDouble(e.NewValue);
+                }
+                catch
+                {
+                    // If that fails, try accessing as BindingValue
+                    try
+                    {
+                        dynamic bindingValue = e.NewValue;
+                        if (bindingValue.HasValue)
+                            newValueDouble = Convert.ToDouble(bindingValue.Value);
+                    }
+                    catch { }
+                }
+            }
+            
+            if ((uint)newValueDouble != this.StartAddress.Offset)
+                this.SetValue(StartAddressProperty, new QualifiedAddress(current.AddressType, current.Segment ?? 0, (uint)newValueDouble));
         }
 
         /// <summary>
@@ -225,7 +259,7 @@ namespace Aeon.Emulator.Launcher.Debugger
             public RowControls()
             {
                 for (int i = 0; i < HexValues.Length; i++)
-                    this.HexValues[i] = new TextBlock { FontFamily = NumberFont, HorizontalAlignment = HorizontalAlignment.Center };
+                    this.HexValues[i] = new TextBlock { FontFamily = NumberFont, HorizontalAlignment = Avalonia.Layout.HorizontalAlignment.Center };
             }
 
             /// <summary>

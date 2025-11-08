@@ -1,5 +1,5 @@
 ﻿using MeltySynth;
-using TinyAudio;
+using Ownaudio.Core;
 
 #nullable enable
 
@@ -8,7 +8,7 @@ namespace Aeon.Emulator.Sound
     internal sealed class MeltySynthMidiMapper : MidiDevice
     {
         private readonly Synthesizer synthesizer;
-        private readonly AudioPlayer audioPlayer;
+        private readonly IAudioEngine audioPlayer;
         private bool disposed;
 
         public MeltySynthMidiMapper(string soundFontPath)
@@ -17,17 +17,18 @@ namespace Aeon.Emulator.Sound
                 throw new ArgumentNullException(nameof(soundFontPath));
 
             this.audioPlayer = Audio.CreatePlayer(true);
-            this.synthesizer = new Synthesizer(soundFontPath, this.audioPlayer.Format.SampleRate);
-            this.audioPlayer.BeginPlayback(this.HandleBufferNeeded);
+            // OwnAudioSharp uses 48kHz by default
+            this.synthesizer = new Synthesizer(soundFontPath, 48000);
+            // Engine is already started in CreatePlayer()
         }
 
         public override void Pause()
         {
-            this.audioPlayer.StopPlayback();
+            // Pause not implemented for now
         }
         public override void Resume()
         {
-            this.audioPlayer.BeginPlayback(this.HandleBufferNeeded);
+            // Resume not implemented for now
         }
 
         protected override void PlayShortMessage(uint message)
@@ -48,12 +49,6 @@ namespace Aeon.Emulator.Sound
             }
 
             base.Dispose(disposing);
-        }
-
-        private void HandleBufferNeeded(Span<float> buffer, out int samplesWritten)
-        {
-            this.synthesizer.RenderInterleaved(buffer);
-            samplesWritten = buffer.Length;
         }
     }
 }

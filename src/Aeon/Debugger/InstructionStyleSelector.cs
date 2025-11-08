@@ -1,28 +1,18 @@
-﻿using System.Windows;
-using System.Windows.Controls;
+using Avalonia;
+using Avalonia.Controls;
+using Avalonia.Styling;
 using Aeon.Emulator.DebugSupport;
 
 namespace Aeon.Emulator.Launcher.Debugger
 {
     /// <summary>
     /// Selects the appropriate style for an instruction.
+    /// Note: Avalonia 11.2 doesn't have IStyleSelector, using basic approach
     /// </summary>
-    public sealed class InstructionStyleSelector : StyleSelector
+    public sealed class InstructionStyleSelector
     {
-        /// <summary>
-        /// When overridden in a derived class, returns a <see cref="T:System.Windows.Style"/> based on custom logic.
-        /// </summary>
-        /// <param name="item">The content.</param>
-        /// <param name="container">The element to which the style will be applied.</param>
-        /// <returns>
-        /// Returns an application-specific style to apply; otherwise, null.
-        /// </returns>
-        public override Style SelectStyle(object item, DependencyObject container)
-        {
-            if(item is LoggedInstruction)
-                return (Style)((FrameworkElement)container).FindResource("loggedInstructionStyle");
-            else
-                return (Style)((FrameworkElement)container).FindResource("listBoxItemStyle");
-        }
+        // TODO: Implement style selection for Avalonia
+        // In Avalonia, style selection is typically done differently
+        // Consider using data templates or style classes instead
     }
 }

@@ -1,6 +1,8 @@
 ﻿using System.Collections.ObjectModel;
 using System.Linq;
-using System.Windows;
+using Avalonia;
+using Avalonia.Controls.ApplicationLifetimes;
+using Avalonia.Markup.Xaml;
 
 namespace Aeon.Emulator.Launcher
 {
@@ -12,22 +14,27 @@ namespace Aeon.Emulator.Launcher
         /// <summary>
         /// Gets the current application instance.
         /// </summary>
-        public static new App Current => (App)Application.Current;
+        public static App Current => (App)Application.Current!;
 
         /// <summary>
         /// Gets the application command line arguments.
         /// </summary>
-        public ReadOnlyCollection<string> Args { get; private set; }
+        public ReadOnlyCollection<string> Args { get; private set; } = new ReadOnlyCollection<string>(new List<string>());
 
-        /// <summary>
-        /// Invoked when the application is started.
-        /// </summary>
-        /// <param name="e">Information about the event.</param>
-        protected override void OnStartup(StartupEventArgs e)
+        public override void Initialize()
         {
-            this.Args = new ReadOnlyCollection<string>(e.Args.ToList());
+            AvaloniaXamlLoader.Load(this);
+        }
 
-            base.OnStartup(e);
+        public override void OnFrameworkInitializationCompleted()
+        {
+            if (ApplicationLifetime is IClassicDesktopStyleApplicationLifetime desktop)
+            {
+                this.Args = new ReadOnlyCollection<string>(desktop.Args?.ToList() ?? new List<string>());
+                desktop.MainWindow = new MainWindow();
+            }
+
+            base.OnFrameworkInitializationCompleted();
         }
     }
 }

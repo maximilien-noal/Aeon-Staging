@@ -1,0 +1,130 @@
+﻿<Window x:Class="Aeon.Emulator.Launcher.MainWindow"
+    xmlns="https://github.com/avaloniaui"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    xmlns:rendering="clr-namespace:Aeon.Emulator.Video.Rendering;assembly=Aeon.Emulator"
+    xmlns:local="clr-namespace:Aeon.Emulator.Launcher"
+    xmlns:sys="clr-namespace:System;assembly=System.Runtime"
+    Title="Aeon" Width="800" Height="600" MinWidth="360" MinHeight="270" Icon="Aeon.ico" DataContext="{Binding ElementName=emulatorDisplay}" Background="{StaticResource backgroundGradient}">
+    <!-- CommandBindings not supported in Avalonia - using Click handlers and KeyBindings instead -->
+    <Window.KeyBindings>
+        <KeyBinding Gesture="Ctrl+W" Command="{Binding CloseCommand}" />
+        <KeyBinding Gesture="Ctrl+C" Command="{Binding CopyCommand}" />
+        <KeyBinding Gesture="F11" Command="{x:Static local:EmulatorDisplay.FullScreenCommand}" />
+    </Window.KeyBindings>
+    <Window.Resources>
+        <local:MouseModeConverter x:Key="mouseModeConverter" />
+        <local:SpeedConverter x:Key="speedConverter" />
+        <!-- BoolToVisibilityConverter not needed in Avalonia - use IsVisible property directly -->
+        <!-- ObjectDataProvider not supported - moved to code-behind -->
+    </Window.Resources>
+    <DockPanel>
+        <StackPanel Name="menuContainer" DockPanel.Dock="Top">
+            <Menu Name="mainMenu">
+                <MenuItem Header="_Aeon">
+                    <MenuItem Header="_Quick Launch Program..." Click="QuickLaunch_Click" />
+                    <MenuItem Header="_Quick Launch Command Prompt..." Click="CommandPrompt_Click" />
+                    <Separator />
+                    <MenuItem Header="_Pause" Command="{Binding PauseCommand}" />
+                    <MenuItem Header="R_esume" Command="{Binding ResumeCommand}" />
+                    <Separator />
+                    <MenuItem Header="E_xit" Click="Close_Click" />
+                </MenuItem>
+                <MenuItem Header="_Edit">
+                    <MenuItem Header="_Copy Screen" Click="Copy_Click" />
+                </MenuItem>
+                <MenuItem Header="_View">
+                    <!-- In Avalonia, checkable MenuItems use ToggleType property -->
+                    <MenuItem Name="viewToolBarMenuItem" Header="_Toolbar">
+                        <MenuItem.Icon>
+                            <CheckBox IsChecked="True" IsHitTestVisible="False" />
+                        </MenuItem.Icon>
+                    </MenuItem>
+                    <Separator />
+                    <MenuItem Header="_Lock Aspect Ratio">
+                        <MenuItem.Icon>
+                            <CheckBox IsChecked="{Binding IsAspectRatioLocked}" IsHitTestVisible="False" />
+                        </MenuItem.Icon>
+                    </MenuItem>
+                    <MenuItem Header="_Full Screen" Command="{x:Static local:EmulatorDisplay.FullScreenCommand}" />
+                    <Separator />
+                    <MenuItem Header="_Performance Window" Click="PerformanceWindow_Click" />
+                </MenuItem>
+                <MenuItem Header="_Debug">
+                    <MenuItem Name="showDebuggerMenuItem" Header="Debugger" Click="ShowDebugger_Click" Tag="__INTERNAL__" />
+                    <MenuItem Name="colorPaletteMenuItem" Header="Color Palette" Click="ShowPalette_Click" />
+                    <MenuItem Header="Dump Video RAM" Click="DumpVideoRam_Click" />
+                    <MenuItem Header="Open Instruction Log..." Click="OpenInstructionLog_Click" />
+                </MenuItem>
+            </Menu>
+            <!-- Toolbar: ToolBarTray/ToolBar not available in Avalonia - using Border + StackPanel -->
+            <Border Name="toolBar" IsVisible="{Binding IsChecked, ElementName=viewToolBarMenuItem}"
+                    BorderThickness="0,0,0,1" BorderBrush="Gray">
+                <Border.Background>
+                    <LinearGradientBrush StartPoint="50.0%,0.0%" EndPoint="50.0%,100.0%">
+                        <GradientStop Color="WhiteSmoke" Offset="0.0" />
+                        <GradientStop Color="DimGray" Offset="1.0" />
+                    </LinearGradientBrush>
+                </Border.Background>
+                <StackPanel Orientation="Horizontal" Margin="4,2">
+                    <StackPanel.Resources>
+                        <Style x:Key="commandStyle" Selector="Shape">
+                            <Setter Property="Stroke" Value="DarkGreen" />
+                            <Setter Property="Fill">
+                                <LinearGradientBrush StartPoint="0.0%,0.0%" EndPoint="100.0%,100.0%">
+                                    <GradientStop Color="LightGreen" Offset="0.0" />
+                                    <GradientStop Color="DarkGreen" Offset="1.0" />
+                                </LinearGradientBrush>
+                            </Setter>
+                        </Style>
+                    </StackPanel.Resources>
+                    <Button ToolTip.Tip="Run Program..." Click="QuickLaunch_Click" Padding="2">
+                        <Image Width="16" Height="16" Source="Resources/openfolderHS.png" />
+                    </Button>
+                    <Separator Width="1" Margin="4,2" />
+                    <Button Command="{Binding ResumeCommand}" ToolTip.Tip="Resume" Padding="2">
+                        <Canvas Width="16" Height="16">
+                            <Polygon Points="0,0 0,9 5,4 0,0" Classes="commandStyle">
+                                <Polygon.RenderTransform>
+                                    <TranslateTransform X="6" Y="4" />
+                                </Polygon.RenderTransform>
+                            </Polygon>
+                        </Canvas>
+                    </Button>
+                    <Button Command="{Binding PauseCommand}" ToolTip.Tip="Pause" Padding="2">
+                        <Canvas Width="16" Height="16">
+                            <Rectangle Width="4" Height="10" Classes="commandStyle" />
+                            <Rectangle Width="4" Height="10" Canvas.Left="5" Classes="commandStyle" />
+                            <Canvas.RenderTransform>
+                                <TranslateTransform X="3" Y="3" />
+                            </Canvas.RenderTransform>
+                        </Canvas>
+                    </Button>
+                    <Separator Width="1" Margin="4,2" />
+                    <ToggleButton Name="mouseIntegrationButton" ToolTip.Tip="Toggle Mouse Integration" Padding="2"
+                              IsChecked="{Binding MouseInputMode, Converter={StaticResource mouseModeConverter}}">
+                        <Image Width="16" Height="16" Source="Resources/MouseIntegration.png" />
+                    </ToggleButton>
+                    <Separator Width="1" Margin="4,2" />
+                    <TextBlock Text="Speed:" VerticalAlignment="Center" Margin="4,0" />
+                    <Button Template="{StaticResource roundButtonTemplate}" ToolTip.Tip="Slow Down Emulation"
+                        Width="18" Height="18" Padding="0" Click="SlowerButton_Click">
+                        <TextBlock FontFamily="Courier New" FontWeight="Bold" Text="-" />
+                    </Button>
+                    <TextBlock Width="50" Text="{Binding EmulationSpeed, Converter={StaticResource speedConverter}}"
+                           TextAlignment="Center" VerticalAlignment="Center" Margin="2,0" />
+                    <Button Template="{StaticResource roundButtonTemplate}" ToolTip.Tip="Speed Up Emulation"
+                        Width="18" Height="18" Padding="0" Click="FasterButton_Click">
+                        <TextBlock FontFamily="Courier New" FontWeight="Bold" Text="+" />
+                    </Button>
+                    <Separator Width="1" Margin="4,2" />
+                    <TextBlock Text="Scaler:" VerticalAlignment="Center" Margin="4,0" />
+                    <ComboBox Name="scalerComboBox" SelectedValue="{Binding ScalingAlgorithm}"
+                          Background="LightGray" MinWidth="100" />
+                </StackPanel>
+            </Border>
+        </StackPanel>
+        <local:EmulatorDisplay x:Name="emulatorDisplay" EmulatorStateChanged="EmulatorDisplay_EmulatorStateChanged"
+                             CurrentProcessChanged="EmulatorDisplay_CurrentProcessChanged"
+                             Margin="0,7,0,0" />
+    </DockPanel>
+</Window>

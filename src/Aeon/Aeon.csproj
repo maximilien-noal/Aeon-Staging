@@ -1,7 +1,7 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
   <PropertyGroup>
     <OutputType>WinExe</OutputType>
-    <TargetFramework>net9.0-windows</TargetFramework>
+    <TargetFramework>net9.0</TargetFramework>
     <RootNamespace>Aeon.Emulator.Launcher</RootNamespace>
     <LangVersion>latest</LangVersion>
     <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
@@ -10,21 +10,28 @@
     <Product>Aeon</Product>
     <Title>Aeon</Title>
     <Description>Runtime environment for the Aeon x86 emulator.</Description>
-    <UseWPF>true</UseWPF>
-    <UseWindowsForms>true</UseWindowsForms>
     <ApplicationIcon>Aeon.ico</ApplicationIcon>
+    <AvaloniaUseCompiledBindingsByDefault>true</AvaloniaUseCompiledBindingsByDefault>
+    <Nullable>enable</Nullable>
   </PropertyGroup>
+  <ItemGroup>
+    <PackageReference Include="Avalonia" Version="11.3.7" />
+    <PackageReference Include="Avalonia.Desktop" Version="11.3.7" />
+    <PackageReference Include="Avalonia.Themes.Fluent" Version="11.3.7" />
+    <PackageReference Include="Avalonia.Fonts.Inter" Version="11.3.7" />
+    <PackageReference Include="Avalonia.Diagnostics" Version="11.3.7" />
+  </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\Aeon.Emulator\Aeon.Emulator.csproj" />
     <ProjectReference Include="..\Aeon.DiskImages\Aeon.DiskImages.csproj" />
-    <ProjectReference Include="..\Aeon.Emulator.Input\Aeon.Emulator.Input.csproj" />
     <ProjectReference Include="..\Aeon.Emulator.Sound\Aeon.Emulator.Sound.csproj" />
-    <ProjectReference Include="..\Aeon.Emulator\Aeon.Emulator.csproj" />
+  </ItemGroup>
+  <!-- Conditional Windows-specific dependencies -->
+  <ItemGroup Condition="$([MSBuild]::IsOSPlatform('Windows'))">
+    <ProjectReference Include="..\Aeon.Emulator.Input\Aeon.Emulator.Input.csproj" />
   </ItemGroup>
   <ItemGroup>
-    <Resource Include="Aeon.ico" />
-    <Resource Include="Resources\MouseIntegration.png" />
-    <Resource Include="Resources\openfolderHS.png" />
-    <Resource Include="Resources\TaskArrow.png" />
+    <AvaloniaResource Include="Aeon.ico" />
+    <AvaloniaResource Include="Resources\**\*" />
   </ItemGroup>
 </Project>

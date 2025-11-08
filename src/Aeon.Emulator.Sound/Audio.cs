@@ -1,54 +1,48 @@
 ﻿using System;
 using System.Threading;
-using TinyAudio;
+using Ownaudio.Core;
 
 namespace Aeon.Emulator.Sound
 {
     internal static class Audio
     {
-        public static AudioPlayer CreatePlayer(bool useCallback = false) => WasapiAudioPlayer.Create(TimeSpan.FromSeconds(0.25), useCallback);
+        // OwnAudioSharp uses 48kHz sample rate by default
+        public const int SampleRate = 48000;
 
-        public static void WriteFullBuffer(AudioPlayer player, ReadOnlySpan<float> buffer)
+        public static IAudioEngine CreatePlayer(bool useCallback = false)
         {
-            var writeBuffer = buffer;
-
-            while (true)
-            {
-                int count = (int)player.WriteData(writeBuffer);
-                writeBuffer = writeBuffer[count..];
-                if (writeBuffer.IsEmpty)
-                    return;
-
-                Thread.Sleep(1);
-            }
+            var engine = AudioEngineFactory.CreateDefault();
+            engine.Initialize(AudioConfig.Default);
+            engine.Start();
+            return engine;
         }
-        public static void WriteFullBuffer(AudioPlayer player, ReadOnlySpan<short> buffer)
+
+        public static void WriteFullBuffer(IAudioEngine player, ReadOnlySpan<float> buffer)
         {
-            var writeBuffer = buffer;
-
-            while (true)
-            {
-                int count = (int)player.WriteData(writeBuffer);
-                writeBuffer = writeBuffer[count..];
-                if (writeBuffer.IsEmpty)
-                    return;
-
-                Thread.Sleep(1);
-            }
+            // OwnAudioSharp requires Span<float>, so we need to copy
+            Span<float> temp = stackalloc float[buffer.Length];
+            buffer.CopyTo(temp);
+            player.Send(temp);
         }
-        public static void WriteFullBuffer(AudioPlayer player, ReadOnlySpan<byte> buffer)
+        public static void WriteFullBuffer(IAudioEngine player, ReadOnlySpan<short> buffer)
         {
-            var writeBuffer = buffer;
-
-            while (true)
+            // Convert short to float
+            Span<float> floatBuffer = stackalloc float[buffer.Length];
+            for (int i = 0; i < buffer.Length; i++)
             {
-                int count = (int)player.WriteData(writeBuffer);
-                writeBuffer = writeBuffer[count..];
-                if (writeBuffer.IsEmpty)
-                    return;
-
-                Thread.Sleep(1);
+                floatBuffer[i] = buffer[i] / 32768f;
             }
+            player.Send(floatBuffer);
+        }
+        public static void WriteFullBuffer(IAudioEngine player, ReadOnlySpan<byte> buffer)
+        {
+            // Convert byte to float
+            Span<float> floatBuffer = stackalloc float[buffer.Length];
+            for (int i = 0; i < buffer.Length; i++)
+            {
+                floatBuffer[i] = (buffer[i] - 128) / 128f;
+            }
+            player.Send(floatBuffer);
         }
     }
 }

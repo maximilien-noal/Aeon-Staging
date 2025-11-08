@@ -1,8 +1,11 @@
 ﻿using System;
-using System.Windows;
-using System.Windows.Media;
-using System.Windows.Shapes;
-using System.Windows.Threading;
+using Avalonia;
+using Avalonia.Controls;
+using Avalonia.Interactivity;
+using Avalonia.Media;
+using Avalonia.Controls.Shapes;
+using Avalonia.Threading;
+using Avalonia.Markup.Xaml;
 
 namespace Aeon.Emulator.Launcher
 {
@@ -14,14 +17,22 @@ namespace Aeon.Emulator.Launcher
         /// <summary>
         /// The EmulatorDisplay dependency property definition.
         /// </summary>
-        public static readonly DependencyProperty EmulatorDisplayProperty = DependencyProperty.Register(nameof(EmulatorDisplay), typeof(EmulatorDisplay), typeof(PaletteDialog));
+        public static readonly StyledProperty<EmulatorDisplay?> EmulatorDisplayProperty = AvaloniaProperty.Register<PaletteDialog, EmulatorDisplay?>(nameof(EmulatorDisplay));
 
         private DispatcherTimer timer;
 
         /// <summary>
         /// Initializes a new instance of the <see cref="PaletteDialog"/> class.
         /// </summary>
-        public PaletteDialog() => this.InitializeComponent();
+        public PaletteDialog()
+        {
+            InitializeComponent();
+        }
+
+        private void InitializeComponent()
+        {
+            AvaloniaXamlLoader.Load(this);
+        }
 
         /// <summary>
         /// Gets or sets the current EmulatorDisplay control. This is a dependency property.
@@ -51,13 +62,14 @@ namespace Aeon.Emulator.Launcher
         /// Invoked when the window is initialized.
         /// </summary>
         /// <param name="e">Unused EventArgs instance.</param>
-        protected override void OnInitialized(EventArgs e)
+        protected override void OnOpened(EventArgs e)
         {
-            base.OnInitialized(e);
+            base.OnOpened(e);
             for (int i = 0; i < 256; i++)
                 this.grid.Children.Add(new Rectangle() { Fill = new SolidColorBrush() });
 
-            this.timer = new DispatcherTimer(TimeSpan.FromSeconds(1.0 / 30.0), DispatcherPriority.Normal, UpdateColors, this.Dispatcher);
+            this.timer = new DispatcherTimer { Interval = TimeSpan.FromSeconds(1.0 / 30.0) };
+            this.timer.Tick += UpdateColors;
             this.timer.Start();
         }
 

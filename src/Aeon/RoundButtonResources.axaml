@@ -1,0 +1,24 @@
+﻿<ResourceDictionary xmlns="https://github.com/avaloniaui"
+                    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
+    <ControlTemplate x:Key="roundButtonTemplate" TargetType="Button">
+        <Grid>
+            <Ellipse x:Name="border" Stroke="Gray" Fill="{TemplateBinding Background}" />
+            <Ellipse x:Name="whiteHighlight" Stroke="Transparent" Opacity="0.75">
+                <Ellipse.Fill>
+                    <RadialGradientBrush Center="25%,25%">
+                        <GradientStop Color="White" Offset="0" />
+                        <GradientStop Color="Transparent" Offset="1" />
+                    </RadialGradientBrush>
+                </Ellipse.Fill>
+            </Ellipse>
+            <Ellipse x:Name="mouseHighlight" Stroke="Transparent" Opacity="0">
+                <Ellipse.Fill>
+                    <SolidColorBrush Color="LightBlue" />
+                </Ellipse.Fill>
+            </Ellipse>
+            <Viewbox>
+                <ContentPresenter Margin="{TemplateBinding Padding}" />
+            </Viewbox>
+        </Grid>
+    </ControlTemplate>
+</ResourceDictionary>

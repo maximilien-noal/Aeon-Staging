@@ -1,5 +1,5 @@
 ﻿using System.Collections.Generic;
-using System.Windows.Input;
+using Avalonia.Input;
 
 namespace Aeon.Emulator.Launcher
 {

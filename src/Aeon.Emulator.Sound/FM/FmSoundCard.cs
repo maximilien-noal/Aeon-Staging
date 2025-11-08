@@ -3,7 +3,7 @@ using System.Collections.Generic;
 using System.Runtime.CompilerServices;
 using System.Threading;
 using System.Threading.Tasks;
-using TinyAudio;
+using Ownaudio.Core;
 using Ymf262Emu;
 
 namespace Aeon.Emulator.Sound.FM
@@ -16,7 +16,7 @@ namespace Aeon.Emulator.Sound.FM
         private const byte Timer1Mask = 0xC0;
         private const byte Timer2Mask = 0xA0;
 
-        private readonly AudioPlayer audioPlayer = Audio.CreatePlayer();
+        private readonly IAudioEngine audioPlayer = Audio.CreatePlayer();
         private int currentAddress;
         private readonly FmSynthesizer synth;
         private Task generateTask;
@@ -30,7 +30,8 @@ namespace Aeon.Emulator.Sound.FM
 
         public FmSoundCard()
         {
-            this.synth = new FmSynthesizer(this.audioPlayer.Format.SampleRate);
+            // OwnAudioSharp uses 48kHz by default
+            this.synth = new FmSynthesizer(48000);
         }
 
         IEnumerable<int> IInputPort.InputPorts => new int[] { 0x388 };
@@ -139,19 +140,21 @@ namespace Aeon.Emulator.Sound.FM
             var buffer = new float[1024];
             float[] playBuffer;
 
-            bool expandToStereo = this.audioPlayer.Format.Channels == 2;
+            // OwnAudioSharp is always stereo
+            bool expandToStereo = true;
             if (expandToStereo)
                 playBuffer = new float[buffer.Length * 2];
             else
                 playBuffer = buffer;
 
-            this.audioPlayer.BeginPlayback();
+            // OwnAudioSharp starts automatically when engine is created
             fillBuffer();
             try
             {
                 while (!cancelPlayback.IsCancellationRequested)
                 {
-                    await this.audioPlayer.WriteDataAsync(playBuffer, this.cancelPlayback.Token).ConfigureAwait(false);
+                    Audio.WriteFullBuffer(this.audioPlayer, playBuffer.AsSpan());
+                    await Task.Delay(10, this.cancelPlayback.Token).ConfigureAwait(false);
                     fillBuffer();
                 }
             }
@@ -159,7 +162,7 @@ namespace Aeon.Emulator.Sound.FM
             {
             }
 
-            this.audioPlayer.StopPlayback();
+            // OwnAudioSharp engine doesn't need explicit stop
 
             void fillBuffer()
             {

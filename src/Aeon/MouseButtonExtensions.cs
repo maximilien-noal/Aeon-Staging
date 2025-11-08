@@ -1,4 +1,4 @@
-﻿using System.Windows.Input;
+﻿using Avalonia.Input;
 using Aeon.Emulator;
 
 namespace Aeon.Emulator.Launcher

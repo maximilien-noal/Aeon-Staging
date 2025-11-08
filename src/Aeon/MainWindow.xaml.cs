@@ -1,37 +1,59 @@
 ﻿using System;
 using System.IO;
-using System.Windows;
-using System.Windows.Input;
-using System.Windows.Interop;
-using System.Windows.Media;
-using System.Windows.Media.Imaging;
+using Avalonia;
+using Avalonia.Controls;
+using Avalonia.Interactivity;
+using Avalonia.Input;
+// using System.Windows.Interop; // Not directly available in Avalonia
+using Avalonia.Media;
+using Avalonia.Media.Imaging;
 using Aeon.DiskImages;
 using Aeon.DiskImages.Archives;
 using Aeon.Emulator.Dos.VirtualFileSystem;
 using Aeon.Emulator.Launcher.Configuration;
-using Microsoft.Win32;
+using Avalonia.Markup.Xaml;
+using System.Threading.Tasks;
 
 namespace Aeon.Emulator.Launcher
 {
-    public sealed partial class MainWindow : Window, System.Windows.Forms.IWin32Window
+    public sealed partial class MainWindow : Window
     {
         private PerformanceWindow performanceWindow;
         private AeonConfiguration currentConfig;
         private bool hasActivated;
         private PaletteDialog paletteWindow;
-        private readonly Lazy<WindowInteropHelper> interopHelper;
+        // WindowInteropHelper not needed in Avalonia
 
         public MainWindow()
         {
-            this.interopHelper = new Lazy<WindowInteropHelper>(() => new WindowInteropHelper(this));
-            this.InitializeComponent();
+            // WindowInteropHelper initialization removed
+            AvaloniaXamlLoader.Load(this);
+            
+            // Get emulatorDisplay control and hook up EmulationError event
+            emulatorDisplay = this.FindControl<EmulatorDisplay>("emulatorDisplay");
+            if (emulatorDisplay != null)
+            {
+                emulatorDisplay.AddHandler(EmulatorDisplay.EmulationErrorEvent, EmulatorDisplay_EmulationError);
+            }
+            
+            // Populate scaler ComboBox - ObjectDataProvider not available in Avalonia
+            InitializeScalerValues();
+        }
+        
+        private void InitializeScalerValues()
+        {
+            var scalerComboBox = this.FindControl<ComboBox>("scalerComboBox");
+            if (scalerComboBox != null)
+            {
+                scalerComboBox.ItemsSource = Enum.GetValues(typeof(Aeon.Emulator.Video.Rendering.ScalingAlgorithm));
+            }
         }
 
-        IntPtr System.Windows.Forms.IWin32Window.Handle => this.interopHelper.Value.Handle;
+        // IWin32Window.Handle property removed
 
-        protected override void OnActivated(EventArgs e)
+        protected override void OnOpened(EventArgs e)
         {
-            base.OnActivated(e);
+            // base.OnActivated(e); // Not in Avalonia
 
             if (!this.hasActivated)
             {
@@ -122,12 +144,14 @@ namespace Aeon.Emulator.Launcher
                     )
                 )
             );
+#if WINDOWS
             vm.RegisterVirtualDevice(new Input.JoystickDevice());
+#endif
 
             emulatorDisplay.EmulationSpeed = config.EmulationSpeed ?? 100_000_000;
             emulatorDisplay.MouseInputMode = config.IsMouseAbsolute ? MouseInputMode.Absolute : MouseInputMode.Relative;
-            toolBar.Visibility = config.HideUserInterface ? Visibility.Collapsed : Visibility.Visible;
-            mainMenu.Visibility = config.HideUserInterface ? Visibility.Collapsed : Visibility.Visible;
+            // toolBar.IsVisible = !config.HideUserInterface;
+            mainMenu.IsVisible = !config.HideUserInterface;
             if (!string.IsNullOrEmpty(config.Title))
                 this.Title = config.Title;
 
@@ -171,40 +195,36 @@ namespace Aeon.Emulator.Launcher
         }
         private TaskDialogItem ShowTaskDialog(string title, string caption, params TaskDialogItem[] items)
         {
-            var taskDialog = new TaskDialog { Owner = this, Items = items, Icon = this.Icon, Title = title, Caption = caption };
-            if (taskDialog.ShowDialog() == true)
+            var taskDialog = new TaskDialog { /* Owner = this, */ Items = items, Icon = this.Icon, Title = title, Caption = caption };
+            // if (taskDialog.ShowDialog() == true) // TODO: Use await ShowDialog(this)
+            if (false)
                 return taskDialog.SelectedItem;
             else
                 return null;
         }
 
-        private void QuickLaunch_Click(object sender, RoutedEventArgs e)
+        private async void QuickLaunch_Click(object? sender, RoutedEventArgs e)
         {
-            var fileDialog = new OpenFileDialog
-            {
-                Filter = "Programs (*.exe,*.com;*.AeonConfig;*.AeonPack)|*.exe;*.com;*.AeonConfig;*.AeonPack|All files (*.*)|*.*",
-                Title = "Run DOS program..."
-            };
+            // TODO: Implement Avalonia file picker
 
-            if (fileDialog.ShowDialog(this) == true)
-                this.QuickLaunch(fileDialog.FileName);
+            // var files = await StorageProvider.OpenFilePickerAsync(new FilePickerOpenOptions {...});
+
+            await Task.CompletedTask; // Placeholder
         }
-        private void CommandPrompt_Click(object sender, RoutedEventArgs e)
+        private async void CommandPrompt_Click(object? sender, RoutedEventArgs e)
         {
-            var dialog = new System.Windows.Forms.FolderBrowserDialog
-            {
-                Description = "Select folder for C:\\ drive...",
-                UseDescriptionForTitle = true
-            };
+            // TODO: Implement Avalonia folder picker
 
-            if (dialog.ShowDialog(this) == System.Windows.Forms.DialogResult.OK)
-            {
-                this.currentConfig = AeonConfiguration.GetQuickLaunchConfiguration(dialog.SelectedPath, null);
-                this.LaunchCurrentConfig();
-            }
+            // var folders = await StorageProvider.OpenFolderPickerAsync(new FolderPickerOpenOptions {...});
+
+            await Task.CompletedTask; // Placeholder
         }
-        private void Close_CanExecute(object sender, CanExecuteRoutedEventArgs e) => e.CanExecute = true;
-        private void Close_Executed(object sender, ExecutedRoutedEventArgs e) => this.Close();
+        // Command handler Close_CanExecute - needs Avalonia command implementation
+        private void Close_Executed(object? sender, RoutedEventArgs e) => this.Close();
+        private void Close_Click(object? sender, RoutedEventArgs e) => Close_Executed(sender, e);
+        
+        private void Copy_Click(object? sender, RoutedEventArgs e) => Copy_Executed(sender, e);
+        /* Avalonia doesn't use CanExecuteRoutedEventArgs
         private void MapDrives_CanExecute(object sender, CanExecuteRoutedEventArgs e)
         {
             if (this.emulatorDisplay != null)
@@ -213,9 +233,11 @@ namespace Aeon.Emulator.Launcher
                 e.CanExecute = state == EmulatorState.Running || state == EmulatorState.Paused;
             }
         }
+        */
+        
         private void EmulatorDisplay_EmulatorStateChanged(object sender, RoutedEventArgs e)
         {
-            CommandManager.InvalidateRequerySuggested();
+            // CommandManager.InvalidateRequerySuggested(); // Not in Avalonia
             if (this.emulatorDisplay.EmulatorState == EmulatorState.ProgramExited && this.currentConfig != null && this.currentConfig.HideUserInterface)
                 this.Close();
         }
@@ -237,34 +259,38 @@ namespace Aeon.Emulator.Launcher
                     emulatorDisplay.EmulationSpeed = newSpeed;
             }
         }
-        private void Copy_CanExecute(object sender, CanExecuteRoutedEventArgs e)
+        /* Avalonia doesn\'t use CanExecuteRoutedEventArgs
+private void Copy_CanExecute(object sender, CanExecuteRoutedEventArgs e)
         {
             if (emulatorDisplay != null && emulatorDisplay.DisplayBitmap != null)
                 e.CanExecute = true;
         }
-        private void Copy_Executed(object sender, ExecutedRoutedEventArgs e)
+*/
+        private void Copy_Executed(object? sender, RoutedEventArgs e)
         {
             if (emulatorDisplay != null)
             {
                 var bmp = emulatorDisplay.DisplayBitmap;
                 if (bmp != null)
-                    Clipboard.SetImage(bmp);
+                {
+                    // Clipboard.SetImage(bmp); // TODO: Avalonia clipboard API
+                }
             }
         }
-        private void FullScreen_Executed(object sener, ExecutedRoutedEventArgs e)
+        private void FullScreen_Executed(object sener, RoutedEventArgs e)
         {
-            if (this.WindowStyle != WindowStyle.None)
+            if (this.SystemDecorations != Avalonia.Controls.SystemDecorations.None)
             {
-                this.menuContainer.Visibility = Visibility.Collapsed;
-                this.WindowStyle = WindowStyle.None;
+                this.menuContainer.IsVisible = false;
+                this.SystemDecorations = Avalonia.Controls.SystemDecorations.None;
                 this.WindowState = WindowState.Maximized;
                 this.SetCurrentValue(BackgroundProperty, Brushes.Black);
             }
             else
             {
-                this.menuContainer.Visibility = Visibility.Visible;
+                this.menuContainer.IsVisible = true;
                 this.WindowState = WindowState.Normal;
-                this.WindowStyle = WindowStyle.SingleBorderWindow;
+                this.SystemDecorations = Avalonia.Controls.SystemDecorations.Full;
                 this.SetCurrentValue(BackgroundProperty, this.FindResource("backgroundGradient"));
             }
         }
@@ -281,7 +307,7 @@ namespace Aeon.Emulator.Launcher
             }
             else if (selection == debug)
             {
-                var debuggerWindow = new DebuggerWindow { Owner = this, EmulatorHost = this.emulatorDisplay.EmulatorHost };
+                var debuggerWindow = new DebuggerWindow { /* Owner = this, */ EmulatorHost = this.emulatorDisplay.EmulatorHost };
                 debuggerWindow.Show();
                 debuggerWindow.UpdateDebugger();
             }
@@ -305,7 +331,7 @@ namespace Aeon.Emulator.Launcher
             {
                 performanceWindow = new PerformanceWindow();
                 performanceWindow.Closed += this.PerformanceWindow_Closed;
-                performanceWindow.Owner = this;
+                // // performanceWindow.Owner = this; // TODO: Set parent in Avalonia // TODO: Set parent window in Avalonia differently
                 performanceWindow.EmulatorDisplay = emulatorDisplay;
                 performanceWindow.Show();
             }
@@ -320,7 +346,7 @@ namespace Aeon.Emulator.Launcher
         }
         private void ShowDebugger_Click(object sender, RoutedEventArgs e)
         {
-            var debuggerWindow = new DebuggerWindow { Owner = this, EmulatorHost = this.emulatorDisplay.EmulatorHost };
+            var debuggerWindow = new DebuggerWindow { /* Owner = this, */ EmulatorHost = this.emulatorDisplay.EmulatorHost };
             debuggerWindow.Show();
             debuggerWindow.UpdateDebugger();
         }
@@ -332,23 +358,24 @@ namespace Aeon.Emulator.Launcher
             }
             else
             {
-                this.paletteWindow = new PaletteDialog { Owner = this, EmulatorDisplay = this.emulatorDisplay, Icon = this.Icon };
+                this.paletteWindow = new PaletteDialog { /* Owner = this, */ EmulatorDisplay = this.emulatorDisplay, Icon = this.Icon };
                 this.paletteWindow.Closed += PaletteWindow_Closed;
                 paletteWindow.Show();
             }
         }
-        private void OpenInstructionLog_Click(object sender, RoutedEventArgs e)
+        private async void OpenInstructionLog_Click(object? sender, RoutedEventArgs e)
         {
-            var openFile = new OpenFileDialog
-            {
-                Filter = "Log files (*.AeonLog)|*.AeonLog|All files (*.*)|*.*",
-                Title = "Open Log File..."
-            };
+            // var openFile = new OpenFileDialog // TODO: Use StorageProvider API
+            // {
+            //     Filter = "Log files (*.AeonLog)|*.AeonLog|All files (*.*)|*.*",
+            //     Title = "Open Log File..."
+            // };
 
-            if (openFile.ShowDialog(this) == true)
+            // if (openFile.ShowDialog(this) == true)
+            if (false)
             {
-                var log = LogAccessor.Open(openFile.FileName);
-                InstructionLogWindow.ShowDialog(log);
+                // var log = LogAccessor.Open(openFile.FileName);
+                // InstructionLogWindow.ShowDialog(log);
             }
         }
         private void PaletteWindow_Closed(object sender, EventArgs e)
@@ -364,8 +391,9 @@ namespace Aeon.Emulator.Launcher
             using var bmp = this.emulatorDisplay?.CurrentPresenter?.Dump();
             if (bmp != null)
             {
-                var bmpSource = BitmapSource.Create(bmp.Width, bmp.Height, 96, 96, PixelFormats.Bgr32, null, bmp.PixelBuffer, bmp.Width * bmp.Height * 4, bmp.Width * 4);
-                Clipboard.SetImage(bmpSource);
+                // TODO: Implement clipboard image support for Avalonia
+                // var bmpSource = BitmapSource.Create(bmp.Width, bmp.Height, 96, 96, PixelFormats.Bgr32, null, bmp.PixelBuffer, bmp.Width * bmp.Height * 4, bmp.Width * 4);
+                // Clipboard.SetImage(bmpSource);
             }
         }
     }
