@@ -13,7 +13,14 @@ namespace Aeon.Test
         [TestMethod]
         public void WriteChunkedStream()
         {
-            using var srcStream = File.OpenRead(@"C:\DOS\32\DAGGER\ARENA2\MAPS.BSA");
+            const string testFile = @"C:\DOS\32\DAGGER\ARENA2\MAPS.BSA";
+            if (!File.Exists(testFile))
+            {
+                Assert.Inconclusive($"Test file not found: {testFile}");
+                return;
+            }
+            
+            using var srcStream = File.OpenRead(testFile);
             using var buffer = new MemoryStream();
             ChunkedCompressor.Compress(srcStream, buffer);
             //using (var writer = new ChunkedStreamWriter())
@@ -33,8 +40,15 @@ namespace Aeon.Test
         [TestMethod]
         public void BuildArchive()
         {
+            const string testDir = @"C:\DOS\16\KEEN4";
+            if (!Directory.Exists(testDir))
+            {
+                Assert.Inconclusive($"Test directory not found: {testDir}");
+                return;
+            }
+            
             using var builder = new ArchiveBuilder();
-            foreach (var fileName in Directory.EnumerateFiles(@"C:\DOS\16\KEEN4"))
+            foreach (var fileName in Directory.EnumerateFiles(testDir))
                 builder.AddFile(fileName, Path.GetFileName(fileName));
 
             using var outputStream = new MemoryStream();
@@ -42,7 +56,7 @@ namespace Aeon.Test
 
             outputStream.Position = 0;
             using var reader = new ArchiveFile(outputStream);
-            foreach (var fileName in Directory.EnumerateFiles(@"C:\DOS\16\KEEN4"))
+            foreach (var fileName in Directory.EnumerateFiles(testDir))
             {
                 using (var f = File.OpenRead(fileName))
                 using (var a = reader.OpenItem(Path.GetFileName(fileName)))
