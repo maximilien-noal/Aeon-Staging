@@ -7,11 +7,14 @@
              xmlns:debug="clr-namespace:Aeon.Emulator.Launcher.Debugger"
              mc:Ignorable="d" Name="root"
              d:DesignHeight="300" d:DesignWidth="300">
+    <UserControl.Styles>
+        <StyleInclude Source="ListBoxTemplates.axaml" />
+        <StyleInclude Source="InstructionStyles.axaml" />
+    </UserControl.Styles>
     <UserControl.Resources>
         <ResourceDictionary>
             <ResourceDictionary.MergedDictionaries>
                 <ResourceInclude Source="InstructionTemplates.axaml" />
-                <ResourceInclude Source="ListBoxTemplates.axaml" />
             </ResourceDictionary.MergedDictionaries>
             <!-- Style for logged instructions - removed TargetType/BasedOn as they're not compatible with Avalonia in this context -->
             <debug:InstructionStyleSelector x:Key="styleSelector" />

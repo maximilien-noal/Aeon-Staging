@@ -48,7 +48,7 @@
 -->
     </ControlTemplate>
     
-    <Style Selector="local|TaskDialogItem">
+    <Style Selector="local|TaskDialogItem" x:Key="taskDialogItemStyle">
         <Setter Property="Template" Value="{StaticResource taskButtonTemplate}" />
         <Setter Property="Icon" Value="../Resources/TaskArrow.png" />
     </Style>

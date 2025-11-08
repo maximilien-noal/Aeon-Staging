@@ -4,7 +4,8 @@
     xmlns:rendering="clr-namespace:Aeon.Emulator.Video.Rendering;assembly=Aeon.Emulator"
     xmlns:local="clr-namespace:Aeon.Emulator.Launcher"
     xmlns:sys="clr-namespace:System;assembly=System.Runtime"
-    Title="Aeon" Width="800" Height="600" MinWidth="360" MinHeight="270" Icon="Aeon.ico" DataContext="{Binding ElementName=emulatorDisplay}" Background="{StaticResource backgroundGradient}">
+    x:CompileBindings="False"
+    Title="Aeon" Width="800" Height="600" MinWidth="360" MinHeight="270" Icon="Aeon.ico" Background="{StaticResource backgroundGradient}">
     <!-- CommandBindings not supported in Avalonia - using Click handlers and KeyBindings instead -->
     <Window.KeyBindings>
         <KeyBinding Gesture="Ctrl+W" Command="{Binding CloseCommand}" />

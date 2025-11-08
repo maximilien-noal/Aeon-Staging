@@ -1,12 +1,12 @@
-﻿<ResourceDictionary xmlns="https://github.com/avaloniaui"
-                    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
+﻿<Styles xmlns="https://github.com/avaloniaui"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
     
     <Style Selector="ListBoxItem.listBoxItemStyle">
         <Setter Property="Template">
             <Setter.Value>
                 <ControlTemplate TargetType="ListBoxItem">
                     <Grid Background="{TemplateBinding Background}">
-                        <Border CornerRadius="4" BorderThickness="1" x:Name="itemBorder" Margin="0" Width="Auto" >
+                        <Border CornerRadius="4" BorderThickness="1" x:Name="itemBorder" Margin="0" >
                             <ContentPresenter />
                         </Border>
                     </Grid>
@@ -50,4 +50,4 @@
             </Setter.Value>
         </Setter>
     </Style>
-</ResourceDictionary>
+</Styles>
