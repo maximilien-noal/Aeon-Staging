@@ -55,7 +55,8 @@ The following is currently emulated:
    - PS2 keyboard + interrupt handler
    - PS2 mouse + interrupt handler + mouse driver
    - Game port
-     - Cross-platform gamepad support using SDL2
+     - Windows: DirectInput/XInput (native APIs)
+     - Linux/macOS: SDL2 gamepad support
  - DOS
    - Roughly equivalent to MS-DOS 5.0
    - Command/batch interpreter

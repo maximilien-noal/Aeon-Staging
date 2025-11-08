@@ -1,6 +1,6 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
   <PropertyGroup>
-    <TargetFramework>net9.0</TargetFramework>
+    <TargetFrameworks>net9.0;net9.0-windows</TargetFrameworks>
     <LangVersion>latest</LangVersion>
     <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
     <Company>Aeon</Company>
@@ -9,7 +9,12 @@
     <Title>Aeon Joystick Emulation</Title>
     <Description>Emulates joysticks for Aeon</Description>
   </PropertyGroup>
-  <ItemGroup>
+  <!-- Define WINDOWS constant for net9.0-windows target -->
+  <PropertyGroup Condition="'$(TargetFramework)' == 'net9.0-windows'">
+    <DefineConstants>$(DefineConstants);WINDOWS</DefineConstants>
+  </PropertyGroup>
+  <!-- SDL2 for non-Windows platforms -->
+  <ItemGroup Condition="'$(TargetFramework)' == 'net9.0'">
     <PackageReference Include="Silk.NET.SDL" Version="2.22.0" />
   </ItemGroup>
   <ItemGroup>

@@ -1,3 +1,4 @@
+#if !WINDOWS
 using System;
 using Silk.NET.SDL;
 
@@ -106,3 +107,4 @@ namespace Aeon.Emulator.Input
         }
     }
 }
+#endif

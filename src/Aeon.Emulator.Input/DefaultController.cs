@@ -1,12 +1,18 @@
 ﻿using System;
 using System.Diagnostics;
+#if !WINDOWS
 using Silk.NET.SDL;
+#else
+using System.Linq;
+#endif
 
 namespace Aeon.Emulator.Input
 {
     internal sealed class DefaultController : IGameController
     {
+#if !WINDOWS
         private static readonly Lazy<Sdl> sdlInstance = new Lazy<Sdl>(InitializeSdl);
+#endif
         private IGameController current;
         private readonly Stopwatch lastAttempt = new();
 
@@ -37,6 +43,7 @@ namespace Aeon.Emulator.Input
 
         public void Dispose() => this.current?.Dispose();
 
+#if !WINDOWS
         private static Sdl InitializeSdl()
         {
             var sdl = Sdl.GetApi();
@@ -87,5 +94,30 @@ namespace Aeon.Emulator.Input
                 return null;
             }
         }
+#else
+        // Windows-only implementation using DirectInput/XInput
+        private static IGameController GetDefaultController()
+        {
+            // first check for an XInput compatible controller
+            if (XInput.TryGetController(out var controller))
+                return controller;
+
+            IntPtr hwnd;
+
+            using (var p = Process.GetCurrentProcess())
+            {
+                hwnd = p.MainWindowHandle;
+            }
+
+            var dinput = DirectInput.GetInstance(hwnd);
+
+            // if none found, try for the first DirectInput device
+            var d = dinput.GetDevices(DeviceClass.GameController, DeviceEnumFlags.All).FirstOrDefault();
+            if (d != null)
+                return new DirectInputGameController(dinput.CreateDevice(d.InstanceId));
+
+            return null;
+        }
+#endif
     }
 }
