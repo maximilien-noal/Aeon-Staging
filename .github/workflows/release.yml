@@ -171,10 +171,10 @@ jobs:
 
       - name: Package artifacts (Windows)
         if: runner.os == 'Windows'
+        shell: pwsh
         run: |
           cd ./publish
-          Compress-Archive -Path ${{ matrix.artifact }} `
-            -DestinationPath ${{ matrix.artifact }}.zip
+          Compress-Archive -Path "${{ matrix.artifact }}" -DestinationPath ${{ matrix.artifact }}.zip
           cd ..
 
       - name: Upload Release Asset (Linux/macOS)
@@ -268,10 +268,10 @@ jobs:
 
       - name: Package artifacts (Windows)
         if: runner.os == 'Windows'
+        shell: pwsh
         run: |
           cd ./publish
-          Compress-Archive -Path ${{ matrix.artifact }} `
-            -DestinationPath ${{ matrix.artifact }}.zip
+          Compress-Archive -Path "${{ matrix.artifact }}" -DestinationPath ${{ matrix.artifact }}.zip
           cd ..
 
       - name: Upload Release Asset (Linux/macOS)
