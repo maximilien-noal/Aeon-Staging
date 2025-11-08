@@ -1,0 +1,3 @@
+GAME.EXE - Main executable file
+This file would contain binary data in a real DOS game.
+For testing purposes, we use text data.

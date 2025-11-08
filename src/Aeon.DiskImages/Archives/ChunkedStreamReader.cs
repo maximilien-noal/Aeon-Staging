@@ -110,7 +110,7 @@ namespace Aeon.DiskImages.Archives
                 if (this.currentIndex < this.index.Length - 1)
                     rawChunkSize = (int)(this.index[this.currentIndex + 1] - this.index[this.currentIndex] - 1);
                 else
-                    rawChunkSize = (int)(this.Length - this.index[this.currentIndex] - 1);
+                    rawChunkSize = (int)(this.baseStream.Length - this.startOffset - this.index[this.currentIndex] - 1);
 
                 var mode = (CompressionAlgorithm)this.baseStream.ReadByte();
                 if (mode == CompressionAlgorithm.Uncompressed)
