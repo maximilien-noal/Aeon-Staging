@@ -103,13 +103,13 @@ jobs:
       run: dotnet restore src/Aeon.sln
       
     - name: Publish Linux x64
-      run: dotnet publish src/Aeon/Aeon.csproj -c Release -r linux-x64 --self-contained false -o ./publish/linux-x64
+      run: dotnet publish src/Aeon/Aeon.csproj -c Release -f net9.0 -r linux-x64 --self-contained false -o ./publish/linux-x64
       
     - name: Publish Windows x64
-      run: dotnet publish src/Aeon/Aeon.csproj -c Release -r win-x64 --self-contained false -o ./publish/win-x64
+      run: dotnet publish src/Aeon/Aeon.csproj -c Release -f net9.0-windows -r win-x64 --self-contained false -o ./publish/win-x64
       
     - name: Publish macOS x64
-      run: dotnet publish src/Aeon/Aeon.csproj -c Release -r osx-x64 --self-contained false -o ./publish/osx-x64
+      run: dotnet publish src/Aeon/Aeon.csproj -c Release -f net9.0 -r osx-x64 --self-contained false -o ./publish/osx-x64
       
     - name: Upload Linux artifacts
       uses: actions/upload-artifact@v4

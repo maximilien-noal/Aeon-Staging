@@ -110,12 +110,15 @@ jobs:
         include:
           - os: ubuntu-latest
             runtime: linux-x64
+            framework: net9.0
             artifact: aeon-linux-x64
           - os: windows-latest
             runtime: win-x64
+            framework: net9.0-windows
             artifact: aeon-windows-x64
           - os: macos-latest
             runtime: osx-x64
+            framework: net9.0
             artifact: aeon-macos-x64
 
     steps:
@@ -145,7 +148,7 @@ jobs:
       - name: Publish framework-dependent build
         run: >-
           dotnet publish src/Aeon/Aeon.csproj -c Release
-          -r ${{ matrix.runtime }} --self-contained false
+          -f ${{ matrix.framework }} -r ${{ matrix.runtime }} --self-contained false
           -o ./publish/${{ matrix.artifact }}
 
       - name: Create version info file
@@ -218,12 +221,15 @@ jobs:
         include:
           - os: ubuntu-latest
             runtime: linux-x64
+            framework: net9.0
             artifact: aeon-linux-x64-standalone
           - os: windows-latest
             runtime: win-x64
+            framework: net9.0-windows
             artifact: aeon-windows-x64-standalone
           - os: macos-latest
             runtime: osx-x64
+            framework: net9.0
             artifact: aeon-macos-x64-standalone
 
     steps:
@@ -241,7 +247,7 @@ jobs:
       - name: Publish self-contained build
         run: >-
           dotnet publish src/Aeon/Aeon.csproj -c Release
-          -r ${{ matrix.runtime }} --self-contained true
+          -f ${{ matrix.framework }} -r ${{ matrix.runtime }} --self-contained true
           -p:PublishSingleFile=false -p:PublishTrimmed=false
           -o ./publish/${{ matrix.artifact }}
 
