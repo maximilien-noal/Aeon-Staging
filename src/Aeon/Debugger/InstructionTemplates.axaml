@@ -3,7 +3,7 @@
                     xmlns:local="clr-namespace:Aeon.Emulator.Launcher.Debugger"
                     xmlns:dbg="clr-namespace:Aeon.Emulator.DebugSupport;assembly=Aeon.Emulator">
     
-    <Style Selector="CheckBox.miniExpanderButton">
+    <Style Selector="CheckBox.miniExpanderButton" x:Key="miniExpanderButtonStyle">
         <Setter Property="Template">
             <Setter.Value>
     <ControlTemplate TargetType="CheckBox">
@@ -19,17 +19,6 @@
     </ControlTemplate>
             </Setter.Value>
         </Setter>
-    </Style>
-    
-    <!-- Styles for hover effects on miniExpander -->
-    <Style Selector="CheckBox:pointerover /template/ Rectangle#horizontalLine">
-        <Setter Property="Fill" Value="Blue" />
-    </Style>
-    <Style Selector="CheckBox:pointerover /template/ Rectangle#verticalLine">
-        <Setter Property="Fill" Value="Blue" />
-    </Style>
-    <Style Selector="CheckBox:pointerover /template/ Border#border">
-        <Setter Property="Background" Value="Gainsboro" />
     </Style>
     
     <DataTemplate x:Key="instructionTemplate" DataType="{x:Type dbg:Instruction}">

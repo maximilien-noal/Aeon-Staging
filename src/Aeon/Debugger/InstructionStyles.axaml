@@ -1,0 +1,14 @@
+﻿<Styles xmlns="https://github.com/avaloniaui"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
+    
+    <!-- Styles for hover effects on miniExpander -->
+    <Style Selector="CheckBox:pointerover /template/ Rectangle#horizontalLine">
+        <Setter Property="Fill" Value="Blue" />
+    </Style>
+    <Style Selector="CheckBox:pointerover /template/ Rectangle#verticalLine">
+        <Setter Property="Fill" Value="Blue" />
+    </Style>
+    <Style Selector="CheckBox:pointerover /template/ Border#border">
+        <Setter Property="Background" Value="Gainsboro" />
+    </Style>
+</Styles>
