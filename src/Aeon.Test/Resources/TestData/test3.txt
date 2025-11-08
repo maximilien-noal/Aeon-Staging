@@ -1,0 +1,4 @@
+Level data file
+Contains map information
+Enemy positions
+Item locations

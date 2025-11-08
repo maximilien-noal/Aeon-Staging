@@ -1,0 +1,6 @@
+This is a test file for the Archive tests.
+It contains multiple lines of text to test compression.
+The ChunkedCompressor should be able to compress this efficiently.
+DOS programs typically have text files like this.
+AUTOEXEC.BAT, CONFIG.SYS, README files, etc.
+12345678901234567890123456789012345678901234567890
