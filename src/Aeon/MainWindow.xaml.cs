@@ -34,6 +34,8 @@ namespace Aeon.Emulator.Launcher
             if (emulatorDisplay != null)
             {
                 emulatorDisplay.AddHandler(EmulatorDisplay.EmulationErrorEvent, EmulatorDisplay_EmulationError);
+                // Set DataContext to emulatorDisplay (moved from XAML to avoid forward reference issue)
+                this.DataContext = emulatorDisplay;
             }
             
             // Populate scaler ComboBox - ObjectDataProvider not available in Avalonia
