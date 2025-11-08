@@ -1,0 +1,297 @@
+---
+name: Release
+
+on:
+  push:
+    tags:
+      - 'v*.*.*'
+  workflow_dispatch:
+    inputs:
+      tag:
+        description: 'Tag to release (e.g., v1.0.0)'
+        required: true
+        type: string
+
+permissions:
+  contents: write
+
+jobs:
+  create-release:
+    name: Create Release
+    runs-on: ubuntu-latest
+    outputs:
+      upload_url: ${{ steps.create_release.outputs.upload_url }}
+      version: ${{ steps.get_version.outputs.version }}
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Get version from tag
+        id: get_version
+        run: |
+          if [ "${{ github.event_name }}" = "workflow_dispatch" ]; then
+            echo "version=${{ github.event.inputs.tag }}" >> $GITHUB_OUTPUT
+          else
+            echo "version=${GITHUB_REF#refs/tags/}" >> $GITHUB_OUTPUT
+          fi
+
+      - name: Generate changelog
+        id: changelog
+        run: |
+          VERSION="${{ steps.get_version.outputs.version }}"
+          echo "Generating changelog for $VERSION"
+
+          # Get the previous tag
+          PREV_TAG=$(git describe --tags --abbrev=0 \
+            $VERSION^ 2>/dev/null || echo "")
+
+          if [ -z "$PREV_TAG" ]; then
+            echo "First release - including all commits"
+            CHANGELOG=$(git log --pretty=format:"- %s (%h)" --no-merges)
+          else
+            echo "Changes since $PREV_TAG"
+            CHANGELOG=$(git log $PREV_TAG..$VERSION \
+              --pretty=format:"- %s (%h)" --no-merges)
+          fi
+
+          # Save changelog to file
+          cat > changelog.md << 'EOF'
+          ## What's Changed
+
+          $CHANGELOG
+
+          ## Installation
+
+          Download the appropriate build for your platform:
+          - **Windows**: `aeon-windows-x64.zip`
+          - **Linux**: `aeon-linux-x64.tar.gz`
+          - **macOS**: `aeon-macos-x64.tar.gz`
+
+          ### Requirements
+          - .NET 9 Runtime (if using framework-dependent builds)
+          - Download from: https://dotnet.microsoft.com/download/dotnet/9.0
+
+          ## Usage
+          Extract the archive and run the Aeon executable.
+          See the [README](https://github.com/${{ github.repository }}/blob/main/README.md)
+          for more details.
+          EOF
+
+          echo "changelog<<EOF" >> $GITHUB_OUTPUT
+          cat changelog.md >> $GITHUB_OUTPUT
+          echo "EOF" >> $GITHUB_OUTPUT
+
+      - name: Create GitHub Release
+        id: create_release
+        uses: actions/create-release@v1
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        with:
+          tag_name: ${{ steps.get_version.outputs.version }}
+          release_name: Release ${{ steps.get_version.outputs.version }}
+          body: ${{ steps.changelog.outputs.changelog }}
+          draft: false
+          prerelease: >-
+            ${{ contains(steps.get_version.outputs.version, 'alpha') ||
+            contains(steps.get_version.outputs.version, 'beta') ||
+            contains(steps.get_version.outputs.version, 'rc') }}
+
+  build-and-upload:
+    name: Build and Upload Assets
+    needs: create-release
+    runs-on: ${{ matrix.os }}
+
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - os: ubuntu-latest
+            runtime: linux-x64
+            artifact: aeon-linux-x64
+          - os: windows-latest
+            runtime: win-x64
+            artifact: aeon-windows-x64
+          - os: macos-latest
+            runtime: osx-x64
+            artifact: aeon-macos-x64
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Setup .NET
+        uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: '9.0.x'
+
+      - name: Display .NET info
+        run: dotnet --info
+
+      - name: Restore dependencies
+        run: dotnet restore src/Aeon.sln
+
+      - name: Build solution
+        run: >-
+          dotnet build src/Aeon.sln --configuration Release --no-restore
+
+      - name: Run tests
+        run: >-
+          dotnet test src/Aeon.sln --configuration Release
+          --no-build --verbosity normal
+
+      - name: Publish framework-dependent build
+        run: >-
+          dotnet publish src/Aeon/Aeon.csproj -c Release
+          -r ${{ matrix.runtime }} --self-contained false
+          -o ./publish/${{ matrix.artifact }}
+
+      - name: Create version info file
+        shell: bash
+        run: |
+          cat > ./publish/${{ matrix.artifact }}/VERSION.txt << EOF
+          Aeon x86 Emulator
+          Version: ${{ needs.create-release.outputs.version }}
+          Platform: ${{ matrix.runtime }}
+          Build Date: $(date -u +"%Y-%m-%d %H:%M:%S UTC")
+          Build Type: Framework-dependent (.NET 9 required)
+
+          For more information, visit:
+          https://github.com/${{ github.repository }}
+          EOF
+
+      - name: Package artifacts (Linux/macOS)
+        if: runner.os != 'Windows'
+        run: |
+          cd ./publish
+          tar -czf ${{ matrix.artifact }}.tar.gz ${{ matrix.artifact }}
+          cd ..
+
+      - name: Package artifacts (Windows)
+        if: runner.os == 'Windows'
+        run: |
+          cd ./publish
+          Compress-Archive -Path ${{ matrix.artifact }} `
+            -DestinationPath ${{ matrix.artifact }}.zip
+          cd ..
+
+      - name: Upload Release Asset (Linux/macOS)
+        if: runner.os != 'Windows'
+        uses: actions/upload-release-asset@v1
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        with:
+          upload_url: ${{ needs.create-release.outputs.upload_url }}
+          asset_path: ./publish/${{ matrix.artifact }}.tar.gz
+          asset_name: ${{ matrix.artifact }}.tar.gz
+          asset_content_type: application/gzip
+
+      - name: Upload Release Asset (Windows)
+        if: runner.os == 'Windows'
+        uses: actions/upload-release-asset@v1
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        with:
+          upload_url: ${{ needs.create-release.outputs.upload_url }}
+          asset_path: ./publish/${{ matrix.artifact }}.zip
+          asset_name: ${{ matrix.artifact }}.zip
+          asset_content_type: application/zip
+
+      - name: Build summary
+        run: |
+          echo "### ✅ Release Build Complete" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "- Version: ${{ needs.create-release.outputs.version }}" >> $GITHUB_STEP_SUMMARY
+          echo "- Platform: ${{ matrix.runtime }}" >> $GITHUB_STEP_SUMMARY
+          echo "- Artifact: ${{ matrix.artifact }}" >> $GITHUB_STEP_SUMMARY
+
+  publish-self-contained:
+    name: Build Self-Contained Builds
+    needs: create-release
+    runs-on: ${{ matrix.os }}
+
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - os: ubuntu-latest
+            runtime: linux-x64
+            artifact: aeon-linux-x64-standalone
+          - os: windows-latest
+            runtime: win-x64
+            artifact: aeon-windows-x64-standalone
+          - os: macos-latest
+            runtime: osx-x64
+            artifact: aeon-macos-x64-standalone
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Setup .NET
+        uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: '9.0.x'
+
+      - name: Restore dependencies
+        run: dotnet restore src/Aeon.sln
+
+      - name: Publish self-contained build
+        run: >-
+          dotnet publish src/Aeon/Aeon.csproj -c Release
+          -r ${{ matrix.runtime }} --self-contained true
+          -p:PublishSingleFile=false -p:PublishTrimmed=false
+          -o ./publish/${{ matrix.artifact }}
+
+      - name: Create version info file
+        shell: bash
+        run: |
+          cat > ./publish/${{ matrix.artifact }}/VERSION.txt << EOF
+          Aeon x86 Emulator
+          Version: ${{ needs.create-release.outputs.version }}
+          Platform: ${{ matrix.runtime }}
+          Build Date: $(date -u +"%Y-%m-%d %H:%M:%S UTC")
+          Build Type: Self-contained (no .NET runtime required)
+
+          For more information, visit:
+          https://github.com/${{ github.repository }}
+          EOF
+
+      - name: Package artifacts (Linux/macOS)
+        if: runner.os != 'Windows'
+        run: |
+          cd ./publish
+          tar -czf ${{ matrix.artifact }}.tar.gz ${{ matrix.artifact }}
+          cd ..
+
+      - name: Package artifacts (Windows)
+        if: runner.os == 'Windows'
+        run: |
+          cd ./publish
+          Compress-Archive -Path ${{ matrix.artifact }} `
+            -DestinationPath ${{ matrix.artifact }}.zip
+          cd ..
+
+      - name: Upload Release Asset (Linux/macOS)
+        if: runner.os != 'Windows'
+        uses: actions/upload-release-asset@v1
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        with:
+          upload_url: ${{ needs.create-release.outputs.upload_url }}
+          asset_path: ./publish/${{ matrix.artifact }}.tar.gz
+          asset_name: ${{ matrix.artifact }}.tar.gz
+          asset_content_type: application/gzip
+
+      - name: Upload Release Asset (Windows)
+        if: runner.os == 'Windows'
+        uses: actions/upload-release-asset@v1
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        with:
+          upload_url: ${{ needs.create-release.outputs.upload_url }}
+          asset_path: ./publish/${{ matrix.artifact }}.zip
+          asset_name: ${{ matrix.artifact }}.zip
+          asset_content_type: application/zip
