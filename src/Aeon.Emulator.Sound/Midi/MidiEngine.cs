@@ -6,7 +6,9 @@
 public enum MidiEngine
 {
     /// <summary>
-    /// Use the OS MIDI mapper.
+    /// Use the OS MIDI mapper. Windows-only (winmm.dll).
+    /// On Linux and macOS, this falls back to silent (no MIDI output).
+    /// For cross-platform MIDI, use <see cref="MeltySynth"/> or <see cref="Mt32"/> instead.
     /// </summary>
     MidiMapper,
     /// <summary>
