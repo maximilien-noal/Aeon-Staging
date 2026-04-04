@@ -3,6 +3,7 @@
         xmlns:local="clr-namespace:Aeon.Emulator.Launcher"
         x:Class="Aeon.Emulator.Launcher.MainWindow"
         Title="Aeon" Width="800" Height="600" MinWidth="360" MinHeight="270"
+        Icon="avares://Aeon.Avalonia/Aeon.ico"
         Background="{StaticResource backgroundGradient}">
     <DockPanel>
         <StackPanel Name="menuContainer" DockPanel.Dock="Top">
