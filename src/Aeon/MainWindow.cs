@@ -1,0 +1,381 @@
+using System.Windows.Input;
+using Avalonia;
+using Avalonia.Controls;
+using Avalonia.Input;
+using Avalonia.Input.Platform;
+using Avalonia.Interactivity;
+using Avalonia.Media;
+using Avalonia.Platform.Storage;
+using Aeon.DiskImages;
+using Aeon.Emulator.Configuration;
+using Aeon.Emulator.Dos.VirtualFileSystem;
+using Avalonia.Media.Imaging;
+
+namespace Aeon.Emulator.Launcher;
+
+public sealed partial class MainWindow : Window
+{
+    private const int MaximumEmulationSpeed = int.MaxValue - 100_000;
+
+    private PerformanceWindow? performanceWindow;
+    private AeonConfiguration? currentConfig;
+    private bool hasActivated;
+    private PaletteDialog? paletteWindow;
+    private readonly SimpleCommand closeCommand;
+
+    public MainWindow()
+    {
+        InitializeComponent();
+        this.closeCommand = new SimpleCommand(() => true, () => this.Close());
+
+        this.Activated += this.MainWindow_Activated;
+        this.emulatorDisplay.EmulatorStateChanged += EmulatorDisplay_EmulatorStateChanged;
+        this.emulatorDisplay.EmulationError += EmulatorDisplay_EmulationError;
+        this.emulatorDisplay.CurrentProcessChanged += EmulatorDisplay_CurrentProcessChanged;
+        this.emulatorDisplay.PropertyChanged += EmulatorDisplay_PropertyChanged;
+
+        this.speedNumericUpDown.MinimumValue = EmulatorHost.MinimumSpeed / 1_000_000;
+        this.speedNumericUpDown.MaximumValue = MaximumEmulationSpeed / 1_000_000;
+        this.speedNumericUpDown.StepValue = 1;
+
+        this.UpdateSpeedButtonStates();
+    }
+
+    public ICommand CloseCommand => this.closeCommand;
+
+    protected override void OnOpened(EventArgs e)
+    {
+        base.OnOpened(e);
+    }
+
+    protected override void OnKeyDown(KeyEventArgs e)
+    {
+        if (e.Key == Key.Enter && e.KeyModifiers.HasFlag(KeyModifiers.Alt))
+        {
+            this.ToggleFullScreen();
+            e.Handled = true;
+        }
+
+        base.OnKeyDown(e);
+    }
+
+    private void ApplyConfiguration(AeonConfiguration config)
+    {
+        this.emulatorDisplay.EmulatorHost = new EmulatorHost(
+            new VirtualMachineInitializationOptions
+            {
+                AdditionalDevices =
+                [
+                    _ => new Sound.PCSpeaker.InternalSpeaker(),
+                    vm => new Sound.Blaster.SoundBlaster(vm),
+                    _ => new Sound.FM.FmSoundCard(),
+                    _ => new Sound.GeneralMidi(new Sound.GeneralMidiOptions(config.MidiEngine ?? Sound.MidiEngine.MidiMapper, config.SoundfontPath, config.Mt32RomsPath))
+                ]
+            }
+        )
+        {
+            EventSynchronizer = new AvaloniaSynchronizer()
+        };
+
+        var emulatorHost = this.emulatorDisplay.EmulatorHost;
+        if (emulatorHost is null)
+            return;
+
+        if (config.Drives != null)
+        {
+            foreach (var (letter, info) in config.Drives)
+            {
+                var driveLetter = ParseDriveLetter(letter);
+
+                var vmDrive = emulatorHost.VirtualMachine.FileSystem.Drives[driveLetter];
+                vmDrive.DriveType = info.Type;
+                vmDrive.VolumeLabel = info.Label;
+                if (info.FreeSpace != null)
+                    vmDrive.FreeSpace = info.FreeSpace.GetValueOrDefault();
+
+                if (!string.IsNullOrEmpty(info.HostPath))
+                {
+                    vmDrive.Mapping = info.ReadOnly ? new MappedFolder(info.HostPath) : new WritableMappedFolder(info.HostPath);
+                }
+                else if (!string.IsNullOrEmpty(info.ImagePath))
+                {
+                    if (Path.GetExtension(info.ImagePath).Equals(".iso", StringComparison.OrdinalIgnoreCase))
+                        vmDrive.Mapping = new ISOImage(info.ImagePath);
+                    else if (Path.GetExtension(info.ImagePath).Equals(".cue", StringComparison.OrdinalIgnoreCase))
+                        vmDrive.Mapping = new CueSheetImage(info.ImagePath);
+                    else
+                        throw new FormatException();
+                }
+                else
+                {
+                    throw new FormatException();
+                }
+
+                vmDrive.HasCommandInterpreter = vmDrive.DriveType == DriveType.Fixed;
+            }
+        }
+
+        emulatorHost.VirtualMachine.FileSystem.WorkingDirectory = new VirtualPath(config.StartupPath ?? string.Empty);
+
+        var requestedSpeed = config.EmulationSpeed ?? 200_000_000;
+        SetEmulationSpeed(requestedSpeed);
+        emulatorDisplay.MouseInputMode = config.IsMouseAbsolute.GetValueOrDefault() ? MouseInputMode.Absolute : MouseInputMode.Relative;
+        mouseIntegrationButton.IsChecked = emulatorDisplay.MouseInputMode == MouseInputMode.Absolute;
+        if (!string.IsNullOrEmpty(config.Title))
+            this.Title = config.Title;
+
+        static DriveLetter ParseDriveLetter(string s)
+        {
+            if (string.IsNullOrEmpty(s))
+                throw new ArgumentNullException(nameof(s));
+            if (s.Length != 1)
+                throw new FormatException();
+
+            return new DriveLetter(s[0]);
+        }
+    }
+
+    private void LaunchCurrentConfig()
+    {
+        if (this.currentConfig == null)
+            return;
+
+        ApplyConfiguration(this.currentConfig);
+        var emulatorHost = this.emulatorDisplay.EmulatorHost;
+        if (emulatorHost is null)
+            return;
+        if (!string.IsNullOrEmpty(this.currentConfig.Launch))
+        {
+            var launchTargets = this.currentConfig.Launch.Split([' ', '\t'], 2, StringSplitOptions.RemoveEmptyEntries);
+            if (launchTargets.Length == 1)
+                emulatorHost.LoadProgram(launchTargets[0]);
+            else
+                emulatorHost.LoadProgram(launchTargets[0], launchTargets[1]);
+        }
+        else
+        {
+            emulatorHost.LoadProgram("COMMAND.COM");
+        }
+
+        emulatorHost.Run();
+    }
+
+    private void QuickLaunch(string fileName)
+    {
+        bool hasConfig = fileName.EndsWith(".AeonConfig", StringComparison.OrdinalIgnoreCase) || fileName.EndsWith(".AeonPack", StringComparison.OrdinalIgnoreCase);
+        if (hasConfig)
+            this.currentConfig = AeonConfiguration.Load(fileName);
+        else
+        {
+            var directoryName = Path.GetDirectoryName(fileName);
+            if (string.IsNullOrEmpty(directoryName))
+                return;
+
+            this.currentConfig = AeonConfiguration.GetQuickLaunchConfiguration(directoryName, Path.GetFileName(fileName));
+        }
+
+        this.LaunchCurrentConfig();
+    }
+
+    private async Task<TaskDialogItem?> ShowTaskDialog(string title, string caption, params TaskDialogItem[] items)
+    {
+        var taskDialog = new TaskDialog { Items = items, Title = title, Caption = caption, Icon = this.Icon };
+        var result = await taskDialog.ShowDialog<bool?>(this);
+        if (result == true)
+            return taskDialog.SelectedItem;
+        return null;
+    }
+
+    private async void QuickLaunch_Click(object? sender, RoutedEventArgs e)
+    {
+        var files = await this.StorageProvider.OpenFilePickerAsync(new FilePickerOpenOptions
+        {
+            Title = "Run DOS program...",
+            FileTypeFilter =
+            [
+                new FilePickerFileType("Programs") { Patterns = ["*.exe", "*.com", "*.AeonConfig", "*.AeonPack"] },
+                new FilePickerFileType("All files") { Patterns = ["*.*"] }
+            ]
+        });
+
+        if (files.Count > 0)
+        {
+            var path = files[0].TryGetLocalPath();
+            if (path != null)
+                this.QuickLaunch(path);
+        }
+    }
+
+    private async void CommandPrompt_Click(object? sender, RoutedEventArgs e)
+    {
+        var folders = await this.StorageProvider.OpenFolderPickerAsync(new FolderPickerOpenOptions
+        {
+            Title = "Select folder for C:\\ drive..."
+        });
+
+        if (folders.Count > 0)
+        {
+            var path = folders[0].TryGetLocalPath();
+            if (path != null)
+            {
+                this.currentConfig = AeonConfiguration.GetQuickLaunchConfiguration(path, string.Empty);
+                this.LaunchCurrentConfig();
+            }
+        }
+    }
+
+    private void Pause_Click(object? sender, RoutedEventArgs e)
+    {
+        emulatorDisplay.PauseCommand.Execute(null);
+    }
+
+    private void Resume_Click(object? sender, RoutedEventArgs e)
+    {
+        emulatorDisplay.ResumeCommand.Execute(null);
+    }
+
+    private void Exit_Click(object? sender, RoutedEventArgs e)
+    {
+        this.Close();
+    }
+
+    private void FullScreen_Click(object? sender, RoutedEventArgs e)
+    {
+        this.ToggleFullScreen();
+    }
+
+    private void MouseIntegration_Changed(object? sender, RoutedEventArgs e)
+    {
+        emulatorDisplay.MouseInputMode = mouseIntegrationButton.IsChecked == true
+            ? MouseInputMode.Absolute
+            : MouseInputMode.Relative;
+    }
+
+    private void ToggleFullScreen()
+    {
+        if (this.WindowState != WindowState.FullScreen)
+        {
+            this.menuContainer.IsVisible = false;
+            this.WindowState = WindowState.FullScreen;
+            this.Background = Brushes.Black;
+        }
+        else
+        {
+            this.menuContainer.IsVisible = true;
+            this.WindowState = WindowState.Normal;
+            this.Background = (IBrush?)this.FindResource("backgroundGradient") ?? Brushes.SteelBlue;
+        }
+    }
+
+    private void EmulatorDisplay_EmulatorStateChanged(object? sender, RoutedEventArgs e)
+    {
+        if (this.emulatorDisplay.EmulatorState == EmulatorState.ProgramExited && this.currentConfig != null)
+            this.Close();
+    }
+
+    private void SlowerButton_Click(object? sender, RoutedEventArgs e)
+    {
+        int newSpeed = Math.Max(EmulatorHost.MinimumSpeed, emulatorDisplay.EmulationSpeed - 100_000);
+        SetEmulationSpeed(newSpeed);
+    }
+
+    private void FasterButton_Click(object? sender, RoutedEventArgs e)
+    {
+        int newSpeed = Math.Min(MaximumEmulationSpeed, emulatorDisplay.EmulationSpeed + 100_000);
+        SetEmulationSpeed(newSpeed);
+    }
+
+    private void EmulatorDisplay_PropertyChanged(object? sender, AvaloniaPropertyChangedEventArgs e)
+    {
+        if (e.Property == EmulatorDisplay.EmulationSpeedProperty)
+            UpdateSpeedButtonStates();
+    }
+
+    private void UpdateSpeedButtonStates()
+    {
+        slowerButton.IsEnabled = emulatorDisplay.EmulationSpeed > EmulatorHost.MinimumSpeed;
+        fasterButton.IsEnabled = emulatorDisplay.EmulationSpeed < MaximumEmulationSpeed;
+    }
+
+    private void SetEmulationSpeed(int speed)
+    {
+        int clampedSpeed = Math.Clamp(speed, EmulatorHost.MinimumSpeed, MaximumEmulationSpeed);
+        if (emulatorDisplay.EmulationSpeed != clampedSpeed)
+            emulatorDisplay.EmulationSpeed = clampedSpeed;
+
+        UpdateSpeedButtonStates();
+    }
+
+    private async void EmulatorDisplay_EmulationError(object? sender, EmulationErrorRoutedEventArgs e)
+    {
+        var end = new TaskDialogItem("End Program", "Terminates the current emulation session.");
+        await ShowTaskDialog("Emulation Error", "An error occurred which caused the emulator to halt: " + e.Message + " What would you like to do?", end);
+    }
+
+    private void EmulatorDisplay_CurrentProcessChanged(object? sender, RoutedEventArgs e)
+    {
+        if (this.currentConfig == null || string.IsNullOrEmpty(this.currentConfig.Title))
+        {
+            var process = emulatorDisplay.CurrentProcess;
+            if (process != null)
+                this.Title = $"{process} - Aeon";
+            else
+                this.Title = "Aeon";
+        }
+    }
+
+    private void PerformanceWindow_Click(object? sender, RoutedEventArgs e)
+    {
+        if (performanceWindow != null)
+            performanceWindow.Activate();
+        else
+        {
+            performanceWindow = new PerformanceWindow();
+            performanceWindow.Closed += this.PerformanceWindow_Closed;
+            performanceWindow.EmulatorDisplay = emulatorDisplay;
+            performanceWindow.Show(this);
+        }
+    }
+
+    private void PerformanceWindow_Closed(object? sender, EventArgs e)
+    {
+        performanceWindow?.Closed -= this.PerformanceWindow_Closed;
+        performanceWindow = null;
+    }
+
+    private void ShowPalette_Click(object? sender, RoutedEventArgs e)
+    {
+        if (this.paletteWindow != null)
+        {
+            this.paletteWindow.Activate();
+        }
+        else
+        {
+            this.paletteWindow = new PaletteDialog { EmulatorDisplay = this.emulatorDisplay, Icon = this.Icon };
+            this.paletteWindow.Closed += PaletteWindow_Closed;
+            this.paletteWindow.Show(this);
+        }
+    }
+
+    private void PaletteWindow_Closed(object? sender, EventArgs e)
+    {
+        this.paletteWindow?.Closed -= this.PaletteWindow_Closed;
+        this.paletteWindow = null;
+    }
+
+    private void MainWindow_Activated(object? sender, EventArgs e)
+    {
+        if (!this.hasActivated)
+        {
+            var args = App.Args;
+
+            if (args.Length > 0)
+                QuickLaunch(args[0]);
+
+            this.hasActivated = true;
+        }
+
+        if (this.WindowState != WindowState.Minimized)
+            this.emulatorDisplay.Focus();
+    }
+}

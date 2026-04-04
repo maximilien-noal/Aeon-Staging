@@ -1,0 +1,77 @@
+<Window xmlns="https://github.com/avaloniaui"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        x:Class="Aeon.Emulator.Launcher.PerformanceWindow"
+        Title="Aeon Performance" Height="300" Width="500" ShowInTaskbar="False" MinWidth="400" MinHeight="200"
+        Icon="avares://Aeon/Aeon.ico">
+    <Window.Styles>
+        <Style Selector="Expander:pointerover">
+            <Setter Property="Background">
+                <LinearGradientBrush StartPoint="50%,0%" EndPoint="50%,100%">
+                    <GradientStop Color="AliceBlue" Offset="0" />
+                    <GradientStop Color="White" Offset="1" />
+                </LinearGradientBrush>
+            </Setter>
+        </Style>
+    </Window.Styles>
+    <DockPanel>
+        <TextBlock Text="Emulator Statistics" FontSize="20" Foreground="DarkBlue" DockPanel.Dock="Top" Margin="5" />
+        <ScrollViewer>
+            <StackPanel Margin="20,0,0,0">
+                <Rectangle Height="2" Stroke="Transparent">
+                    <Rectangle.Fill>
+                        <LinearGradientBrush StartPoint="0%,50%" EndPoint="100%,50%">
+                            <GradientStop Color="White" Offset="0" />
+                            <GradientStop Color="DarkGray" Offset="0.5" />
+                            <GradientStop Color="White" Offset="1" />
+                        </LinearGradientBrush>
+                    </Rectangle.Fill>
+                </Rectangle>
+                <Expander Name="processorExpander" IsExpanded="True">
+                    <Expander.Header>
+                        <TextBlock Text="Processor" FontSize="16" Foreground="SteelBlue" />
+                    </Expander.Header>
+                    <Grid Margin="30,0,0,0" ColumnDefinitions="Auto,*" RowDefinitions="Auto,Auto">
+                        <TextBlock Text="Instructions emulated:" />
+                        <TextBlock Text="Instructions per second:" Grid.Row="1" />
+                        <TextBlock Name="instructionsLabel" Text="0" HorizontalAlignment="Right" Grid.Column="1" />
+                        <TextBlock Name="ipsLabel" Text="0" HorizontalAlignment="Right" Grid.Column="1" Grid.Row="1" />
+                    </Grid>
+                </Expander>
+                <Rectangle Height="2" Stroke="Transparent">
+                    <Rectangle.Fill>
+                        <LinearGradientBrush StartPoint="0%,50%" EndPoint="100%,50%">
+                            <GradientStop Color="White" Offset="0" />
+                            <GradientStop Color="DarkGray" Offset="0.5" />
+                            <GradientStop Color="White" Offset="1" />
+                        </LinearGradientBrush>
+                    </Rectangle.Fill>
+                </Rectangle>
+                <Expander Name="memoryExpander" IsExpanded="True">
+                    <Expander.Header>
+                        <TextBlock Text="Memory" FontSize="16" Foreground="SteelBlue" />
+                    </Expander.Header>
+                    <Grid Margin="30,0,0,0" ColumnDefinitions="Auto,*" RowDefinitions="Auto,Auto,Auto">
+                        <TextBlock Text="Conventional memory:" />
+                        <TextBlock Name="conventionalMemoryLabel" HorizontalAlignment="Right" Grid.Column="1" />
+                        <TextBlock Text="Expanded memory:" Grid.Row="1" />
+                        <TextBlock Name="expandedMemoryLabel" HorizontalAlignment="Right" Grid.Column="1" Grid.Row="1" />
+                        <TextBlock Text="Extended memory:" Grid.Row="2" />
+                        <TextBlock Name="extendedMemoryLabel" HorizontalAlignment="Right" Grid.Column="1" Grid.Row="2" />
+                    </Grid>
+                </Expander>
+                <Rectangle Height="2" Stroke="Transparent">
+                    <Rectangle.Fill>
+                        <LinearGradientBrush StartPoint="0%,50%" EndPoint="100%,50%">
+                            <GradientStop Color="White" Offset="0" />
+                            <GradientStop Color="DarkGray" Offset="0.5" />
+                            <GradientStop Color="White" Offset="1" />
+                        </LinearGradientBrush>
+                    </Rectangle.Fill>
+                </Rectangle>
+                <Expander Header="I/O" IsVisible="False">
+                </Expander>
+            </StackPanel>
+        </ScrollViewer>
+    </DockPanel>
+</Window>
+

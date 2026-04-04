@@ -1,0 +1,60 @@
+name: Build & Test
+
+on:
+  push:
+    branches: [main, master]
+  pull_request:
+    branches: [main, master]
+
+permissions:
+  contents: read
+
+jobs:
+  build:
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - os: windows-latest
+            name: Windows
+            rid: win-x64
+          - os: ubuntu-latest
+            name: Linux
+            rid: linux-x64
+          - os: macos-latest
+            name: macOS (arm64)
+            rid: osx-arm64
+
+    runs-on: ${{ matrix.os }}
+    name: ${{ matrix.name }}
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Setup .NET 10
+        uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: "10.0.x"
+
+      - name: Restore
+        run: dotnet restore src/Aeon.slnx
+
+      - name: Build
+        run: dotnet build src/Aeon.slnx --no-restore
+
+      - name: Test
+        run: dotnet test src/Aeon.Test/Aeon.Test.csproj --no-restore --verbosity normal
+
+      - name: Publish
+        run: >
+          dotnet publish src/Aeon/Aeon.csproj
+          -c Release
+          -r ${{ matrix.rid }}
+          --self-contained
+          -o publish/${{ matrix.rid }}
+
+      - name: Upload artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: aeon-${{ matrix.rid }}
+          path: publish/${{ matrix.rid }}/

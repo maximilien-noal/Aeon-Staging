@@ -1,13 +1,11 @@
 ﻿using System.Diagnostics;
 using System.Diagnostics.CodeAnalysis;
-using System.Runtime.CompilerServices;
 using System.Runtime.InteropServices;
 using System.Text.RegularExpressions;
 using Aeon.DiskImages.Iso9660;
 using Aeon.Emulator;
 using Aeon.Emulator.Dos;
 using Aeon.Emulator.Dos.VirtualFileSystem;
-using TinyAudio;
 
 namespace Aeon.DiskImages;
 
@@ -312,12 +310,14 @@ public sealed partial class CueSheetImage : IMappedDrive, IAudioCD, IRawSectorRe
 
     private sealed class AudioTrackPlayer : IDisposable
     {
-        private const double BufferSeconds = 0.1;
-        private const int SourceRate = 44100;
-        private readonly AudioPlayer audioPlayer = AudioPlayer.CreateDefault(TimeSpan.FromSeconds(BufferSeconds), false);
+        private const int SourceRate = 44100; // CD audio is always 44100Hz stereo 16-bit
+        private const int SourceChannels = 2;
+        private readonly Spice86.Audio.Backend.Audio.AudioPlayer audioPlayer;
         private readonly Stream audioStream;
         private readonly SemaphoreSlim syncLock = new(1, 1);
         private readonly Stopwatch playbackTimer = new();
+        private readonly Spice86.Audio.Filters.Speex.SpeexResamplerCSharp? resampler;
+        private readonly int outputRate;
         private CancellationTokenSource stopTokenSource = new();
         private Task? readTask;
         private int sectorsRead;
@@ -327,6 +327,19 @@ public sealed partial class CueSheetImage : IMappedDrive, IAudioCD, IRawSectorRe
         public AudioTrackPlayer(string fileName)
         {
             this.audioStream = File.Open(fileName, new FileStreamOptions { Options = FileOptions.Asynchronous });
+            var factory = new Spice86.Audio.Backend.Audio.AudioPlayerFactory(Spice86.Audio.Filters.AudioEngine.CrossPlatform);
+            this.audioPlayer = factory.CreatePlayer(SourceRate, framesPerBuffer: 0, prebufferMs: 0, allowNegotiate: true);
+            this.audioPlayer.Start();
+
+            // The audio backend may negotiate a different output rate
+            this.outputRate = this.audioPlayer.Format.SampleRate;
+            if (this.outputRate != SourceRate)
+            {
+                // Use Speex resampler (same approach as DOSBox Staging's MixerChannel)
+                // Quality 5 = SPEEX_RESAMPLER_QUALITY_DEFAULT (good balance of quality and speed)
+                this.resampler = new Spice86.Audio.Filters.Speex.SpeexResamplerCSharp(
+                    SourceChannels, (uint)SourceRate, (uint)this.outputRate, quality: 5);
+            }
         }
 
         public bool Playing => this.playing;
@@ -357,8 +370,7 @@ public sealed partial class CueSheetImage : IMappedDrive, IAudioCD, IRawSectorRe
 
             this.playing = true;
             this.playbackTimer.Start();
-            this.readTask = Task.Run(this.ReadAndResampleAsync);
-            this.audioPlayer.BeginPlayback();
+            this.readTask = Task.Run(this.ReadAndPlayAsync);
         }
         public void Stop()
         {
@@ -366,7 +378,6 @@ public sealed partial class CueSheetImage : IMappedDrive, IAudioCD, IRawSectorRe
                 return;
 
             this.playing = false;
-            this.audioPlayer.StopPlayback();
             this.stopTokenSource.Cancel();
             this.readTask?.Wait();
             this.stopTokenSource.Dispose();
@@ -385,13 +396,18 @@ public sealed partial class CueSheetImage : IMappedDrive, IAudioCD, IRawSectorRe
             }
         }
 
-        private async Task ReadAndResampleAsync()
+        private async Task ReadAndPlayAsync()
         {
             try
             {
-                var tempBuffer = new byte[2352];
-                int minTargetSize = (int)((double)this.audioPlayer.Format.SampleRate / SourceRate * tempBuffer.Length) + 16;
-                var resampleBuffer = new byte[minTargetSize];
+                var tempBuffer = new byte[2352]; // One CD sector: 2352 bytes = 588 stereo frames
+                int sourceSamples = tempBuffer.Length / sizeof(short); // 1176 samples (588 stereo frames)
+                var sourceFloats = new float[sourceSamples];
+
+                // Output buffer: account for potential rate conversion
+                double ratio = (double)this.outputRate / SourceRate;
+                int maxOutputSamples = (int)(sourceSamples * ratio) + SourceChannels * 2;
+                var outputFloats = new float[maxOutputSamples];
 
                 while (this.playing)
                 {
@@ -416,14 +432,44 @@ public sealed partial class CueSheetImage : IMappedDrive, IAudioCD, IRawSectorRe
                     {
                         this.sectorsRead++;
 
-                        int sampleCount = Resample16Stereo(
-                            SourceRate,
-                            this.audioPlayer.Format.SampleRate,
-                            MemoryMarshal.Cast<byte, short>(tempBuffer.AsSpan(0, bytesRead)),
-                            MemoryMarshal.Cast<byte, short>(resampleBuffer.AsSpan())
-                        );
+                        // Convert 16-bit PCM to float
+                        var shortSamples = MemoryMarshal.Cast<byte, short>(tempBuffer.AsSpan(0, bytesRead));
+                        int sampleCount = shortSamples.Length;
+                        for (int i = 0; i < sampleCount; i++)
+                            sourceFloats[i] = shortSamples[i] / 32768f;
 
-                        await this.audioPlayer.WriteDataRawAsync<short>(resampleBuffer.AsMemory(0, sampleCount * 2), this.stopTokenSource.Token).ConfigureAwait(false);
+                        int writeCount;
+                        float[] writeSource;
+
+                        if (this.resampler != null)
+                        {
+                            // Use Speex resampler (matching DOSBox Staging's MixerChannel approach)
+                            this.resampler.ProcessInterleavedFloat(
+                                sourceFloats.AsSpan(0, sampleCount),
+                                outputFloats.AsSpan(),
+                                out uint inputConsumed,
+                                out uint outputProduced);
+
+                            writeCount = (int)outputProduced * SourceChannels;
+                            writeSource = outputFloats;
+                        }
+                        else
+                        {
+                            // Source and output rates match — no resampling needed
+                            writeCount = sampleCount;
+                            writeSource = sourceFloats;
+                        }
+
+                        // Write using index-based tracking to avoid Span across await
+                        int offset = 0;
+                        while (offset < writeCount)
+                        {
+                            this.stopTokenSource.Token.ThrowIfCancellationRequested();
+                            int written = this.audioPlayer.WriteData(writeSource.AsSpan(offset, writeCount - offset));
+                            offset += written;
+                            if (offset < writeCount)
+                                await Task.Delay(1, this.stopTokenSource.Token).ConfigureAwait(false);
+                        }
                     }
                     else
                     {
@@ -435,40 +481,6 @@ public sealed partial class CueSheetImage : IMappedDrive, IAudioCD, IRawSectorRe
             {
             }
         }
-
-        private static int Resample16Stereo(int sourceRate, int destRate, ReadOnlySpan<short> source, Span<short> dest)
-        {
-            double src2Dest = (double)destRate / (double)sourceRate;
-            double dest2Src = (double)sourceRate / (double)destRate;
-
-            int length = (int)(src2Dest * source.Length) / 2;
-
-            for (int i = 0; i < length; i++)
-            {
-                int srcIndex = (int)(i * dest2Src) << 1;
-
-                var value1Left = source[srcIndex];
-                var value1Right = source[srcIndex + 1];
-                if (srcIndex < source.Length - 3)
-                {
-                    var remainder = (i * dest2Src) % 1;
-                    var value2Left = source[srcIndex + 2];
-                    var value2Right = source[srcIndex + 3];
-
-                    dest[i << 1] = Interpolate(value1Left, value2Left, remainder);
-                    dest[(i << 1) + 1] = Interpolate(value1Right, value2Right, remainder);
-                }
-                else
-                {
-                    dest[i << 1] = value1Left;
-                    dest[(i << 1) + 1] = value1Right;
-                }
-            }
-
-            return length * 2;
-        }
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        private static short Interpolate(short a, short b, double factor) => (short)(((b - a) * factor) + a);
     }
 
     [GeneratedRegex(@"^FILE\s+""(?<1>[^""]+)""\s+BINARY$", RegexOptions.ExplicitCapture)]

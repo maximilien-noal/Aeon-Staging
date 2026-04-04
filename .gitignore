@@ -320,3 +320,6 @@ ASALocalRun/
 
 # MSBuild Binary and Structured Log
 *.binlog
+
+# Reqnroll / SpecFlow generated code
+*.feature.cs

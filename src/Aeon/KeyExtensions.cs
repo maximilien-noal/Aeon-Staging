@@ -1,18 +1,10 @@
-﻿using System.Collections.Frozen;
-using System.Windows.Input;
+using System.Collections.Frozen;
+using Avalonia.Input;
 
 namespace Aeon.Emulator.Launcher;
 
-/// <summary>
-/// Contains extension methods for the Key type.
-/// </summary>
 public static class KeyExtensions
 {
-    /// <summary>
-    /// Converts a WPF Key into an emulator Keys.
-    /// </summary>
-    /// <param name="key">Key to convert.</param>
-    /// <returns>Equivalent Keys value.</returns>
     public static Keys ToEmulatorKey(this Key key) => keyLookup.TryGetValue(key, out var value) ? value : Keys.Null;
 
     private static readonly FrozenDictionary<Key, Keys> keyLookup = new Dictionary<Key, Keys>
@@ -66,9 +58,9 @@ public static class KeyExtensions
         [Key.OemQuotes] = Keys.Apostrophe,
         [Key.OemComma] = Keys.Comma,
         [Key.OemPeriod] = Keys.Period,
-        [Key.OemQuestion] = Keys.Slash,
+        [Key.Oem2] = Keys.Slash,
         [Key.OemMinus] = Keys.Minus,
-        [Key.Add] = Keys.Equals,
+        [Key.OemPlus] = Keys.Equals,
         [Key.Back] = Keys.Backspace,
         [Key.Oem5] = Keys.Backslash,
         [Key.Enter] = Keys.Enter,

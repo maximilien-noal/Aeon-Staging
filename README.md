@@ -1,85 +1,104 @@
-# What is Aeon?
-Aeon is an x86 with DOS emulator written in 100% C#. It was originally started in 2008 as an experiment
-in developing a high performance emulator fully in C#/.NET. So basically, it's like [DOSBox](https://www.dosbox.com/)
-but with worse compatibility and only for Windows.
+# Aeon (Soft Fork)
 
-# Who should use Aeon?
-C# developers might be interested in this, or fans of retro gaming that want to experiment with a different
-emulator. If you're just looking to get an old game running, just use DOSBox :)
+Aeon is an x86 + DOS emulator written in C#.
 
-# Downloads
-See the [Releases](https://github.com/gregdivis/Aeon/releases) page for the latest builds, or
-get the source and build it yourself (see building instructions below).
+This repository is a **soft fork** of the original [`gregdivis/Aeon`](https://github.com/gregdivis/Aeon), with a focus on:
 
-Aeon doesn't have an installer, but does require that the .NET 6 runtime is installed.
-You can download it from Microsoft at [https://dotnet.microsoft.com/download/dotnet/6.0](https://dotnet.microsoft.com/download/dotnet/6.0).
+- Keeping compatibility with upstream design and behavior where practical
+- Improving maintainability and modern .NET support
+- Expanding **cross-platform support**
 
-# Usage
-The easiest way to get started is just to use the "quick launch program" button in the toolbar, and
-browse to a DOS .exe or .com file. Launching a program this way will create a virtual environment with
-the program's directory mounted as the C: drive in the emulated system.
+## About the project
 
-It's also possible to quick launch a command prompt in a directory if you'd like to pass in arguments
-before launching the program. Batch files are supported.
+Aeon started in 2008 as a high-performance emulator experiment in C#/.NET. Conceptually, it is similar to [DOSBox](https://www.dosbox.com/), but with a different architecture and compatibility profile.
 
-You can set up the emulated environment with more detail by creating a json configuration file with
-a `.AeonConfig` extension and launching it with the quick launch program button. This format isn't
-documented yet, but you can find a few basic samples [in the repo](https://github.com/gregdivis/Aeon/tree/master/examples).
+If you only want maximum DOS game compatibility, DOSBox is usually the better first choice.
 
-# Capabilities
-Aeon aims to emulate the hardware and software environment of a typical 486DX PC, which was pretty common in the early 1990s.
-The following is currently emulated:
+## Downloads
 
- - CPU
-   - Core x86 Instruction Set
-     - Nearly all instructions are implemented, but there are still some gaps (generally, I've only implemented new instructions as I find old programs that use them)
-   - x87 FPU (floating point unit/instructions)
-     - Not emulated with true precision (Aeon uses 64-bit floating point math rather than the 80-bit format used in the original x87)
- - Memory
-   - Real Mode Memory Model
-   - Protected Mode Memory Model
-     - Still a number of bugs in this, but it is adequate to run most DOS applications that used common DPMI extenders
- - Video
-   - Text modes: 80x25, 40x25
-   - Graphical modes:
-     - CGA (320x200 4-color mode 04h)
-     - EGA (320x200, 640x200, 640x320 16-color modes 0Dh, 0Eh, 10h)
-     - VGA (640x480 4-color, 320x200 256-color modes 12h, 13h)
-     - Unchained 13h VGA (mode X)
-     - SVGA VBE 2.0 (linear and windowed)
-   - Display filtering: Scale2x, Scale3x
- - BIOS/System
-   - 8259 interrupt controller
-   - 8253/8254 interrupt timer
- - Peripherals
-   - PS2 keyboard + interrupt handler
-   - PS2 mouse + interrupt handler + mouse driver
-   - Game port
-     - Limited, currently only using DirectInput/XInput
- - DOS
-   - Roughly equivalent to MS-DOS 5.0
-   - Command/batch interpreter
-   - Mountable drives:
-     - Host directory
-     - ISO image
-     - BIN/CUE image
-     - Host CD drive
- - Sound
-   - Internal PC speaker
-     - Timer-based waveform generation only, no direct access
-   - OPL3/Ymf262 FM sythesis (Sound Blaster, Adlib)
-   - Sound Blaster 16 DSP
-     - Primarily Single/auto DMA mode
-   - General MIDI using any of:
-     - Windows MIDI Mapper
-     - [MeltySynth](https://github.com/sinshu/meltysynth) SoundFont-based MIDI synthesis (requires SoundFont)
-     - [mt32emu](https://github.com/munt/munt) Roland MT-32 emulation (requires MT32 roms)
+- Original upstream releases: <https://github.com/gregdivis/Aeon/releases>
+- For Linux/Mac, this fork can be considered as it uses Avaloniav11 and Spice86.Audio for full cross platform desktop support.
 
+## Usage
 
-# Building
-You can build Aeon using Visual Studio 2022. It has a couple NuGet dependencies that should be fetched
-automatically on build.
+The fastest way to start is using the **Quick Launch Program** button in the toolbar and selecting a DOS `.exe` or `.com` file.
 
-**Important**: Aeon will be *extremely* slow if you build in Debug configuration, and even in a Release
-configuration if you have a debugger attached, as it relies heavily on inlining, intrinsics, and other
-JIT compiler optimizations that get suppressed in Debug mode or with a debugger attached.
+You can also:
+
+- Quick launch a command prompt in a directory to pass arguments before running programs
+- Run batch files
+- Launch a `.AeonConfig` JSON configuration file for a more detailed virtual environment setup
+
+Sample configs are available in the upstream examples folder: <https://github.com/gregdivis/Aeon/tree/master/examples>
+
+## Capabilities
+
+Aeon targets the hardware/software environment of a typical early-1990s 486DX-era PC.
+
+### CPU
+
+- Core x86 instruction set
+  - Nearly all instructions are implemented; some edge cases remain
+- x87 FPU instructions
+  - Emulated using 64-bit floating point math (not full 80-bit x87 precision)
+
+### Memory
+
+- Real mode memory model
+- Protected mode memory model
+  - Usable for many DOS apps with common DPMI extenders, though issues remain
+
+### Video
+
+- Text modes: `80x25`, `40x25`
+- Graphics modes:
+  - CGA (`320x200`, 4-color, mode `04h`)
+  - EGA (`320x200`, `640x200`, `640x320`, 16-color, modes `0Dh`, `0Eh`, `10h`)
+  - VGA (`640x480` 4-color, `320x200` 256-color, modes `12h`, `13h`)
+  - Unchained VGA mode `13h` (Mode X)
+  - SVGA VBE 2.0 (linear and windowed)
+- Display filtering: `Scale2x`, `Scale3x`
+
+### BIOS/System
+
+- `8259` interrupt controller
+- `8253/8254` programmable interval timer
+
+### Peripherals
+
+- PS/2 keyboard + interrupt handler
+- PS/2 mouse + interrupt handler + mouse driver
+- Game port (limited; currently DirectInput/XInput based)
+
+### DOS layer
+
+- Roughly equivalent to MS-DOS 5.0 behavior
+- Command/batch interpreter
+- Mountable drives:
+  - Host directory
+  - ISO image
+  - BIN/CUE image
+  - Host CD drive
+
+### Sound
+
+- Internal PC speaker (timer-based waveform generation only)
+- OPL3/YMF262 FM synthesis (Sound Blaster/AdLib)
+- Sound Blaster 16 DSP (primarily single/auto DMA mode)
+- General MIDI via:
+  - Windows MIDI Mapper
+  - [MeltySynth](https://github.com/sinshu/meltysynth) (SoundFont-based)
+  - [mt32emu](https://github.com/munt/munt) (requires MT-32 ROMs)
+
+## Building
+
+Build with Visual Studio (current supported version in this repo) or the `dotnet` CLI.
+
+NuGet dependencies should restore automatically.
+
+> **Important**
+> Aeon is significantly slower in `Debug` builds, and can also slow down if a debugger is attached to `Release` builds. It relies heavily on inlining, intrinsics, and JIT optimizations that are reduced in debug scenarios.
+
+## Upstream
+
+- Original project: <https://github.com/gregdivis/Aeon>

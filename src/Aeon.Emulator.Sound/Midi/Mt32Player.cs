@@ -1,13 +1,18 @@
 ﻿using System.IO.Compression;
 using Mt32emu;
-using TinyAudio;
+using Spice86.Audio.Backend.Audio;
 
 namespace Aeon.Emulator.Sound;
 
 internal sealed class Mt32Player : IDisposable
 {
+    private const int SampleRate = 44100;
+    private const int BufferSize = 11025; // ~250ms at 44100Hz
+
     private readonly Mt32Context context = new();
-    private readonly AudioPlayer audioPlayer = Audio.CreatePlayer(true);
+    private readonly AudioPlayer audioPlayer = Audio.CreatePlayer(SampleRate);
+    private readonly Thread playbackThread;
+    private volatile bool playing;
     private bool disposed;
 
     public Mt32Player(string romsPath)
@@ -16,41 +21,56 @@ internal sealed class Mt32Player : IDisposable
 
         this.LoadRoms(romsPath);
 
-        var analogMode = Mt32GlobalState.GetBestAnalogOutputMode(this.audioPlayer.Format.SampleRate);
+        var analogMode = Mt32GlobalState.GetBestAnalogOutputMode(SampleRate);
         this.context.AnalogOutputMode = analogMode;
-        this.context.SetSampleRate(this.audioPlayer.Format.SampleRate);
+        this.context.SetSampleRate(SampleRate);
 
         this.context.OpenSynth();
-        this.audioPlayer.BeginPlayback(this.FillBuffer);
+        this.playing = true;
+        this.playbackThread = new Thread(this.PlaybackLoop) { IsBackground = true };
+        this.playbackThread.Start();
     }
 
     public void PlayShortMessage(uint message) => this.context.PlayMessage(message);
     public void PlaySysex(ReadOnlySpan<byte> data) => this.context.PlaySysex(data);
-    public void Pause() => this.audioPlayer.StopPlayback();
-    public void Resume() => this.audioPlayer.BeginPlayback(this.FillBuffer);
+    public void Pause() => this.playing = false;
+    public void Resume() => this.playing = true;
     public void Dispose()
     {
         if (!this.disposed)
         {
+            this.disposed = true;
+            this.playing = false;
+            this.playbackThread.Join();
             this.context.Dispose();
             this.audioPlayer.Dispose();
-            this.disposed = true;
         }
     }
 
-    private void FillBuffer(Span<float> buffer, out int samplesWritten)
+    private void PlaybackLoop()
     {
-        try
+        Span<float> buffer = stackalloc float[BufferSize];
+
+        while (!this.disposed)
         {
-            this.context.Render(buffer);
-            samplesWritten = buffer.Length;
-        }
-        catch (ObjectDisposedException)
-        {
-            buffer.Clear();
-            samplesWritten = buffer.Length;
+            if (!this.playing)
+            {
+                Thread.Sleep(1);
+                continue;
+            }
+
+            try
+            {
+                this.context.Render(buffer);
+                Audio.WriteFullBuffer(this.audioPlayer, buffer);
+            }
+            catch (ObjectDisposedException)
+            {
+                break;
+            }
         }
     }
+
     private void LoadRoms(string path)
     {
         if (path.EndsWith(".zip", StringComparison.OrdinalIgnoreCase))
