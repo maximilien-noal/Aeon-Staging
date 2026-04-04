@@ -1,12 +1,17 @@
 ﻿using MeltySynth;
-using TinyAudio;
+using Spice86.Audio.Backend.Audio;
 
 namespace Aeon.Emulator.Sound;
 
 internal sealed class MeltySynthMidiMapper : MidiDevice
 {
+    private const int SampleRate = 44100;
+    private const int BufferSize = 11025; // ~250ms at 44100Hz
+
     private readonly Synthesizer synthesizer;
     private readonly AudioPlayer audioPlayer;
+    private readonly Thread playbackThread;
+    private volatile bool playing;
     private bool disposed;
 
     public MeltySynthMidiMapper(string soundFontPath)
@@ -14,18 +19,20 @@ internal sealed class MeltySynthMidiMapper : MidiDevice
         if (string.IsNullOrEmpty(soundFontPath))
             throw new ArgumentNullException(nameof(soundFontPath));
 
-        this.audioPlayer = Audio.CreatePlayer(true);
-        this.synthesizer = new Synthesizer(soundFontPath, this.audioPlayer.Format.SampleRate);
-        this.audioPlayer.BeginPlayback(this.HandleBufferNeeded);
+        this.audioPlayer = Audio.CreatePlayer(SampleRate);
+        this.synthesizer = new Synthesizer(soundFontPath, SampleRate);
+        this.playing = true;
+        this.playbackThread = new Thread(this.PlaybackLoop) { IsBackground = true };
+        this.playbackThread.Start();
     }
 
     public override void Pause()
     {
-        this.audioPlayer.StopPlayback();
+        this.playing = false;
     }
     public override void Resume()
     {
-        this.audioPlayer.BeginPlayback(this.HandleBufferNeeded);
+        this.playing = true;
     }
 
     protected override void PlayShortMessage(uint message)
@@ -39,18 +46,32 @@ internal sealed class MeltySynthMidiMapper : MidiDevice
     {
         if (!this.disposed)
         {
-            if (!disposing)
-                this.audioPlayer.Dispose();
-
             this.disposed = true;
+            this.playing = false;
+            if (disposing)
+            {
+                this.playbackThread.Join();
+                this.audioPlayer.Dispose();
+            }
         }
 
         base.Dispose(disposing);
     }
 
-    private void HandleBufferNeeded(Span<float> buffer, out int samplesWritten)
+    private void PlaybackLoop()
     {
-        this.synthesizer.RenderInterleaved(buffer);
-        samplesWritten = buffer.Length;
+        Span<float> buffer = stackalloc float[BufferSize];
+
+        while (!this.disposed)
+        {
+            if (!this.playing)
+            {
+                Thread.Sleep(1);
+                continue;
+            }
+
+            this.synthesizer.RenderInterleaved(buffer);
+            Audio.WriteFullBuffer(this.audioPlayer, buffer);
+        }
     }
 }

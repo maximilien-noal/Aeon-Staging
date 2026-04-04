@@ -1,0 +1,33 @@
+<Styles xmlns="https://github.com/avaloniaui"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:local="clr-namespace:Aeon.Emulator.Launcher">
+    <Style Selector="local|TaskDialogItem">
+        <Setter Property="HorizontalAlignment" Value="Stretch" />
+        <Setter Property="HorizontalContentAlignment" Value="Left" />
+        <Setter Property="Margin" Value="0,2" />
+        <Setter Property="Cursor" Value="Hand" />
+        <Setter Property="Template">
+            <ControlTemplate>
+                <Border Name="border" CornerRadius="3" Background="Transparent"
+                        BorderBrush="Transparent" BorderThickness="1" Padding="2">
+                    <Grid ColumnDefinitions="Auto,*" RowDefinitions="Auto,*">
+                        <Image Source="avares://Aeon/Resources/TaskArrow.png" VerticalAlignment="Center" Margin="2" />
+                        <TextBlock Grid.Column="1" Text="{TemplateBinding Text}" FontSize="16" Margin="5,1" Foreground="Navy" />
+                        <TextBlock Grid.Column="1" Grid.Row="1" Text="{TemplateBinding Description}" TextWrapping="Wrap" Margin="5,1" Foreground="Navy" />
+                    </Grid>
+                </Border>
+            </ControlTemplate>
+        </Setter>
+    </Style>
+    <Style Selector="local|TaskDialogItem:pointerover /template/ Border#border">
+        <Setter Property="BorderBrush" Value="DarkBlue" />
+        <Setter Property="Background">
+            <LinearGradientBrush StartPoint="50%,0%" EndPoint="50%,100%" Opacity="0.5">
+                <GradientStop Color="Transparent" Offset="0" />
+                <GradientStop Color="SkyBlue" Offset="0.5" />
+                <GradientStop Color="Transparent" Offset="1" />
+            </LinearGradientBrush>
+        </Setter>
+    </Style>
+</Styles>
+

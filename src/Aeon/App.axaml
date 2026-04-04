@@ -1,0 +1,17 @@
+<Application xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             x:Class="Aeon.Emulator.Launcher.App"
+             RequestedThemeVariant="Light">
+    <Application.Styles>
+        <FluentTheme />
+        <StyleInclude Source="avares://Aeon/EmulatorDisplayStyles.axaml" />
+        <StyleInclude Source="avares://Aeon/TaskDialogStyles.axaml" />
+    </Application.Styles>
+    <Application.Resources>
+        <LinearGradientBrush x:Key="backgroundGradient">
+            <GradientStop Color="SteelBlue" Offset="0" />
+            <GradientStop Color="#FF1D4461" Offset="1" />
+        </LinearGradientBrush>
+    </Application.Resources>
+</Application>
+
