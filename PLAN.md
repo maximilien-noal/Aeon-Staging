@@ -14,7 +14,7 @@ This document outlines the plan to make Aeon run on **Windows, Linux, and macOS*
 | **MIDI passthrough** | `Aeon.Emulator.Sound/Midi/WindowsMidiMapper.cs`, `NativeMethods.cs` | `winmm.dll` P/Invoke (`midiOutOpen`, `midiOutShortMsg`, etc.) | Windows MIDI Mapper device |
 | **WPF UI** | `Aeon/` (10 XAML files, code-behind, converters, `FastBitmap.cs`, `WpfSynchronizer.cs`, `KeyExtensions.cs`) | WPF, `InteropBitmap`, `System.Windows.Input.Key`, `Dispatcher` | Entire desktop frontend |
 | **Fast bitmap rendering** | `Aeon/FastBitmap.cs` | `kernel32.dll` P/Invoke (`CreateFileMapping`, `MapViewOfFile`) + WPF `InteropBitmap` | Video display |
-| **Cursor control** | `Aeon/NativeMethods.cs`, `EmulatorDisplay.xaml.cs` | `user32.dll` P/Invoke (`SetCursorPos`) | Mouse cursor warping for relative mouse mode — replace with SDL2 C# for cross-platform support (Windows, Linux Xorg, Linux Wayland, macOS) |
+| **Cursor control** | `Aeon/NativeMethods.cs`, `EmulatorDisplay.xaml.cs` | `user32.dll` P/Invoke (`SetCursorPos`) | Mouse cursor warping for relative mouse mode — port SDL2 cursor code to pure C# for cross-platform support (Windows, Linux Xorg, Linux Wayland, macOS) using only OS system libraries |
 | **CD-ROM device I/O** | `Aeon.DiskImages/Iso9660/NativeMethods.cs`, `IOCTL.cs` | `kernel32.dll` P/Invoke (`DeviceIoControl`, `CreateFile`, `ReadFile`) | Physical CD-ROM drive access |
 | **Project targeting** | `Aeon/Aeon.csproj` | `net10.0-windows`, `UseWPF=true`, `UseWindowsForms=true` | Build configuration |
 
@@ -27,21 +27,47 @@ This document outlines the plan to make Aeon run on **Windows, Linux, and macOS*
 
 ---
 
-## Phase 1: Audio Backend — Replace TinyAudio with Bufdio.Spice86
+## Phase 1: Audio Backend — Replace TinyAudio with Spice86.Audio
 
 ### Rationale
-`TinyAudio` is the current audio output abstraction. `Bufdio.Spice86` (the NuGet name for Spice86.Audio) is a cross-platform audio playback library built on **PortAudio**, supporting Windows, macOS, and Linux. Current latest version: **11.1.0**.
+`TinyAudio` is the current audio output abstraction. **`Spice86.Audio`** (NuGet: `Spice86.Audio`, latest version: **11.4.0**) is a **fully managed, cross-platform** audio library with **no native dependencies**. It is a C# port combining code from multiple sources:
+
+- **SDL2 cross-platform audio drivers** — Pure C# ports of SDL2's per-platform audio backends (WASAPI, ALSA, CoreAudio)
+- **DOSBox Staging audio low-level code** — Audio structures, mixing, and processing ported from DOSBox Staging
+- **IIR Filters** — Biquad filters (low-pass, high-pass, band-pass, notch, peaking, shelf)
+- **Audio filters** — Chorus, Compressor, DC Block, Envelope, LFO, MVerb (reverb), Noise Gate, Crossfeed
+- **Audio structures** — `AudioFrame` (stereo sample pair), `AudioFrameBuffer`, `RWQueue` (lock-free read/write queue)
+- **Speex resampler** — High-quality audio resampling ported to C#
+
+| Platform | Spice86.Audio Backend | Underlying OS API |
+|----------|----------------------|-------------------|
+| Windows | `SdlWindowsBackend` | WASAPI |
+| Linux | `SdlLinuxBackend` | ALSA |
+| macOS | `SdlMacBackend` | CoreAudio (AudioQueue) |
+
+Source: [`OpenRakis/Spice86.Audio`](https://github.com/OpenRakis/Spice86.Audio)
+
+### Key API Differences from TinyAudio
+
+| TinyAudio (current) | Spice86.Audio (new) |
+|---------------------|---------------------|
+| `AudioPlayer.CreateDefault(TimeSpan, bool)` | `AudioPlayerFactory.CreatePlayer(sampleRate, framesPerBuffer, prebufferMs, allowNegotiate)` |
+| `player.WriteData(ReadOnlySpan<float>)` → returns `int` | `player.WriteData(Span<float>)` → returns `int` |
+| N/A | `player.Start()` — must be called to begin playback |
+| N/A | `player.MuteOutput()` / `player.UnmuteOutput()` |
+| N/A | `player.ClearQueuedData()` |
 
 ### Changes Required
 
 1. **`Aeon.Emulator.Sound/Aeon.Emulator.Sound.csproj`**
-   - Replace `<PackageReference Include="TinyAudio" Version="0.5.0" />` with `<PackageReference Include="Bufdio.Spice86" Version="11.1.0" />`
+   - Replace `<PackageReference Include="TinyAudio" Version="0.5.0" />` with `<PackageReference Include="Spice86.Audio" Version="11.4.0" />`
 
 2. **`Aeon.Emulator.Sound/Audio.cs`**
-   - Replace `using TinyAudio;` with the appropriate `Bufdio` namespace
-   - Update `CreatePlayer()` to use `Bufdio.Spice86`'s audio player creation API
-   - Update `WriteFullBuffer()` overloads to match the new player's `WriteData` method signature
-   - The general pattern (write loop with `Thread.Sleep(1)` backoff) should remain the same
+   - Replace `using TinyAudio;` with `using Spice86.Audio.Backend.Audio;`
+   - Replace `CreatePlayer()` — instantiate `AudioPlayerFactory` with `AudioEngine.CrossPlatform`, then call `factory.CreatePlayer(44100, 0, 0, true)` (or appropriate parameters)
+   - Add `player.Start()` call after creation (Spice86.Audio requires explicit start)
+   - Update `WriteFullBuffer()` — signature changes from `ReadOnlySpan<float>` to `Span<float>`; the `short` and `byte` overloads will need conversion to float before writing (Spice86.Audio only accepts `Span<float>`)
+   - The write loop with `Thread.Sleep(1)` backoff pattern remains the same
 
 3. **All consumers of `Audio.CreatePlayer()`** — Verify that `InternalSpeaker.cs`, `SoundBlaster.cs` (via `Dsp.cs`), `FmSoundCard.cs`, and `MeltySynthMidiMapper.cs` still compile. These files call `Audio.CreatePlayer()` and `Audio.WriteFullBuffer()`, so if the `Audio` wrapper API stays the same, no changes are needed in consumers.
 
@@ -77,10 +103,15 @@ The Windows MIDI Mapper (`winmm.dll`) has no direct cross-platform equivalent. T
 
 ---
 
-## Phase 3: UI — Replace WPF with AvaloniaUI
+## Phase 3: UI — Replace WPF with AvaloniaUI (C# Code-Only, No XAML)
 
 ### Rationale
-WPF is Windows-only. AvaloniaUI is a cross-platform XAML-based UI framework for .NET with an API very close to WPF. It uses Skia for GPU-accelerated rendering and runs on Windows, macOS, and Linux.
+WPF is Windows-only. AvaloniaUI is a cross-platform UI framework for .NET with an API very close to WPF. It uses Skia for GPU-accelerated rendering and runs on Windows, macOS, and Linux.
+
+### Approach: Pure C# — No AXAML/XAML Files
+The Avalonia frontend will be written **entirely in C# code** (no `.axaml` files). This keeps the code as close as possible to the existing WPF code-behind style, where most logic is already in `.cs` files. The existing WPF project uses minimal XAML — the `EmulatorDisplay.xaml` is only 12 lines, `PaletteDialog.xaml` is 6 lines, and most UI logic lives in code-behind.
+
+**Spice86** ([`OpenRakis/Spice86`](https://github.com/OpenRakis/Spice86)) is a good reference for Avalonia `WriteableBitmap` usage and rendering patterns, but its MVVM + XAML architecture should **not** be followed. Aeon's UI will stay close to the existing imperative, event-driven WPF code-behind pattern.
 
 ### Strategy
 Create a new `Aeon.Avalonia` project that replaces the `Aeon` (WPF) project. The existing `Aeon` project can be kept for reference or removed. The `AeonMonoGame` project remains as an alternative frontend.
@@ -114,46 +145,53 @@ Create a new `Aeon.Avalonia` project that replaces the `Aeon` (WPF) project. The
 
 2. **Add to `Aeon.slnx`** solution file
 
-#### 3.2 File-by-File Migration Map
+#### 3.2 File-by-File Migration Map (C#-Only)
 
-| WPF File | Avalonia Equivalent | Migration Notes |
-|----------|-------------------|-----------------|
-| `App.xaml` / `App.xaml.cs` | `App.axaml` / `App.axaml.cs` | Replace `Application` base class with Avalonia's. Use `AppBuilder` for initialization. |
-| `MainWindow.xaml` / `.cs` | `MainWindow.axaml` / `.cs` | XAML is nearly identical. Replace `xmlns` to Avalonia namespaces. `FolderBrowserDialog` → Avalonia `StorageProvider.OpenFolderPickerAsync()`. |
-| `EmulatorDisplay.xaml` / `.cs` | `EmulatorDisplay.axaml` / `.cs` | **Most complex migration.** Replace `ContentControl` DependencyProperties with Avalonia `StyledProperty`. Replace WPF routed events with Avalonia routed events. Replace mouse/keyboard input from `System.Windows.Input` to `Avalonia.Input`. |
-| `EmulatorDisplayResources.xaml` | `EmulatorDisplayResources.axaml` | Update resource dictionary syntax (minimal changes). |
-| `TaskDialog.xaml` / `.cs` | `TaskDialog.axaml` / `.cs` | Port custom dialog. Avalonia has no built-in TaskDialog, but the custom implementation should port easily. |
-| `TaskDialogTemplates.xaml` | `TaskDialogTemplates.axaml` | Convert DataTemplates to Avalonia syntax. |
-| `PaletteDialog.xaml` / `.cs` | `PaletteDialog.axaml` / `.cs` | Straightforward port — grids, colors, basic controls. |
-| `PerformanceWindow.xaml` / `.cs` | `PerformanceWindow.axaml` / `.cs` | Simple data display window — direct port. |
-| `NumericUpDown.xaml` / `.cs` | `NumericUpDown.axaml` / `.cs` | Avalonia has a built-in `NumericUpDown` control — use it instead of the custom one. |
-| `RoundButtonResources.xaml` | `RoundButtonResources.axaml` | Port button style/template to Avalonia styling syntax. |
-| `FastBitmap.cs` | `AvaloniaBitmap.cs` (new) | **Major rewrite.** Replace `InteropBitmap` + Win32 memory mapping with Avalonia's `WriteableBitmap`. Use `WriteableBitmap.Lock()` to get a pixel buffer pointer. This is fully cross-platform. |
+All UI is built in **pure C# code** — no AXAML files. Controls are instantiated and composed programmatically.
+
+| WPF File | Avalonia C# Equivalent | Migration Notes |
+|----------|----------------------|-----------------|
+| `App.xaml` / `App.xaml.cs` | `App.cs` (C# only) | Build `Application` subclass in C#. Use `AppBuilder.Configure<App>().UsePlatformDetect().StartWithClassicDesktopLifetime()`. Set theme via `Styles.Add(new FluentTheme())`. |
+| `MainWindow.xaml` / `.cs` | `MainWindow.cs` (C# only) | Build the menu bar, toolbar, and layout in C# using `new Menu { Items = { ... } }`, `new StackPanel { Children = { ... } }`, etc. Most logic is already in code-behind — keep it there. Replace `FolderBrowserDialog` → `StorageProvider.OpenFolderPickerAsync()`. |
+| `EmulatorDisplay.xaml` / `.cs` | `EmulatorDisplay.cs` (C# only) | The WPF XAML is only 12 lines (Viewbox → Canvas → Image). Build this trivially in C#: `new Viewbox { Child = new Canvas { Children = { displayImage } } }`. Replace `DependencyProperty` → `StyledProperty<T>`. Replace WPF `RoutedEvent` → Avalonia `RoutedEvent<T>`. Replace `System.Windows.Input` mouse/keyboard → `Avalonia.Input`. **Most complex file — all 380 lines of code-behind port directly.** |
+| `EmulatorDisplayResources.xaml` | Inline in `EmulatorDisplay.cs` | The WPF resource dictionary defines styles with MultiTrigger + Storyboard animations. Convert to Avalonia pseudo-classes and `Transitions` in C# (e.g., `new Setter(OpacityProperty, 0.0)` with `DoubleTransition`). |
+| `TaskDialog.xaml` / `.cs` | `TaskDialog.cs` (C# only) | Simple Grid + TextBlock + ItemsControl layout. Build in C# constructor. 2 `DependencyProperty` → `StyledProperty`. Event bubbling for button clicks ports directly. |
+| `TaskDialogTemplates.xaml` | Inline in `TaskDialogItem.cs` | The WPF ControlTemplate (Grid + Rectangle + Image + TextBlocks) builds easily in C# as a `FuncControlTemplate<TaskDialogItem>`. |
+| `PaletteDialog.xaml` / `.cs` | `PaletteDialog.cs` (C# only) | XAML is only 6 lines (Window + UniformGrid). Already creates 256 Rectangles programmatically in code-behind. Direct port — almost no changes. |
+| `PerformanceWindow.xaml` / `.cs` | `PerformanceWindow.cs` (C# only) | Build layout in C# using `StackPanel`, `Expander`, `Label`. All updates are already imperative (`Label.Content = value`). |
+| `NumericUpDown.xaml` / `.cs` | Use Avalonia's built-in `NumericUpDown` | Avalonia has a built-in `NumericUpDown` control. Drop the custom one entirely; bind `Value`, `Minimum`, `Maximum`, `Increment` properties. |
+| `RoundButtonResources.xaml` | `RoundButton.cs` style helper | Port the Ellipse + gradient + animation template to C# using `new ControlTemplate<Button>` with Avalonia's animation API. Or simplify to a styled button. |
+| `FastBitmap.cs` | `AvaloniaBitmap.cs` (C# only) | **Major rewrite.** Replace `InteropBitmap` + Win32 memory mapping with Avalonia's `WriteableBitmap`. Use `WriteableBitmap.Lock()` to get pixel buffer pointer. Reference Spice86's bitmap rendering for patterns. |
 | `WpfSynchronizer.cs` | `AvaloniaSynchronizer.cs` | Replace `Dispatcher.BeginInvoke` with `Avalonia.Threading.Dispatcher.UIThread.Post()`. |
-| `KeyExtensions.cs` | `KeyExtensions.cs` | Replace `System.Windows.Input.Key` enum with `Avalonia.Input.Key` enum. The key names are very similar but not identical — update the dictionary mappings. |
-| `MouseButtonExtensions.cs` | `MouseButtonExtensions.cs` | Replace WPF `MouseButton` with `Avalonia.Input.PointerPointProperties` or `Avalonia.Input.MouseButton`. |
-| `MouseModeConverter.cs` | `MouseModeConverter.cs` | Replace `IValueConverter` (WPF) with Avalonia's `IValueConverter` — same interface, different namespace. |
-| `SpeedConverter.cs` | `SpeedConverter.cs` | Same as above — namespace change only. |
-| `SimpleCommand.cs` | `SimpleCommand.cs` | `ICommand` is in `System.Windows.Input` for WPF but `System.Windows.Input.ICommand` is actually in `System.ObjectModel` — likely no change needed or use `ReactiveCommand` from Avalonia's ReactiveUI integration. |
-| `NativeMethods.cs` (`SetCursorPos`) | `SdlCursorHelper.cs` (new) | Replace `user32.dll` P/Invoke with **SDL2 C# bindings** (`SDL_WarpMouseInWindow` or `SDL_WarpMouseGlobal`). SDL2 handles cursor warping cross-platform: Windows (Win32), Linux Xorg (XWarpPointer), Linux Wayland (wl_pointer), macOS (CGWarpMouseCursorPosition). Add SDL2-CS NuGet or vendor the SDL2# bindings; ship native SDL2 libraries per platform in `runtimes/` folders. |
-| `BrowseInfo.cs` | Remove/replace | Replace with Avalonia `StorageProvider` API for file/folder browsing. |
+| `KeyExtensions.cs` | `KeyExtensions.cs` | Replace `System.Windows.Input.Key` → `Avalonia.Input.Key`. Update dictionary — key names are very similar. |
+| `MouseButtonExtensions.cs` | `MouseButtonExtensions.cs` | Replace WPF `MouseButton` → `Avalonia.Input.PointerPointProperties`. Same switch logic. |
+| `MouseModeConverter.cs` | `MouseModeConverter.cs` | `IValueConverter` is in `Avalonia.Data.Converters` — same interface pattern. Or replace with simple C# property logic (no converter needed in C#-only UI). |
+| `SpeedConverter.cs` | `SpeedConverter.cs` or inline | Same — or replace with direct string formatting in code-behind. |
+| `SimpleCommand.cs` | `SimpleCommand.cs` | `ICommand` is in `System.Windows.Input` namespace — works the same in Avalonia. No change needed. |
+| `NativeMethods.cs` (`SetCursorPos`) | `CursorHelper.cs` (C# only) | Port SDL2 cursor warping logic to **pure C#** with per-platform P/Invoke to OS system libraries only: `user32.dll` (Windows), `libX11.so` (Linux Xorg), Wayland client libs (Linux Wayland), `CoreGraphics.framework` (macOS). No native SDL2 dependency. See section 3.5. |
+| `BrowseInfo.cs` | Remove | Replace with Avalonia `StorageProvider` API. |
+| `EmulationErrorRoutedEventArgs.cs` | `EmulationErrorRoutedEventArgs.cs` | Port to Avalonia `RoutedEventArgs` — same pattern, different base class. |
+| `TaskDialogItem.cs` | `TaskDialogItem.cs` | Replace 3 `DependencyProperty` → `StyledProperty`. Same code structure. |
 
-#### 3.3 Key Avalonia Differences from WPF
+#### 3.3 Key Avalonia Differences from WPF (C#-Only Context)
 
-| WPF Concept | Avalonia Equivalent |
-|-------------|-------------------|
-| `DependencyProperty` | `StyledProperty<T>` or `DirectProperty<T>` |
-| `RoutedEvent` | `RoutedEvent<T>` (similar API) |
+| WPF Pattern | Avalonia C# Equivalent |
+|-------------|----------------------|
+| `DependencyProperty.Register(...)` | `StyledProperty<T>` via `AvaloniaProperty.Register<TOwner, T>(...)` |
+| `DependencyProperty.RegisterReadOnly(...)` | `DirectProperty<TOwner, T>` via `AvaloniaProperty.RegisterDirect<TOwner, T>(...)` |
+| `DependencyPropertyKey` (read-only) | `DirectProperty` with getter only |
+| `RoutedEvent` + `RoutedEventHandler` | `RoutedEvent<RoutedEventArgs>` (similar registration pattern) |
 | `Dispatcher.BeginInvoke()` | `Dispatcher.UIThread.Post()` |
-| `.xaml` extension | `.axaml` extension |
-| `xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"` | `xmlns="https://github.com/avaloniaui"` |
+| `new Window { Content = ... }` | Same — `new Window { Content = ... }` |
+| `new Grid { RowDefinitions = ... }` | Same — `new Grid { RowDefinitions = ... }` |
+| `element.SetBinding(...)` | `element.Bind(property, binding)` or `element[property] = new Binding(...)` |
+| `ControlTemplate` in XAML | `new FuncControlTemplate<T>((control, scope) => ...)` in C# |
+| `Style` with `Trigger` | `new Style(x => x.OfType<T>()) { Setters = { ... } }` + pseudo-classes |
+| `DataTrigger` | Use `IObservable<T>` bindings or pseudo-classes in C# |
+| `Storyboard` / `DoubleAnimation` | `new Animation { Duration = ..., Children = { new KeyFrame { Setters = { ... } } } }` |
 | `InteropBitmap` | `WriteableBitmap` |
 | `System.Windows.Input.Key` | `Avalonia.Input.Key` |
-| `System.Windows.Media.Imaging` | `Avalonia.Media.Imaging` |
-| `ContentControl` | `ContentControl` (same name, different namespace) |
-| `Window` | `Window` (same name, different namespace) |
-| `FolderBrowserDialog` | `IStorageProvider.OpenFolderPickerAsync()` |
-| `System.Windows.Threading.DispatcherTimer` | `Avalonia.Threading.DispatcherTimer` |
+| `FolderBrowserDialog` (WinForms) | `IStorageProvider.OpenFolderPickerAsync()` |
 
 #### 3.4 Video Rendering (FastBitmap replacement)
 
@@ -168,46 +206,35 @@ The current `FastBitmap.cs` uses Win32 memory-mapped files + WPF `InteropBitmap`
 
 This is slightly different (Bgra8888 vs Bgr32) but handles the same use case. Performance should be comparable since `WriteableBitmap.Lock()` gives a direct pointer.
 
-#### 3.5 Cross-Platform Cursor Control via SDL2 C#
+#### 3.5 Cross-Platform Cursor Control — Pure C# Port of SDL2 Cursor Code
 
 The current `NativeMethods.SetCursorPos()` (Win32 `user32.dll`) is used in `EmulatorDisplay.xaml.cs` (line 375) to warp the mouse cursor back to the center of the display during relative mouse capture mode. This is essential for FPS-style mouse look in DOS games.
 
-**Avalonia does not provide a built-in cursor warp API**, so a cross-platform native solution is needed. **SDL2 C# bindings** solve this cleanly:
+**Avalonia does not provide a built-in cursor warp API**, so a cross-platform solution is needed. Following the same approach as Spice86.Audio (which ports SDL2 audio drivers to pure C#), the SDL2 cursor warping code will be **ported to pure C#** — no native SDL2 library dependency.
 
-##### Why SDL2
+##### Per-Platform C# Ports
 
-| Platform | SDL2 Backend | Equivalent of `SetCursorPos` |
-|----------|-------------|------------------------------|
-| Windows | Win32 API | `SetCursorPos()` (same as current) |
-| Linux (Xorg) | X11 | `XWarpPointer()` |
-| Linux (Wayland) | Wayland protocol | `wl_pointer` warp (with compositor support) |
-| macOS | Cocoa/Quartz | `CGWarpMouseCursorPosition()` |
-
-SDL2's `SDL_WarpMouseInWindow()` and `SDL_WarpMouseGlobal()` abstract all of the above into a single cross-platform call.
+| Platform | SDL2 Source Reference | C# Port Approach |
+|----------|----------------------|-----------------|
+| Windows | `SDL_windowsmouse.c` → `WIN_WarpMouse()` | P/Invoke `user32.dll SetCursorPos()` (same as current, but isolated in cross-platform abstraction) |
+| Linux (Xorg) | `SDL_x11mouse.c` → `X11_WarpMouse()` | P/Invoke `libX11.so` → `XWarpPointer()` |
+| Linux (Wayland) | `SDL_waylandmouse.c` → `Wayland_WarpMouse()` | P/Invoke Wayland client libs for `wl_pointer` warp (with compositor support) |
+| macOS | `SDL_cocoamouse.m` → `Cocoa_WarpMouse()` | P/Invoke `CoreGraphics.framework` → `CGWarpMouseCursorPosition()` |
 
 ##### Changes Required
 
-1. **Add SDL2-CS dependency** to `Aeon.Avalonia.csproj`:
-   - Use the **SDL2-CS** NuGet package or vendor the `SDL2.cs` bindings from [`flibitijibibo/SDL2-CS`](https://github.com/flibitijibibo/SDL2-CS)
-   - Initialize SDL2 with `SDL_Init(SDL_INIT_VIDEO)` at application startup (only the video subsystem is needed for cursor control)
+1. **Create `CursorHelper.cs`** in `Aeon.Avalonia` (or a shared project):
+   - Port the SDL2 cursor warping logic to C# with per-platform P/Invoke
+   - Use `OperatingSystem.IsWindows()` / `IsLinux()` / `IsMacOS()` for runtime platform detection
+   - Each platform path uses only OS-provided system libraries (no SDL2 native dependency)
+   - Single public API: `CursorHelper.WarpCursor(int x, int y)`
 
-2. **Create `SdlCursorHelper.cs`** in `Aeon.Avalonia`:
-   - Wrap `SDL_WarpMouseGlobal(int x, int y)` to replace `NativeMethods.SetCursorPos()`
-   - Called from `EmulatorDisplay` during relative mouse capture mode
-   - Falls back gracefully if SDL2 is unavailable
+2. **Update `EmulatorDisplay` code-behind** — replace the `NativeMethods.SetCursorPos()` call with `CursorHelper.WarpCursor()`
 
-3. **Ship native SDL2 libraries** for each platform via NuGet runtime folders:
-   ```
-   runtimes/win-x64/native/SDL2.dll
-   runtimes/linux-x64/native/libSDL2-2.0.so.0
-   runtimes/osx-x64/native/libSDL2.dylib
-   runtimes/osx-arm64/native/libSDL2.dylib
-   ```
-
-4. **Update `EmulatorDisplay` code-behind** — replace the `NativeMethods.SetCursorPos()` call with `SdlCursorHelper.WarpCursor()`
+3. **No native library shipping required** — all P/Invoke targets are OS-provided system libraries (`user32.dll`, `libX11.so`, `CoreGraphics.framework`)
 
 ##### Wayland Note
-Wayland has restrictions on cursor warping for security reasons — some compositors may not honor `SDL_WarpMouseGlobal()`. SDL2 handles this as gracefully as possible. For relative mouse input on Wayland, SDL2's relative mouse mode (`SDL_SetRelativeMouseMode`) may be a better fit, which captures mouse motion deltas directly without needing to warp the cursor.
+Wayland has restrictions on cursor warping for security reasons — some compositors may not honor warp requests. For relative mouse input on Wayland, SDL2's approach uses relative pointer protocol (`zwp_relative_pointer_v1`) to capture mouse motion deltas directly without warping. This may need to be ported as well for full Wayland support.
 
 ---
 
@@ -241,7 +268,7 @@ Wayland has restrictions on cursor warping for security reasons — some composi
    - `dotnet publish -r linux-x64`
    - `dotnet publish -r osx-x64`
    - `dotnet publish -r osx-arm64`
-4. **Package native dependencies** (SDL2 native libraries for cursor control, PortAudio libraries from Bufdio.Spice86)
+4. **No native dependencies to package** — both Spice86.Audio and the cursor helper use only OS-provided system libraries via P/Invoke
 
 ---
 
@@ -268,10 +295,10 @@ Phase 5 (CI)        ──→  After Phase 3 is complete
 
 | Risk | Likelihood | Mitigation |
 |------|-----------|------------|
-| Bufdio.Spice86 API incompatibility with TinyAudio | Low | The `Audio.cs` wrapper abstracts the API; only one file needs updating |
+| Spice86.Audio API incompatibility with TinyAudio | Low | The `Audio.cs` wrapper abstracts the API; only one file needs updating. Spice86.Audio is fully managed C# — no native dependencies to manage. |
 | Avalonia XAML differences cause rendering issues | Medium | Test extensively on all platforms; use Avalonia DevTools for debugging |
 | Performance regression in video rendering | Low | Avalonia `WriteableBitmap` provides direct pointer access similar to `InteropBitmap` |
-| `SetCursorPos` replacement via SDL2 | Low | SDL2 handles cursor warping on Windows, Linux (Xorg/Wayland), and macOS natively; Wayland restrictions mitigated by SDL2's relative mouse mode |
+| `SetCursorPos` replacement via pure C# SDL2 port | Low | Port uses only OS system libraries (`user32.dll`, `libX11.so`, `CoreGraphics.framework`); Wayland restrictions mitigated by porting SDL2's relative pointer protocol |
 | Physical CD-ROM access on Linux/macOS | Low | Defer; ISO file support is already cross-platform |
 
 ---
@@ -279,7 +306,7 @@ Phase 5 (CI)        ──→  After Phase 3 is complete
 ## Summary of Files Changed per Phase
 
 ### Phase 1 (2 files modified)
-- `Aeon.Emulator.Sound/Aeon.Emulator.Sound.csproj` — swap TinyAudio → Bufdio.Spice86
+- `Aeon.Emulator.Sound/Aeon.Emulator.Sound.csproj` — swap TinyAudio → Spice86.Audio
 - `Aeon.Emulator.Sound/Audio.cs` — update API calls
 
 ### Phase 2 (1-2 files modified)
@@ -287,11 +314,10 @@ Phase 5 (CI)        ──→  After Phase 3 is complete
 - `Aeon.Emulator.Sound/Midi/MidiEngine.cs` — add documentation (optional)
 
 ### Phase 3 (~20 new/modified files)
-- New `Aeon.Avalonia/` project with all AXAML files and code-behind
+- New `Aeon.Avalonia/` project with all C#-only UI files (no AXAML)
 - New `AvaloniaBitmap.cs` replacing `FastBitmap.cs`
 - New `AvaloniaSynchronizer.cs` replacing `WpfSynchronizer.cs`
-- New `SdlCursorHelper.cs` — cross-platform cursor warping via SDL2 C# bindings
-- SDL2-CS NuGet reference + native SDL2 libraries in `runtimes/` folders
+- New `CursorHelper.cs` — pure C# port of SDL2 cursor warping (per-platform P/Invoke to OS system libs only)
 
 ### Phase 4 (2-4 new files)
 - Platform-specific CD-ROM abstractions (can be deferred)
