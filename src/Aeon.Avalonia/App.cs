@@ -1,16 +1,16 @@
 using Avalonia;
 using Avalonia.Controls.ApplicationLifetimes;
-using Avalonia.Themes.Fluent;
+using Avalonia.Markup.Xaml;
 
 namespace Aeon.Emulator.Launcher;
 
-public sealed class App : Application
+public sealed partial class App : Application
 {
     public static string[] Args { get; private set; } = [];
 
     public override void Initialize()
     {
-        Styles.Add(new FluentTheme());
+        AvaloniaXamlLoader.Load(this);
     }
 
     public override void OnFrameworkInitializationCompleted()

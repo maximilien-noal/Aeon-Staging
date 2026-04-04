@@ -1,4 +1,3 @@
-using Avalonia;
 using Avalonia.Controls;
 using Avalonia.Controls.Shapes;
 using Avalonia.Media;
@@ -9,9 +8,8 @@ namespace Aeon.Emulator.Launcher;
 /// <summary>
 /// Displays the current color palette.
 /// </summary>
-public class PaletteDialog : Window
+public partial class PaletteDialog : Window
 {
-    private readonly WrapPanel grid;
     private DispatcherTimer? timer;
 
     /// <summary>
@@ -19,17 +17,7 @@ public class PaletteDialog : Window
     /// </summary>
     public PaletteDialog()
     {
-        this.Title = "Color Palette";
-        this.Height = 300;
-        this.Width = 300;
-        this.ShowInTaskbar = false;
-
-        // Use WrapPanel to simulate a 16x16 uniform grid
-        this.grid = new WrapPanel();
-        for (int i = 0; i < 256; i++)
-            this.grid.Children.Add(new Rectangle { Width = 16, Height = 16, Fill = new SolidColorBrush() });
-
-        this.Content = this.grid;
+        InitializeComponent();
     }
 
     /// <summary>
@@ -40,6 +28,10 @@ public class PaletteDialog : Window
     protected override void OnOpened(EventArgs e)
     {
         base.OnOpened(e);
+
+        for (int i = 0; i < 256; i++)
+            this.grid.Children.Add(new Rectangle { Fill = new SolidColorBrush() });
+
         this.timer = new DispatcherTimer(TimeSpan.FromSeconds(1.0 / 30.0), DispatcherPriority.Normal, UpdateColors);
         this.timer.Start();
     }

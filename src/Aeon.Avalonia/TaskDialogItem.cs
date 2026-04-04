@@ -1,6 +1,5 @@
+using Avalonia;
 using Avalonia.Controls;
-using Avalonia.Layout;
-using Avalonia.Media;
 
 namespace Aeon.Emulator.Launcher;
 
@@ -10,13 +9,21 @@ namespace Aeon.Emulator.Launcher;
 public class TaskDialogItem : Button
 {
     /// <summary>
+    /// The Text dependency property definition.
+    /// </summary>
+    public static readonly StyledProperty<string?> TextProperty =
+        AvaloniaProperty.Register<TaskDialogItem, string?>(nameof(Text));
+    /// <summary>
+    /// The Description dependency property definition.
+    /// </summary>
+    public static readonly StyledProperty<string?> DescriptionProperty =
+        AvaloniaProperty.Register<TaskDialogItem, string?>(nameof(Description));
+
+    /// <summary>
     /// Initializes a new instance of the <see cref="TaskDialogItem"/> class.
     /// </summary>
     public TaskDialogItem()
     {
-        this.HorizontalAlignment = HorizontalAlignment.Stretch;
-        this.HorizontalContentAlignment = HorizontalAlignment.Left;
-        this.Margin = new Avalonia.Thickness(0, 2);
     }
     /// <summary>
     /// Initializes a new instance of the <see cref="TaskDialogItem"/> class.
@@ -28,25 +35,22 @@ public class TaskDialogItem : Button
     {
         this.Text = text;
         this.Description = description;
-        UpdateContent();
     }
 
     /// <summary>
-    /// Gets or sets the text to display.
+    /// Gets or sets the text to display. This is a styled property.
     /// </summary>
-    public string? Text { get; set; }
-    /// <summary>
-    /// Gets or sets the description to display.
-    /// </summary>
-    public string? Description { get; set; }
-
-    private void UpdateContent()
+    public string? Text
     {
-        var panel = new StackPanel { Spacing = 2 };
-        if (!string.IsNullOrEmpty(this.Text))
-            panel.Children.Add(new TextBlock { Text = this.Text, FontWeight = FontWeight.Bold });
-        if (!string.IsNullOrEmpty(this.Description))
-            panel.Children.Add(new TextBlock { Text = this.Description, TextWrapping = TextWrapping.Wrap, Foreground = Brushes.Gray });
-        this.Content = panel;
+        get => GetValue(TextProperty);
+        set => SetValue(TextProperty, value);
+    }
+    /// <summary>
+    /// Gets or sets the description to display. This is a styled property.
+    /// </summary>
+    public string? Description
+    {
+        get => GetValue(DescriptionProperty);
+        set => SetValue(DescriptionProperty, value);
     }
 }

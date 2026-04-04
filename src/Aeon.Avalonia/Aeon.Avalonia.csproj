@@ -11,6 +11,7 @@
     <Description>Runtime environment for the Aeon x86 emulator.</Description>
     <ImplicitUsings>enable</ImplicitUsings>
     <Nullable>enable</Nullable>
+    <ApplicationIcon>Aeon.ico</ApplicationIcon>
   </PropertyGroup>
   <ItemGroup>
     <PackageReference Include="Avalonia" Version="11.3.13" />
@@ -22,5 +23,9 @@
     <ProjectReference Include="..\Aeon.Emulator\Aeon.Emulator.csproj" />
     <ProjectReference Include="..\Aeon.DiskImages\Aeon.DiskImages.csproj" />
     <ProjectReference Include="..\Aeon.Emulator.Sound\Aeon.Emulator.Sound.csproj" />
+  </ItemGroup>
+  <ItemGroup>
+    <AvaloniaResource Include="Resources\*.png" />
+    <AvaloniaResource Include="Aeon.ico" />
   </ItemGroup>
 </Project>
