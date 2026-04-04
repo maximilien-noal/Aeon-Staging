@@ -14,7 +14,7 @@ This document outlines the plan to make Aeon run on **Windows, Linux, and macOS*
 | **MIDI passthrough** | `Aeon.Emulator.Sound/Midi/WindowsMidiMapper.cs`, `NativeMethods.cs` | `winmm.dll` P/Invoke (`midiOutOpen`, `midiOutShortMsg`, etc.) | Windows MIDI Mapper device |
 | **WPF UI** | `Aeon/` (10 XAML files, code-behind, converters, `FastBitmap.cs`, `WpfSynchronizer.cs`, `KeyExtensions.cs`) | WPF, `InteropBitmap`, `System.Windows.Input.Key`, `Dispatcher` | Entire desktop frontend |
 | **Fast bitmap rendering** | `Aeon/FastBitmap.cs` | `kernel32.dll` P/Invoke (`CreateFileMapping`, `MapViewOfFile`) + WPF `InteropBitmap` | Video display |
-| **Cursor control** | `Aeon/NativeMethods.cs` | `user32.dll` P/Invoke (`SetCursorPos`) | Mouse cursor repositioning |
+| **Cursor control** | `Aeon/NativeMethods.cs`, `EmulatorDisplay.xaml.cs` | `user32.dll` P/Invoke (`SetCursorPos`) | Mouse cursor warping for relative mouse mode — replace with SDL2 C# for cross-platform support (Windows, Linux Xorg, Linux Wayland, macOS) |
 | **CD-ROM device I/O** | `Aeon.DiskImages/Iso9660/NativeMethods.cs`, `IOCTL.cs` | `kernel32.dll` P/Invoke (`DeviceIoControl`, `CreateFile`, `ReadFile`) | Physical CD-ROM drive access |
 | **Project targeting** | `Aeon/Aeon.csproj` | `net10.0-windows`, `UseWPF=true`, `UseWindowsForms=true` | Build configuration |
 
@@ -135,7 +135,7 @@ Create a new `Aeon.Avalonia` project that replaces the `Aeon` (WPF) project. The
 | `MouseModeConverter.cs` | `MouseModeConverter.cs` | Replace `IValueConverter` (WPF) with Avalonia's `IValueConverter` — same interface, different namespace. |
 | `SpeedConverter.cs` | `SpeedConverter.cs` | Same as above — namespace change only. |
 | `SimpleCommand.cs` | `SimpleCommand.cs` | `ICommand` is in `System.Windows.Input` for WPF but `System.Windows.Input.ICommand` is actually in `System.ObjectModel` — likely no change needed or use `ReactiveCommand` from Avalonia's ReactiveUI integration. |
-| `NativeMethods.cs` (`SetCursorPos`) | Platform abstraction | For cursor warping: use Avalonia's pointer APIs or conditionally P/Invoke per platform. Avalonia doesn't have a direct equivalent, so this may need a platform-specific helper with `#if` or runtime OS checks. |
+| `NativeMethods.cs` (`SetCursorPos`) | `SdlCursorHelper.cs` (new) | Replace `user32.dll` P/Invoke with **SDL2 C# bindings** (`SDL_WarpMouseInWindow` or `SDL_WarpMouseGlobal`). SDL2 handles cursor warping cross-platform: Windows (Win32), Linux Xorg (XWarpPointer), Linux Wayland (wl_pointer), macOS (CGWarpMouseCursorPosition). Add SDL2-CS NuGet or vendor the SDL2# bindings; ship native SDL2 libraries per platform in `runtimes/` folders. |
 | `BrowseInfo.cs` | Remove/replace | Replace with Avalonia `StorageProvider` API for file/folder browsing. |
 
 #### 3.3 Key Avalonia Differences from WPF
@@ -167,6 +167,47 @@ The current `FastBitmap.cs` uses Win32 memory-mapped files + WPF `InteropBitmap`
 ```
 
 This is slightly different (Bgra8888 vs Bgr32) but handles the same use case. Performance should be comparable since `WriteableBitmap.Lock()` gives a direct pointer.
+
+#### 3.5 Cross-Platform Cursor Control via SDL2 C#
+
+The current `NativeMethods.SetCursorPos()` (Win32 `user32.dll`) is used in `EmulatorDisplay.xaml.cs` (line 375) to warp the mouse cursor back to the center of the display during relative mouse capture mode. This is essential for FPS-style mouse look in DOS games.
+
+**Avalonia does not provide a built-in cursor warp API**, so a cross-platform native solution is needed. **SDL2 C# bindings** solve this cleanly:
+
+##### Why SDL2
+
+| Platform | SDL2 Backend | Equivalent of `SetCursorPos` |
+|----------|-------------|------------------------------|
+| Windows | Win32 API | `SetCursorPos()` (same as current) |
+| Linux (Xorg) | X11 | `XWarpPointer()` |
+| Linux (Wayland) | Wayland protocol | `wl_pointer` warp (with compositor support) |
+| macOS | Cocoa/Quartz | `CGWarpMouseCursorPosition()` |
+
+SDL2's `SDL_WarpMouseInWindow()` and `SDL_WarpMouseGlobal()` abstract all of the above into a single cross-platform call.
+
+##### Changes Required
+
+1. **Add SDL2-CS dependency** to `Aeon.Avalonia.csproj`:
+   - Use the **SDL2-CS** NuGet package or vendor the `SDL2.cs` bindings from [`flibitijibibo/SDL2-CS`](https://github.com/flibitijibibo/SDL2-CS)
+   - Initialize SDL2 with `SDL_Init(SDL_INIT_VIDEO)` at application startup (only the video subsystem is needed for cursor control)
+
+2. **Create `SdlCursorHelper.cs`** in `Aeon.Avalonia`:
+   - Wrap `SDL_WarpMouseGlobal(int x, int y)` to replace `NativeMethods.SetCursorPos()`
+   - Called from `EmulatorDisplay` during relative mouse capture mode
+   - Falls back gracefully if SDL2 is unavailable
+
+3. **Ship native SDL2 libraries** for each platform via NuGet runtime folders:
+   ```
+   runtimes/win-x64/native/SDL2.dll
+   runtimes/linux-x64/native/libSDL2-2.0.so.0
+   runtimes/osx-x64/native/libSDL2.dylib
+   runtimes/osx-arm64/native/libSDL2.dylib
+   ```
+
+4. **Update `EmulatorDisplay` code-behind** — replace the `NativeMethods.SetCursorPos()` call with `SdlCursorHelper.WarpCursor()`
+
+##### Wayland Note
+Wayland has restrictions on cursor warping for security reasons — some compositors may not honor `SDL_WarpMouseGlobal()`. SDL2 handles this as gracefully as possible. For relative mouse input on Wayland, SDL2's relative mouse mode (`SDL_SetRelativeMouseMode`) may be a better fit, which captures mouse motion deltas directly without needing to warp the cursor.
 
 ---
 
@@ -200,7 +241,7 @@ This is slightly different (Bgra8888 vs Bgr32) but handles the same use case. Pe
    - `dotnet publish -r linux-x64`
    - `dotnet publish -r osx-x64`
    - `dotnet publish -r osx-arm64`
-4. **Package native dependencies** (SDL2 libraries, PortAudio libraries from Bufdio.Spice86)
+4. **Package native dependencies** (SDL2 native libraries for cursor control, PortAudio libraries from Bufdio.Spice86)
 
 ---
 
@@ -230,7 +271,7 @@ Phase 5 (CI)        ──→  After Phase 3 is complete
 | Bufdio.Spice86 API incompatibility with TinyAudio | Low | The `Audio.cs` wrapper abstracts the API; only one file needs updating |
 | Avalonia XAML differences cause rendering issues | Medium | Test extensively on all platforms; use Avalonia DevTools for debugging |
 | Performance regression in video rendering | Low | Avalonia `WriteableBitmap` provides direct pointer access similar to `InteropBitmap` |
-| `SetCursorPos` has no direct Avalonia equivalent | Medium | Use platform-specific code with runtime OS detection; or use Avalonia's pointer capture APIs |
+| `SetCursorPos` replacement via SDL2 | Low | SDL2 handles cursor warping on Windows, Linux (Xorg/Wayland), and macOS natively; Wayland restrictions mitigated by SDL2's relative mouse mode |
 | Physical CD-ROM access on Linux/macOS | Low | Defer; ISO file support is already cross-platform |
 
 ---
@@ -245,17 +286,15 @@ Phase 5 (CI)        ──→  After Phase 3 is complete
 - `Aeon.Emulator.Sound/Midi/GeneralMidi.cs` — add TODO comment + optional logging
 - `Aeon.Emulator.Sound/Midi/MidiEngine.cs` — add documentation (optional)
 
-### Phase 3 (~5-8 new files)
-- New `Aeon.Input/` project or files in `Aeon.Emulator/`
-- `GamepadDevice.cs`, `JoystickDevice.cs`, SDL2 bindings or NuGet reference
-
-### Phase 4 (~20 new/modified files)
+### Phase 3 (~20 new/modified files)
 - New `Aeon.Avalonia/` project with all AXAML files and code-behind
 - New `AvaloniaBitmap.cs` replacing `FastBitmap.cs`
 - New `AvaloniaSynchronizer.cs` replacing `WpfSynchronizer.cs`
+- New `SdlCursorHelper.cs` — cross-platform cursor warping via SDL2 C# bindings
+- SDL2-CS NuGet reference + native SDL2 libraries in `runtimes/` folders
 
-### Phase 5 (2-4 new files)
+### Phase 4 (2-4 new files)
 - Platform-specific CD-ROM abstractions (can be deferred)
 
-### Phase 6 (1-2 new files)
+### Phase 5 (1-2 new files)
 - CI workflow files (`.github/workflows/`)
