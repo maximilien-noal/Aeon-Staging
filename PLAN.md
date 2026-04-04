@@ -27,7 +27,7 @@ This document outlines the plan to make Aeon run on **Windows, Linux, and macOS*
 
 ---
 
-## Phase 1: Audio Backend — Replace TinyAudio with Spice86.Audio
+## Phase 1: Audio Backend — Replace TinyAudio with Spice86.Audio ✅ DONE
 
 ### Rationale
 `TinyAudio` is the current audio output abstraction. **`Spice86.Audio`** (NuGet: `Spice86.Audio`, latest version: **11.4.0**) is a **fully managed, cross-platform** audio library with **no native dependencies**. It is a C# port combining code from multiple sources:
@@ -74,9 +74,15 @@ Source: [`OpenRakis/Spice86.Audio`](https://github.com/OpenRakis/Spice86.Audio)
 ### Testing
 - Verify Sound Blaster, OPL3 FM, PC Speaker, and MeltySynth MIDI all produce audio on Windows, Linux, and macOS
 
+### Implementation Notes
+
+**Callback → push-based conversion**: TinyAudio had a callback mode where the OS audio system pulled data. Spice86.Audio only supports push mode (`player.WriteData(Span<float>)`). All callback-based consumers (InternalSpeaker, FmSoundCard, Mt32Player, MeltySynthMidiMapper) were converted to background thread push loops. SoundBlaster was already push-based; its `BeginPlayback()`/`StopPlayback()` calls were replaced with `MuteOutput()`/`UnmuteOutput()`.
+
+**CD audio (CueSheetImage.cs)**: The CD audio player uses `SpeexResamplerCSharp` from Spice86.Audio for high-quality resampling when the audio backend negotiates a different output rate. This matches **DOSBox Staging's** [`cdrom_image.cpp`](https://github.com/dosbox-staging/dosbox-staging/blob/main/src/dos/cdrom_image.cpp) approach, where CD audio is decoded from BIN/CUE image files, resampled via the mixer's Speex resampler, and fed to the audio output through a `MixerChannel`. DOSBox Staging also supports compressed audio tracks via SDL_sound (FLAC, MP3, OGG, OPUS, WAV) — this is not yet implemented in Aeon but could be added later by decoding compressed tracks to PCM before feeding them to the existing resampling pipeline.
+
 ---
 
-## Phase 2: General MIDI Passthrough — Windows-Only with Platform Guard
+## Phase 2: General MIDI Passthrough — Windows-Only with Platform Guard ✅ DONE
 
 ### Rationale
 The Windows MIDI Mapper (`winmm.dll`) has no direct cross-platform equivalent. The existing code already handles this gracefully: `GeneralMidi.TryCreateMidiMapper()` returns `null` on non-Windows, which means MIDI simply doesn't play (silent). The `MeltySynth` and `MT-32` engines are fully cross-platform alternatives.
@@ -305,13 +311,20 @@ Phase 5 (CI)        ──→  After Phase 3 is complete
 
 ## Summary of Files Changed per Phase
 
-### Phase 1 (2 files modified)
-- `Aeon.Emulator.Sound/Aeon.Emulator.Sound.csproj` — swap TinyAudio → Spice86.Audio
-- `Aeon.Emulator.Sound/Audio.cs` — update API calls
+### Phase 1 ✅ (9 files modified)
+- `Aeon.Emulator.Sound/Aeon.Emulator.Sound.csproj` — swap TinyAudio → Spice86.Audio 11.4.0
+- `Aeon.Emulator.Sound/Audio.cs` — rewrite using `AudioPlayerFactory` + `AudioEngine.CrossPlatform`; add float conversion for `short[]`/`byte[]` overloads
+- `Aeon.Emulator.Sound/PCSpeaker/InternalSpeaker.cs` — callback → push-based background thread
+- `Aeon.Emulator.Sound/FM/FmSoundCard.cs` — callback → push-based background thread
+- `Aeon.Emulator.Sound/Midi/Mt32Player.cs` — callback → push-based background thread
+- `Aeon.Emulator.Sound/Midi/MeltySynthMidiMapper.cs` — callback → push-based background thread
+- `Aeon.Emulator.Sound/Blaster/SoundBlaster.cs` — replace `BeginPlayback()`/`StopPlayback()` with `MuteOutput()`/`UnmuteOutput()`
+- `Aeon.DiskImages/Aeon.DiskImages.csproj` — swap TinyAudio → Spice86.Audio 11.4.0
+- `Aeon.DiskImages/CueSheetImage.cs` — replace TinyAudio AudioPlayer with Spice86.Audio; use `SpeexResamplerCSharp` (DOSBox Staging MixerChannel approach) for CD audio resampling
 
-### Phase 2 (1-2 files modified)
-- `Aeon.Emulator.Sound/Midi/GeneralMidi.cs` — add TODO comment + optional logging
-- `Aeon.Emulator.Sound/Midi/MidiEngine.cs` — add documentation (optional)
+### Phase 2 ✅ (2 files modified)
+- `Aeon.Emulator.Sound/Midi/GeneralMidi.cs` — add TODO comment for Linux/macOS MIDI passthrough
+- `Aeon.Emulator.Sound/Midi/MidiEngine.cs` — document MidiMapper as Windows-only
 
 ### Phase 3 (~20 new/modified files)
 - New `Aeon.Avalonia/` project with all C#-only UI files (no AXAML)
