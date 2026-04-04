@@ -2,7 +2,7 @@
 
 ## Overview
 
-This document outlines the plan to make Aeon run on **Windows, Linux, and macOS** by replacing Windows-only dependencies with cross-platform alternatives. The core emulation engine (`Aeon.Emulator`) already targets `net10.0` and has no platform-specific code — the work is concentrated in the **audio/sound**, **UI**, and **input** layers.
+This document outlines the plan to make Aeon run on **Windows, Linux, and macOS** by replacing Windows-only dependencies with cross-platform alternatives. The core emulation engine (`Aeon.Emulator`) already targets `net10.0` and has no platform-specific code — the work is concentrated in the **audio/sound** and **UI** layers.
 
 ---
 
@@ -77,50 +77,7 @@ The Windows MIDI Mapper (`winmm.dll`) has no direct cross-platform equivalent. T
 
 ---
 
-## Phase 3: Input — Add SDL2 Gamepad/Controller Support
-
-### Rationale
-The codebase currently has **no gamepad/controller support** — only keyboard and mouse. The problem statement asks to add gamepad support using SDL2 C# bindings from the `SDL2` branch of `https://github.com/libsdl-org/SDL`. On Windows, SDL2's gamepad backend uses XInput internally, so Windows behavior is preserved.
-
-### Recommended Approach
-Use **SDL2-CS** (`SDL2#`) — the well-established C# wrapper for SDL2 that closely mirrors the C API. It targets .NET Standard and works on Windows, macOS, and Linux.
-
-### Changes Required
-
-1. **New project or integration point** — Two options:
-   - **Option A (recommended)**: Add SDL2 gamepad support to `Aeon.Emulator.Sound` or create a new `Aeon.Input` project
-   - **Option B**: Add it directly to each frontend (`Aeon`, `AeonMonoGame`)
-
-2. **Add SDL2-CS NuGet package** or vendor the SDL2# bindings from the SDL2 branch:
-   - Ship native SDL2 libraries for each platform (`.dll` for Windows, `.so` for Linux, `.dylib` for macOS)
-
-3. **Create a `GamepadDevice` class** in `Aeon.Emulator` (or a new `Aeon.Input` project):
-   - Initialize SDL2 with `SDL_INIT_GAMECONTROLLER`
-   - Poll for gamepad input via `SDL_GameControllerGetAxis` and `SDL_GameControllerGetButton`
-   - Map gamepad buttons/axes to DOS keyboard scan codes or joystick port values (ports `0x201`)
-   - The emulator core (`Aeon.Emulator`) already has port-based I/O, so a gamepad device would implement `IInputPort` for the joystick port
-
-4. **Joystick port emulation** — DOS games expect joystick input on port `0x201`:
-   - Button states in bits 4-7
-   - Axis positions via timing-based ADC (bits 0-3)
-   - Create a `JoystickDevice : IInputPort, IOutputPort` that reads SDL2 gamepad state
-
-5. **Frontend integration**:
-   - In the Avalonia frontend (see Phase 4): initialize SDL2 for gamepad subsystem only (not for video/audio — those are handled by Avalonia and Bufdio)
-   - Poll gamepad state on the emulation thread or via a timer
-
-### Native Library Distribution
-- Include platform-specific SDL2 native binaries via NuGet runtime folders or a `runtimes/` directory in the project:
-  ```
-  runtimes/win-x64/native/SDL2.dll
-  runtimes/linux-x64/native/libSDL2.so
-  runtimes/osx-x64/native/libSDL2.dylib
-  runtimes/osx-arm64/native/libSDL2.dylib
-  ```
-
----
-
-## Phase 4: UI — Replace WPF with AvaloniaUI
+## Phase 3: UI — Replace WPF with AvaloniaUI
 
 ### Rationale
 WPF is Windows-only. AvaloniaUI is a cross-platform XAML-based UI framework for .NET with an API very close to WPF. It uses Skia for GPU-accelerated rendering and runs on Windows, macOS, and Linux.
@@ -130,7 +87,7 @@ Create a new `Aeon.Avalonia` project that replaces the `Aeon` (WPF) project. The
 
 ### Changes Required
 
-#### 4.1 New Project Setup
+#### 3.1 New Project Setup
 
 1. **Create `src/Aeon.Avalonia/Aeon.Avalonia.csproj`**:
    ```xml
@@ -157,7 +114,7 @@ Create a new `Aeon.Avalonia` project that replaces the `Aeon` (WPF) project. The
 
 2. **Add to `Aeon.slnx`** solution file
 
-#### 4.2 File-by-File Migration Map
+#### 3.2 File-by-File Migration Map
 
 | WPF File | Avalonia Equivalent | Migration Notes |
 |----------|-------------------|-----------------|
@@ -181,7 +138,7 @@ Create a new `Aeon.Avalonia` project that replaces the `Aeon` (WPF) project. The
 | `NativeMethods.cs` (`SetCursorPos`) | Platform abstraction | For cursor warping: use Avalonia's pointer APIs or conditionally P/Invoke per platform. Avalonia doesn't have a direct equivalent, so this may need a platform-specific helper with `#if` or runtime OS checks. |
 | `BrowseInfo.cs` | Remove/replace | Replace with Avalonia `StorageProvider` API for file/folder browsing. |
 
-#### 4.3 Key Avalonia Differences from WPF
+#### 3.3 Key Avalonia Differences from WPF
 
 | WPF Concept | Avalonia Equivalent |
 |-------------|-------------------|
@@ -198,7 +155,7 @@ Create a new `Aeon.Avalonia` project that replaces the `Aeon` (WPF) project. The
 | `FolderBrowserDialog` | `IStorageProvider.OpenFolderPickerAsync()` |
 | `System.Windows.Threading.DispatcherTimer` | `Avalonia.Threading.DispatcherTimer` |
 
-#### 4.4 Video Rendering (FastBitmap replacement)
+#### 3.4 Video Rendering (FastBitmap replacement)
 
 The current `FastBitmap.cs` uses Win32 memory-mapped files + WPF `InteropBitmap` for zero-copy rendering. The Avalonia replacement:
 
@@ -213,7 +170,7 @@ This is slightly different (Bgra8888 vs Bgr32) but handles the same use case. Pe
 
 ---
 
-## Phase 5: CD-ROM Device I/O — Platform Abstraction
+## Phase 4: CD-ROM Device I/O — Platform Abstraction
 
 ### Current State
 `Aeon.DiskImages/Iso9660/NativeMethods.cs` uses Win32 `DeviceIoControl` for physical CD-ROM drive access. This is already guarded with `[SupportedOSPlatform("windows")]`.
@@ -229,7 +186,7 @@ This is slightly different (Bgra8888 vs Bgr32) but handles the same use case. Pe
 
 ---
 
-## Phase 6: Build & CI Updates
+## Phase 5: Build & CI Updates
 
 ### Changes Required
 
@@ -252,19 +209,17 @@ This is slightly different (Bgra8888 vs Bgr32) but handles the same use case. Pe
 ```
 Phase 1 (Audio)     ──→  Can be done independently, unblocks sound on all platforms
 Phase 2 (MIDI)      ──→  Minimal work, just documentation/TODO notes
-Phase 3 (Input)     ──→  Independent of UI; new feature addition
-Phase 4 (UI)        ──→  Largest effort; depends on Phase 1 for audio during testing
-Phase 5 (CD-ROM)    ──→  Can be deferred; low priority
-Phase 6 (CI)        ──→  After Phase 4 is complete
+Phase 3 (UI)        ──→  Largest effort; depends on Phase 1 for audio during testing
+Phase 4 (CD-ROM)    ──→  Can be deferred; low priority
+Phase 5 (CI)        ──→  After Phase 3 is complete
 ```
 
-### Recommended order: **Phase 1 → Phase 2 → Phase 4 → Phase 3 → Phase 6 → Phase 5**
+### Recommended order: **Phase 1 → Phase 2 → Phase 3 → Phase 5 → Phase 4**
 
 - Phase 1 & 2 are quick wins that make the sound library cross-platform
-- Phase 4 is the largest effort and the critical path for having a working cross-platform app
-- Phase 3 adds new functionality and can be done in parallel with Phase 4
-- Phase 5 is optional / deferrable
-- Phase 6 ties everything together
+- Phase 3 is the largest effort and the critical path for having a working cross-platform app
+- Phase 4 is optional / deferrable
+- Phase 5 ties everything together
 
 ---
 
@@ -274,7 +229,6 @@ Phase 6 (CI)        ──→  After Phase 4 is complete
 |------|-----------|------------|
 | Bufdio.Spice86 API incompatibility with TinyAudio | Low | The `Audio.cs` wrapper abstracts the API; only one file needs updating |
 | Avalonia XAML differences cause rendering issues | Medium | Test extensively on all platforms; use Avalonia DevTools for debugging |
-| SDL2 native library distribution complexity | Medium | Use NuGet runtime folders; test on all platforms |
 | Performance regression in video rendering | Low | Avalonia `WriteableBitmap` provides direct pointer access similar to `InteropBitmap` |
 | `SetCursorPos` has no direct Avalonia equivalent | Medium | Use platform-specific code with runtime OS detection; or use Avalonia's pointer capture APIs |
 | Physical CD-ROM access on Linux/macOS | Low | Defer; ISO file support is already cross-platform |
