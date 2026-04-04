@@ -109,7 +109,7 @@ The Windows MIDI Mapper (`winmm.dll`) has no direct cross-platform equivalent. T
 
 ---
 
-## Phase 3: UI — Replace WPF with AvaloniaUI (C# Code-Only, No XAML)
+## Phase 3: UI — Replace WPF with AvaloniaUI (C# Code-Only, No XAML) ✅ DONE
 
 ### Rationale
 WPF is Windows-only. AvaloniaUI is a cross-platform UI framework for .NET with an API very close to WPF. It uses Skia for GPU-accelerated rendering and runs on Windows, macOS, and Linux.
@@ -326,11 +326,24 @@ Phase 5 (CI)        ──→  After Phase 3 is complete
 - `Aeon.Emulator.Sound/Midi/GeneralMidi.cs` — add TODO comment for Linux/macOS MIDI passthrough
 - `Aeon.Emulator.Sound/Midi/MidiEngine.cs` — document MidiMapper as Windows-only
 
-### Phase 3 (~20 new/modified files)
-- New `Aeon.Avalonia/` project with all C#-only UI files (no AXAML)
-- New `AvaloniaBitmap.cs` replacing `FastBitmap.cs`
-- New `AvaloniaSynchronizer.cs` replacing `WpfSynchronizer.cs`
-- New `CursorHelper.cs` — pure C# port of SDL2 cursor warping (per-platform P/Invoke to OS system libs only)
+### Phase 3 ✅ (15 new files, 1 modified)
+- New `Aeon.Avalonia/Aeon.Avalonia.csproj` — Avalonia 11.3.13, cross-platform desktop app
+- New `Aeon.Avalonia/App.cs` — Application entry point with FluentTheme
+- New `Aeon.Avalonia/MainWindow.cs` — Full menu, toolbar, file dialogs (Avalonia StorageProvider)
+- New `Aeon.Avalonia/EmulatorDisplay.cs` — Main emulator display with keyboard/mouse handling
+- New `Aeon.Avalonia/AvaloniaBitmap.cs` — WriteableBitmap replacement for FastBitmap
+- New `Aeon.Avalonia/AvaloniaSynchronizer.cs` — Dispatcher.UIThread.Post() replacement for WpfSynchronizer
+- New `Aeon.Avalonia/CursorHelper.cs` — Cross-platform cursor warping (user32.dll / libX11.so / CoreGraphics.framework)
+- New `Aeon.Avalonia/KeyExtensions.cs` — Avalonia Key → emulator Keys mapping
+- New `Aeon.Avalonia/MouseButtonExtensions.cs` — Avalonia PointerUpdateKind → emulator MouseButtons
+- New `Aeon.Avalonia/SimpleCommand.cs` — ICommand implementation (unchanged logic)
+- New `Aeon.Avalonia/MouseInputMode.cs` — Enum (unchanged)
+- New `Aeon.Avalonia/EmulationErrorRoutedEventArgs.cs` — Avalonia RoutedEventArgs
+- New `Aeon.Avalonia/TaskDialog.cs` — Pure C# task dialog
+- New `Aeon.Avalonia/TaskDialogItem.cs` — Task dialog item control
+- New `Aeon.Avalonia/PaletteDialog.cs` — Color palette debug window
+- New `Aeon.Avalonia/PerformanceWindow.cs` — Performance statistics window
+- Modified `Aeon.slnx` — added Aeon.Avalonia project
 
 ### Phase 4 (2-4 new files)
 - Platform-specific CD-ROM abstractions (can be deferred)
