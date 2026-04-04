@@ -1,4 +1,4 @@
-﻿using TinyAudio;
+﻿using Spice86.Audio.Backend.Audio;
 
 namespace Aeon.Emulator.Sound.PCSpeaker;
 
@@ -13,12 +13,16 @@ public sealed class InternalSpeaker : IInputPort, IOutputPort, IDisposable
     private const double FrequencyFactor = 1193180;
     private const float Amplitude = 0.5f;
     private const int OutputSampleRate = 44100;
+    private const int BufferSize = 4410; // ~100ms at 44100Hz
 
     private volatile uint frequencyRegister;
     private byte? nextFrequencyRegisterByte;
     private volatile SpeakerControl controlRegister = SpeakerControl.UseTimer;
     private double phase;
     private AudioPlayer? audioPlayer;
+    private Thread? playbackThread;
+    private volatile bool playing;
+    private volatile bool endPlayback;
 
     ReadOnlySpan<ushort> IInputPort.InputPorts => [0x61];
     ReadOnlySpan<ushort> IOutputPort.OutputPorts => [0x42, 0x61];
@@ -33,13 +37,11 @@ public sealed class InternalSpeaker : IInputPort, IOutputPort, IDisposable
             this.controlRegister = (SpeakerControl)value;
             if (!oldValue.HasFlag(SpeakerControl.SpeakerOn) && this.controlRegister.HasFlag(SpeakerControl.SpeakerOn))
             {
-                this.audioPlayer ??= AudioPlayer.CreateDefault(TimeSpan.FromSeconds(0.1), true, new AudioFormat(OutputSampleRate, 1, SampleFormat.IeeeFloat32));
-                if (!this.audioPlayer.Playing)
-                    this.audioPlayer.BeginPlayback(this.WriteAudioData);
+                this.StartPlayback();
             }
             else if (oldValue.HasFlag(SpeakerControl.SpeakerOn) && !this.controlRegister.HasFlag(SpeakerControl.SpeakerOn))
             {
-                this.audioPlayer?.StopPlayback();
+                this.StopPlayback();
             }
         }
         else
@@ -59,21 +61,63 @@ public sealed class InternalSpeaker : IInputPort, IOutputPort, IDisposable
 
     Task IVirtualDevice.PauseAsync()
     {
-        this.audioPlayer?.StopPlayback();
+        this.StopPlayback();
         return Task.CompletedTask;
     }
     Task IVirtualDevice.ResumeAsync()
     {
-        this.audioPlayer?.BeginPlayback(this.WriteAudioData);
+        if (this.controlRegister.HasFlag(SpeakerControl.SpeakerOn))
+            this.StartPlayback();
         return Task.CompletedTask;
     }
     void IDisposable.Dispose()
     {
+        this.endPlayback = true;
+        this.playing = false;
+        this.playbackThread?.Join();
         this.audioPlayer?.Dispose();
         this.audioPlayer = null;
     }
 
-    private void WriteAudioData(Span<float> buffer, out int samplesWritten)
+    private void StartPlayback()
+    {
+        if (this.playing)
+            return;
+
+        this.audioPlayer ??= Audio.CreatePlayer(OutputSampleRate);
+        this.playing = true;
+        this.endPlayback = false;
+
+        if (this.playbackThread is null || !this.playbackThread.IsAlive)
+        {
+            this.playbackThread = new Thread(this.PlaybackLoop) { IsBackground = true };
+            this.playbackThread.Start();
+        }
+    }
+
+    private void StopPlayback()
+    {
+        this.playing = false;
+    }
+
+    private void PlaybackLoop()
+    {
+        Span<float> buffer = stackalloc float[BufferSize];
+
+        while (!this.endPlayback)
+        {
+            if (!this.playing)
+            {
+                Thread.Sleep(1);
+                continue;
+            }
+
+            this.GenerateAudioData(buffer);
+            Audio.WriteFullBuffer(this.audioPlayer!, buffer);
+        }
+    }
+
+    private void GenerateAudioData(Span<float> buffer)
     {
         bool isOn = this.controlRegister.HasFlag(SpeakerControl.SpeakerOn);
         var frequency = FrequencyFactor / this.frequencyRegister;
@@ -81,7 +125,6 @@ public sealed class InternalSpeaker : IInputPort, IOutputPort, IDisposable
         if (!isOn || frequency <= 0)
         {
             buffer.Clear();
-            samplesWritten = buffer.Length;
             return;
         }
 
@@ -93,7 +136,5 @@ public sealed class InternalSpeaker : IInputPort, IOutputPort, IDisposable
             buffer[i] = normalizedPhase < 0.5 ? Amplitude : -Amplitude;
             this.phase += phaseIncrement;
         }
-
-        samplesWritten = buffer.Length;
     }
 }

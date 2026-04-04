@@ -6,8 +6,7 @@ namespace Aeon.Emulator.Sound.Blaster;
 /// Emulates a Sound Blaster 16 device.
 /// </summary>
 public sealed partial class SoundBlaster : IInputPort, IOutputPort, IDmaDevice8, IDmaDevice16, IDisposable
-{
-    private readonly VirtualMachine vm;
+{    private readonly VirtualMachine vm;
     private readonly DmaChannel dmaChannel;
     private readonly List<byte> commandData = [];
     private readonly Queue<byte> outputData = new();
@@ -340,8 +339,7 @@ public sealed partial class SoundBlaster : IInputPort, IOutputPort, IDmaDevice8,
         short[] writeBuffer = new short[65536 * 2];
 
         using var player = Audio.CreatePlayer();
-        int sampleRate = (int)player.Format.SampleRate;
-        player.BeginPlayback();
+        int sampleRate = player.Format.SampleRate;
 
         while (!this.endPlayback)
         {
@@ -360,7 +358,7 @@ public sealed partial class SoundBlaster : IInputPort, IOutputPort, IDmaDevice8,
 
             if (this.pausePlayback)
             {
-                player.StopPlayback();
+                player.MuteOutput();
                 while (this.pausePlayback)
                 {
                     Thread.Sleep(1);
@@ -368,7 +366,7 @@ public sealed partial class SoundBlaster : IInputPort, IOutputPort, IDmaDevice8,
                         return;
                 }
 
-                player.BeginPlayback();
+                player.UnmuteOutput();
             }
 
             if (this.pauseDuration > 0)

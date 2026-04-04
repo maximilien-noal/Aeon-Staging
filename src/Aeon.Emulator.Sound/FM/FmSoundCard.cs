@@ -1,4 +1,4 @@
-﻿using TinyAudio;
+﻿using Spice86.Audio.Backend.Audio;
 using Ymf262Emu;
 
 namespace Aeon.Emulator.Sound.FM;
@@ -10,8 +10,10 @@ public sealed class FmSoundCard : IInputPort, IOutputPort, IDisposable
 {
     private const byte Timer1Mask = 0xC0;
     private const byte Timer2Mask = 0xA0;
+    private const int SampleRate = 44100;
+    private const int BufferSize = 11025; // ~250ms at 44100Hz
 
-    private readonly AudioPlayer audioPlayer = AudioPlayer.CreateDefault(TimeSpan.FromSeconds(0.25), true, new AudioFormat(44100, 1, SampleFormat.IeeeFloat32));
+    private readonly AudioPlayer audioPlayer = Audio.CreatePlayer(SampleRate);
     private int currentAddress;
     private readonly FmSynthesizer synth;
     private byte timer1Data;
@@ -19,11 +21,13 @@ public sealed class FmSoundCard : IInputPort, IOutputPort, IDisposable
     private byte timerControlByte;
     private byte statusByte;
     private bool initialized;
-    private bool paused;
+    private volatile bool paused;
+    private volatile bool disposed;
+    private Thread? playbackThread;
 
     public FmSoundCard()
     {
-        this.synth = new FmSynthesizer(this.audioPlayer.Format.SampleRate);
+        this.synth = new FmSynthesizer(SampleRate);
     }
 
     ReadOnlySpan<ushort> IInputPort.InputPorts => [0x388];
@@ -92,7 +96,6 @@ public sealed class FmSoundCard : IInputPort, IOutputPort, IDisposable
     {
         if (this.initialized && !this.paused)
         {
-            this.audioPlayer.StopPlayback();
             this.paused = true;
         }
 
@@ -102,7 +105,6 @@ public sealed class FmSoundCard : IInputPort, IOutputPort, IDisposable
     {
         if (paused)
         {
-            this.audioPlayer.BeginPlayback(this.GetAudioData);
             this.paused = false;
         }
 
@@ -113,20 +115,33 @@ public sealed class FmSoundCard : IInputPort, IOutputPort, IDisposable
     {
         if (this.initialized)
         {
+            this.disposed = true;
+            this.playbackThread?.Join();
             this.audioPlayer.Dispose();
             this.initialized = false;
         }
     }
 
-    private void GetAudioData(Span<float> buffer, out int samplesWritten)
+    private void PlaybackLoop()
     {
-        this.synth.GetData(buffer);
-        samplesWritten = buffer.Length;
+        Span<float> buffer = stackalloc float[BufferSize];
+
+        while (!this.disposed)
+        {
+            if (this.paused)
+            {
+                Thread.Sleep(1);
+                continue;
+            }
+
+            this.synth.GetData(buffer);
+            Audio.WriteFullBuffer(this.audioPlayer, buffer);
+        }
     }
     private void Initialize()
     {
-        this.audioPlayer.BeginPlayback(this.GetAudioData);
-        // this.generateTask = Task.Run(this.GenerateWaveformsAsync);
+        this.playbackThread = new Thread(this.PlaybackLoop) { IsBackground = true };
+        this.playbackThread.Start();
         this.initialized = true;
     }
 }
