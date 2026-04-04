@@ -260,19 +260,18 @@ Wayland has restrictions on cursor warping for security reasons — some composi
 
 ---
 
-## Phase 5: Build & CI Updates
+## Phase 5: Build & CI Updates ✅ DONE
 
 ### Changes Required
 
-1. **Update `Aeon.slnx`** to include `Aeon.Avalonia` project
-2. **Update or create CI workflows** to build and test on:
-   - `windows-latest`
-   - `ubuntu-latest`
-   - `macos-latest`
-3. **Publish artifacts** for all three platforms:
+1. ~~**Update `Aeon.slnx`** to include `Aeon.Avalonia` project~~ ✅ Already done in Phase 3
+2. ~~**Update or create CI workflows** to build and test on:~~ ✅
+   - `windows-latest` — builds full solution (including WPF project)
+   - `ubuntu-latest` — builds cross-platform projects only
+   - `macos-latest` — builds cross-platform projects only
+3. ~~**Publish artifacts** for all three platforms:~~ ✅
    - `dotnet publish -r win-x64`
    - `dotnet publish -r linux-x64`
-   - `dotnet publish -r osx-x64`
    - `dotnet publish -r osx-arm64`
 4. **No native dependencies to package** — both Spice86.Audio and the cursor helper use only OS-provided system libraries via P/Invoke
 
@@ -285,7 +284,7 @@ Phase 1 (Audio)     ──→  Can be done independently, unblocks sound on all 
 Phase 2 (MIDI)      ──→  Minimal work, just documentation/TODO notes
 Phase 3 (UI)        ──→  Largest effort; depends on Phase 1 for audio during testing
 Phase 4 (CD-ROM)    ──→  Can be deferred; low priority
-Phase 5 (CI)        ──→  After Phase 3 is complete
+Phase 5 (CI)        ──→  ✅ Done — multi-platform build matrix
 ```
 
 ### Recommended order: **Phase 1 → Phase 2 → Phase 3 → Phase 5 → Phase 4**
@@ -348,5 +347,5 @@ Phase 5 (CI)        ──→  After Phase 3 is complete
 ### Phase 4 (2-4 new files)
 - Platform-specific CD-ROM abstractions (can be deferred)
 
-### Phase 5 (1-2 new files)
-- CI workflow files (`.github/workflows/`)
+### Phase 5 ✅ (1 new file)
+- `.github/workflows/build.yml` — multi-platform CI workflow (Windows/Linux/macOS), builds + tests + publishes artifacts

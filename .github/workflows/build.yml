@@ -1,0 +1,77 @@
+name: Build & Test
+
+on:
+  push:
+    branches: [ main, master ]
+  pull_request:
+    branches: [ main, master ]
+
+permissions:
+  contents: read
+
+jobs:
+  build:
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - os: windows-latest
+            name: Windows
+            rid: win-x64
+          - os: ubuntu-latest
+            name: Linux
+            rid: linux-x64
+          - os: macos-latest
+            name: macOS (arm64)
+            rid: osx-arm64
+
+    runs-on: ${{ matrix.os }}
+    name: ${{ matrix.name }}
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Setup .NET 10
+        uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: '10.0.x'
+          dotnet-quality: 'preview'
+
+      # Windows: build full solution (includes WPF project)
+      - name: Restore (full solution)
+        if: runner.os == 'Windows'
+        run: dotnet restore src/Aeon.slnx
+
+      - name: Build (full solution)
+        if: runner.os == 'Windows'
+        run: dotnet build src/Aeon.slnx --no-restore
+
+      # Linux/macOS: build cross-platform projects only (WPF project targets net10.0-windows)
+      - name: Restore (cross-platform)
+        if: runner.os != 'Windows'
+        run: |
+          dotnet restore src/Aeon.Avalonia/Aeon.Avalonia.csproj
+          dotnet restore src/Aeon.Test/Aeon.Test.csproj
+
+      - name: Build (cross-platform)
+        if: runner.os != 'Windows'
+        run: dotnet build src/Aeon.Avalonia/Aeon.Avalonia.csproj --no-restore
+
+      # Tests run on all platforms
+      - name: Test
+        run: dotnet test src/Aeon.Test/Aeon.Test.csproj --no-restore --verbosity normal
+
+      # Publish Avalonia frontend for all platforms
+      - name: Publish Aeon.Avalonia
+        run: >
+          dotnet publish src/Aeon.Avalonia/Aeon.Avalonia.csproj
+          -c Release
+          -r ${{ matrix.rid }}
+          --self-contained
+          -o publish/${{ matrix.rid }}
+
+      - name: Upload artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: aeon-${{ matrix.rid }}
+          path: publish/${{ matrix.rid }}/
