@@ -3,7 +3,6 @@ using Avalonia;
 using Avalonia.Controls;
 using Avalonia.Input;
 using Avalonia.Interactivity;
-using Avalonia.Layout;
 using Avalonia.Media;
 using Avalonia.Media.Imaging;
 using Avalonia.Platform;
@@ -12,8 +11,21 @@ using Aeon.Emulator.Video.Rendering;
 
 namespace Aeon.Emulator.Launcher;
 
-public sealed class EmulatorDisplay : ContentControl
+public sealed partial class EmulatorDisplay : ContentControl
 {
+    public static readonly StyledProperty<EmulatorState> EmulatorStateProperty =
+        AvaloniaProperty.Register<EmulatorDisplay, EmulatorState>(nameof(EmulatorState), EmulatorState.NoProgram);
+    public static readonly StyledProperty<MouseInputMode> MouseInputModeProperty =
+        AvaloniaProperty.Register<EmulatorDisplay, MouseInputMode>(nameof(MouseInputMode), MouseInputMode.Relative);
+    public static readonly StyledProperty<bool> IsMouseCursorCapturedProperty =
+        AvaloniaProperty.Register<EmulatorDisplay, bool>(nameof(IsMouseCursorCaptured), false);
+    public static readonly StyledProperty<int> EmulationSpeedProperty =
+        AvaloniaProperty.Register<EmulatorDisplay, int>(nameof(EmulationSpeed), 20_000_000);
+    public static readonly StyledProperty<bool> IsAspectRatioLockedProperty =
+        AvaloniaProperty.Register<EmulatorDisplay, bool>(nameof(IsAspectRatioLocked), true);
+    public static readonly StyledProperty<ScalingAlgorithm> ScalingAlgorithmProperty =
+        AvaloniaProperty.Register<EmulatorDisplay, ScalingAlgorithm>(nameof(ScalingAlgorithm), ScalingAlgorithm.None);
+
     public static readonly RoutedEvent<RoutedEventArgs> EmulatorStateChangedEvent =
         RoutedEvent.Register<EmulatorDisplay, RoutedEventArgs>(nameof(EmulatorStateChanged), Avalonia.Interactivity.RoutingStrategies.Bubble);
     public static readonly RoutedEvent<EmulationErrorRoutedEventArgs> EmulationErrorEvent =
@@ -30,35 +42,24 @@ public sealed class EmulatorDisplay : ContentControl
     private readonly SimpleCommand pauseCommand;
     private VideoRenderer? aeonRenderer;
     private AvaloniaBitmap? renderTarget;
-    private readonly Image displayImage;
-    private readonly Canvas displayArea;
-    private readonly Viewbox outerViewbox;
+
+    static EmulatorDisplay()
+    {
+        EmulationSpeedProperty.Changed.AddClassHandler<EmulatorDisplay>(OnEmulationSpeedChanged);
+        IsAspectRatioLockedProperty.Changed.AddClassHandler<EmulatorDisplay>(OnIsAspectRatioLockedChanged);
+        ScalingAlgorithmProperty.Changed.AddClassHandler<EmulatorDisplay>(OnScalingAlgorithmChanged);
+    }
 
     public EmulatorDisplay()
     {
         this.resumeCommand = new SimpleCommand(() => this.EmulatorState == EmulatorState.Paused, () => { this.EmulatorHost?.Run(); });
         this.pauseCommand = new SimpleCommand(() => this.EmulatorState == EmulatorState.Running, () => { this.EmulatorHost?.Pause(); });
 
-        this.MinWidth = 160;
-        this.MinHeight = 100;
-        this.Background = Brushes.Transparent;
-        this.Focusable = true;
+        InitializeComponent();
 
-        this.displayImage = new Image { Stretch = Stretch.None };
         this.displayImage.PointerPressed += DisplayImage_PointerPressed;
         this.displayImage.PointerReleased += DisplayImage_PointerReleased;
         this.displayImage.PointerMoved += DisplayImage_PointerMoved;
-
-        this.displayArea = new Canvas();
-        this.displayArea.Children.Add(this.displayImage);
-
-        this.outerViewbox = new Viewbox
-        {
-            Stretch = Stretch.Uniform,
-            Child = this.displayArea
-        };
-
-        this.Content = this.outerViewbox;
     }
 
     public event EventHandler<RoutedEventArgs>? EmulatorStateChanged
@@ -111,45 +112,40 @@ public sealed class EmulatorDisplay : ContentControl
         }
     }
 
-    public EmulatorState EmulatorState { get; private set; } = EmulatorState.NoProgram;
-    public MouseInputMode MouseInputMode { get; set; } = MouseInputMode.Relative;
-    public bool IsMouseCursorCaptured { get; private set; }
+    public EmulatorState EmulatorState
+    {
+        get => GetValue(EmulatorStateProperty);
+        private set => SetValue(EmulatorStateProperty, value);
+    }
 
-    private int emulationSpeed = 20_000_000;
+    public MouseInputMode MouseInputMode
+    {
+        get => GetValue(MouseInputModeProperty);
+        set => SetValue(MouseInputModeProperty, value);
+    }
+
+    public bool IsMouseCursorCaptured
+    {
+        get => GetValue(IsMouseCursorCapturedProperty);
+        private set => SetValue(IsMouseCursorCapturedProperty, value);
+    }
+
     public int EmulationSpeed
     {
-        get => this.emulationSpeed;
-        set
-        {
-            if (value >= EmulatorHost.MinimumSpeed && this.emulationSpeed != value)
-            {
-                this.emulationSpeed = value;
-                if (this.emulator != null)
-                    this.emulator.EmulationSpeed = value;
-            }
-        }
+        get => GetValue(EmulationSpeedProperty);
+        set => SetValue(EmulationSpeedProperty, value);
     }
 
-    private bool isAspectRatioLocked = true;
     public bool IsAspectRatioLocked
     {
-        get => this.isAspectRatioLocked;
-        set
-        {
-            this.isAspectRatioLocked = value;
-            this.outerViewbox.Stretch = value ? Stretch.Uniform : Stretch.Fill;
-        }
+        get => GetValue(IsAspectRatioLockedProperty);
+        set => SetValue(IsAspectRatioLockedProperty, value);
     }
 
-    private ScalingAlgorithm scalingAlgorithm = ScalingAlgorithm.None;
     public ScalingAlgorithm ScalingAlgorithm
     {
-        get => this.scalingAlgorithm;
-        set
-        {
-            this.scalingAlgorithm = value;
-            this.InitializePresenter();
-        }
+        get => GetValue(ScalingAlgorithmProperty);
+        set => SetValue(ScalingAlgorithmProperty, value);
     }
 
     public WriteableBitmap? DisplayBitmap => this.renderTarget?.Bitmap;
@@ -282,6 +278,29 @@ public sealed class EmulatorDisplay : ContentControl
         }
     }
 
+    private static void OnEmulationSpeedChanged(EmulatorDisplay obj, AvaloniaPropertyChangedEventArgs e)
+    {
+        var newValue = (int)e.NewValue!;
+        if (newValue < EmulatorHost.MinimumSpeed)
+        {
+            obj.SetValue(EmulationSpeedProperty, EmulatorHost.MinimumSpeed);
+            return;
+        }
+        if (obj.emulator != null)
+            obj.emulator.EmulationSpeed = newValue;
+    }
+
+    private static void OnIsAspectRatioLockedChanged(EmulatorDisplay obj, AvaloniaPropertyChangedEventArgs e)
+    {
+        bool value = (bool)e.NewValue!;
+        obj.outerViewbox.Stretch = value ? Stretch.Uniform : Stretch.Fill;
+    }
+
+    private static void OnScalingAlgorithmChanged(EmulatorDisplay obj, AvaloniaPropertyChangedEventArgs e)
+    {
+        obj.InitializePresenter();
+    }
+
     private void Emulator_StateChanged(object? sender, EventArgs e)
     {
         Dispatcher.UIThread.Post(() =>
@@ -377,7 +396,6 @@ public sealed class EmulatorDisplay : ContentControl
                 if (dx != 0 || dy != 0)
                 {
                     this.emulator.MouseEvent(new MouseMoveRelativeEvent(dx, dy));
-                    // Convert center point to screen coordinates and warp cursor back
                     var screenPoint = this.displayImage.PointToScreen(centerPoint);
                     CursorHelper.WarpCursor((int)screenPoint.X, (int)screenPoint.Y);
                 }

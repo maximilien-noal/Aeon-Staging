@@ -1,0 +1,84 @@
+<Window xmlns="https://github.com/avaloniaui"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:local="clr-namespace:Aeon.Emulator.Launcher"
+        x:Class="Aeon.Emulator.Launcher.MainWindow"
+        Title="Aeon" Width="800" Height="600" MinWidth="360" MinHeight="270"
+        Background="{StaticResource backgroundGradient}">
+    <DockPanel>
+        <StackPanel Name="menuContainer" DockPanel.Dock="Top">
+            <Menu Name="mainMenu">
+                <MenuItem Header="_Aeon">
+                    <MenuItem Header="_Quick Launch Program..." Click="QuickLaunch_Click" />
+                    <MenuItem Header="_Quick Launch Command Prompt..." Click="CommandPrompt_Click" />
+                    <Separator />
+                    <MenuItem Header="_Pause" Click="Pause_Click" />
+                    <MenuItem Header="R_esume" Click="Resume_Click" />
+                    <Separator />
+                    <MenuItem Header="E_xit" Click="Exit_Click" />
+                </MenuItem>
+                <MenuItem Header="_Edit">
+                    <MenuItem Header="_Copy Screen" Click="Copy_Click" />
+                </MenuItem>
+                <MenuItem Header="_View">
+                    <MenuItem Name="viewToolBarMenuItem" Header="_Toolbar">
+                        <MenuItem.Icon>
+                            <CheckBox Name="toolBarCheckBox" IsChecked="True" />
+                        </MenuItem.Icon>
+                    </MenuItem>
+                    <Separator />
+                    <MenuItem Header="_Lock Aspect Ratio">
+                        <MenuItem.Icon>
+                            <CheckBox Name="aspectRatioCheckBox" IsChecked="True"
+                                      IsCheckedChanged="AspectRatioCheckBox_Changed" />
+                        </MenuItem.Icon>
+                    </MenuItem>
+                    <MenuItem Header="_Full Screen" Click="FullScreen_Click" />
+                    <Separator />
+                    <MenuItem Header="_Performance Window" Click="PerformanceWindow_Click" />
+                </MenuItem>
+                <MenuItem Header="_Debug">
+                    <MenuItem Header="Color Palette" Click="ShowPalette_Click" />
+                </MenuItem>
+            </Menu>
+            <Border Name="toolBar" IsVisible="{Binding #toolBarCheckBox.IsChecked}">
+                <Border.Background>
+                    <LinearGradientBrush StartPoint="50%,0%" EndPoint="50%,100%">
+                        <GradientStop Color="WhiteSmoke" Offset="0.0" />
+                        <GradientStop Color="DimGray" Offset="1.0" />
+                    </LinearGradientBrush>
+                </Border.Background>
+                <StackPanel Orientation="Horizontal" Margin="2" Spacing="4">
+                    <Button ToolTip.Tip="Run Program..." Click="QuickLaunch_Click">
+                        <Image Width="16" Height="16" Source="avares://Aeon.Avalonia/Resources/openfolderHS.png" />
+                    </Button>
+                    <Separator />
+                    <Button Click="Resume_Click" ToolTip.Tip="Resume">
+                        <Canvas Width="16" Height="16">
+                            <Polygon Points="6,4 6,13 11,8" Fill="Green" Stroke="DarkGreen" />
+                        </Canvas>
+                    </Button>
+                    <Button Click="Pause_Click" ToolTip.Tip="Pause">
+                        <Canvas Width="16" Height="16">
+                            <Rectangle Canvas.Left="3" Canvas.Top="3" Width="4" Height="10" Fill="Green" Stroke="DarkGreen" />
+                            <Rectangle Canvas.Left="8" Canvas.Top="3" Width="4" Height="10" Fill="Green" Stroke="DarkGreen" />
+                        </Canvas>
+                    </Button>
+                    <Separator />
+                    <Button ToolTip.Tip="Toggle Mouse Integration" Click="MouseIntegration_Click">
+                        <Image Width="16" Height="16" Source="avares://Aeon.Avalonia/Resources/MouseIntegration.png" />
+                    </Button>
+                    <Separator />
+                    <TextBlock Text="Speed:" VerticalAlignment="Center" />
+                    <Button ToolTip.Tip="Slow Down Emulation" Click="SlowerButton_Click" Padding="4,2" MinWidth="24">
+                        <TextBlock FontFamily="Courier New" FontWeight="Bold" Text="-" />
+                    </Button>
+                    <TextBlock Name="speedLabel" Width="50" TextAlignment="Center" VerticalAlignment="Center" />
+                    <Button ToolTip.Tip="Speed Up Emulation" Click="FasterButton_Click" Padding="4,2" MinWidth="24">
+                        <TextBlock FontFamily="Courier New" FontWeight="Bold" Text="+" />
+                    </Button>
+                </StackPanel>
+            </Border>
+        </StackPanel>
+        <local:EmulatorDisplay x:Name="emulatorDisplay" Margin="0,7,0,0" />
+    </DockPanel>
+</Window>

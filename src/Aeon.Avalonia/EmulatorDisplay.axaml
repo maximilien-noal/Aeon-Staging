@@ -1,0 +1,11 @@
+<ContentControl xmlns="https://github.com/avaloniaui"
+                xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+                xmlns:local="clr-namespace:Aeon.Emulator.Launcher"
+                x:Class="Aeon.Emulator.Launcher.EmulatorDisplay"
+                MinWidth="160" MinHeight="100" Background="Transparent" Focusable="True">
+    <Viewbox Name="outerViewbox">
+        <Canvas Name="displayArea">
+            <Image Name="displayImage" Stretch="None" />
+        </Canvas>
+    </Viewbox>
+</ContentControl>

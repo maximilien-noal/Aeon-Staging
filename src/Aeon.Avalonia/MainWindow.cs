@@ -3,7 +3,6 @@ using Avalonia;
 using Avalonia.Controls;
 using Avalonia.Input;
 using Avalonia.Interactivity;
-using Avalonia.Layout;
 using Avalonia.Media;
 using Avalonia.Platform.Storage;
 using Aeon.DiskImages;
@@ -12,49 +11,20 @@ using Aeon.Emulator.Dos.VirtualFileSystem;
 
 namespace Aeon.Emulator.Launcher;
 
-public sealed class MainWindow : Window
+public sealed partial class MainWindow : Window
 {
     private PerformanceWindow? performanceWindow;
     private AeonConfiguration? currentConfig;
     private bool hasActivated;
     private PaletteDialog? paletteWindow;
-    private readonly EmulatorDisplay emulatorDisplay;
-    private readonly StackPanel menuContainer;
 
     public MainWindow()
     {
-        this.Title = "Aeon";
-        this.Width = 800;
-        this.Height = 600;
-        this.MinWidth = 360;
-        this.MinHeight = 270;
-        this.Background = new LinearGradientBrush
-        {
-            GradientStops =
-            {
-                new GradientStop(Colors.SteelBlue, 0),
-                new GradientStop(Color.Parse("#FF1D4461"), 1)
-            }
-        };
-
-        this.emulatorDisplay = new EmulatorDisplay { Margin = new Thickness(0, 7, 0, 0) };
+        InitializeComponent();
         this.emulatorDisplay.EmulatorStateChanged += EmulatorDisplay_EmulatorStateChanged;
         this.emulatorDisplay.EmulationError += EmulatorDisplay_EmulationError;
         this.emulatorDisplay.CurrentProcessChanged += EmulatorDisplay_CurrentProcessChanged;
-
-        var menuBar = BuildMenu();
-        var toolBar = BuildToolBar();
-
-        this.menuContainer = new StackPanel();
-        this.menuContainer.Children.Add(menuBar);
-        this.menuContainer.Children.Add(toolBar);
-
-        var dockPanel = new DockPanel();
-        DockPanel.SetDock(this.menuContainer, Dock.Top);
-        dockPanel.Children.Add(this.menuContainer);
-        dockPanel.Children.Add(this.emulatorDisplay);
-
-        this.Content = dockPanel;
+        this.speedLabel.Text = FormatSpeed(emulatorDisplay.EmulationSpeed);
     }
 
     protected override void OnOpened(EventArgs e)
@@ -84,105 +54,6 @@ public sealed class MainWindow : Window
 
         base.OnKeyDown(e);
     }
-
-    private Menu BuildMenu()
-    {
-        var quickLaunchItem = new MenuItem { Header = "_Quick Launch Program..." };
-        quickLaunchItem.Click += QuickLaunch_Click;
-
-        var commandPromptItem = new MenuItem { Header = "_Quick Launch Command Prompt..." };
-        commandPromptItem.Click += CommandPrompt_Click;
-
-        var pauseItem = new MenuItem { Header = "_Pause" };
-        pauseItem.Click += (_, _) => emulatorDisplay.PauseCommand.Execute(null);
-
-        var resumeItem = new MenuItem { Header = "R_esume" };
-        resumeItem.Click += (_, _) => emulatorDisplay.ResumeCommand.Execute(null);
-
-        var exitItem = new MenuItem { Header = "E_xit" };
-        exitItem.Click += (_, _) => this.Close();
-
-        var aeonMenu = new MenuItem
-        {
-            Header = "_Aeon",
-            Items = { quickLaunchItem, commandPromptItem, new Separator(), pauseItem, resumeItem, new Separator(), exitItem }
-        };
-
-        var copyItem = new MenuItem { Header = "_Copy Screen" };
-        copyItem.Click += Copy_Click;
-        var editMenu = new MenuItem { Header = "_Edit", Items = { copyItem } };
-
-        var fullScreenItem = new MenuItem { Header = "_Full Screen" };
-        fullScreenItem.Click += (_, _) => ToggleFullScreen();
-
-        var perfItem = new MenuItem { Header = "_Performance Window" };
-        perfItem.Click += PerformanceWindow_Click;
-
-        var viewMenu = new MenuItem
-        {
-            Header = "_View",
-            Items = { fullScreenItem, new Separator(), perfItem }
-        };
-
-        var paletteItem = new MenuItem { Header = "Color Palette" };
-        paletteItem.Click += ShowPalette_Click;
-        var debugMenu = new MenuItem { Header = "_Debug", Items = { paletteItem } };
-
-        return new Menu { Items = { aeonMenu, editMenu, viewMenu, debugMenu } };
-    }
-
-    private StackPanel BuildToolBar()
-    {
-        var openButton = new Button { Content = "📂" };
-        ToolTip.SetTip(openButton, "Run Program...");
-        openButton.Click += QuickLaunch_Click;
-
-        var resumeButton = new Button { Content = "▶" };
-        ToolTip.SetTip(resumeButton, "Resume");
-        resumeButton.Click += (_, _) => emulatorDisplay.ResumeCommand.Execute(null);
-
-        var pauseButton = new Button { Content = "⏸" };
-        ToolTip.SetTip(pauseButton, "Pause");
-        pauseButton.Click += (_, _) => emulatorDisplay.PauseCommand.Execute(null);
-
-        var slowerButton = new Button { Content = "-" };
-        ToolTip.SetTip(slowerButton, "Slow Down Emulation");
-        slowerButton.Click += SlowerButton_Click;
-
-        var speedLabel = new TextBlock
-        {
-            Width = 80,
-            TextAlignment = TextAlignment.Center,
-            VerticalAlignment = VerticalAlignment.Center,
-            Text = FormatSpeed(emulatorDisplay.EmulationSpeed)
-        };
-        this.speedLabel = speedLabel;
-
-        var fasterButton = new Button { Content = "+" };
-        ToolTip.SetTip(fasterButton, "Speed Up Emulation");
-        fasterButton.Click += FasterButton_Click;
-
-        return new StackPanel
-        {
-            Orientation = Orientation.Horizontal,
-            Spacing = 4,
-            Margin = new Thickness(4),
-            Children =
-            {
-                openButton,
-                new Panel { Width = 1, Background = Brushes.Gray, Margin = new Thickness(4, 0) },
-                resumeButton,
-                pauseButton,
-                new Panel { Width = 1, Background = Brushes.Gray, Margin = new Thickness(4, 0) },
-                new TextBlock { Text = "Speed:", VerticalAlignment = VerticalAlignment.Center },
-                slowerButton,
-                speedLabel,
-                fasterButton
-            }
-        };
-    }
-
-    private TextBlock? speedLabel;
 
     private static string FormatSpeed(int speed)
     {
@@ -345,11 +216,40 @@ public sealed class MainWindow : Window
         var bmp = emulatorDisplay.DisplayBitmap;
         if (bmp != null && this.Clipboard != null)
         {
-            // Avalonia clipboard doesn't directly support images in the same way as WPF.
-            // For now we just provide a text notification. Full clipboard image support
-            // would need platform-specific code or a future Avalonia API.
             await this.Clipboard.SetTextAsync("[Screen copied - image clipboard not yet implemented]");
         }
+    }
+
+    private void Pause_Click(object? sender, RoutedEventArgs e)
+    {
+        emulatorDisplay.PauseCommand.Execute(null);
+    }
+
+    private void Resume_Click(object? sender, RoutedEventArgs e)
+    {
+        emulatorDisplay.ResumeCommand.Execute(null);
+    }
+
+    private void Exit_Click(object? sender, RoutedEventArgs e)
+    {
+        this.Close();
+    }
+
+    private void FullScreen_Click(object? sender, RoutedEventArgs e)
+    {
+        ToggleFullScreen();
+    }
+
+    private void MouseIntegration_Click(object? sender, RoutedEventArgs e)
+    {
+        emulatorDisplay.MouseInputMode = emulatorDisplay.MouseInputMode == MouseInputMode.Relative
+            ? MouseInputMode.Absolute
+            : MouseInputMode.Relative;
+    }
+
+    private void AspectRatioCheckBox_Changed(object? sender, RoutedEventArgs e)
+    {
+        emulatorDisplay.IsAspectRatioLocked = aspectRatioCheckBox.IsChecked == true;
     }
 
     private void ToggleFullScreen()
@@ -364,14 +264,7 @@ public sealed class MainWindow : Window
         {
             this.menuContainer.IsVisible = true;
             this.WindowState = WindowState.Normal;
-            this.Background = new LinearGradientBrush
-            {
-                GradientStops =
-                {
-                    new GradientStop(Colors.SteelBlue, 0),
-                    new GradientStop(Color.Parse("#FF1D4461"), 1)
-                }
-            };
+            this.Background = (IBrush?)this.FindResource("backgroundGradient") ?? Brushes.SteelBlue;
         }
     }
 
@@ -387,8 +280,7 @@ public sealed class MainWindow : Window
         if (newSpeed != emulatorDisplay.EmulationSpeed)
         {
             emulatorDisplay.EmulationSpeed = newSpeed;
-            if (speedLabel != null)
-                speedLabel.Text = FormatSpeed(newSpeed);
+            speedLabel.Text = FormatSpeed(newSpeed);
         }
     }
 
@@ -398,8 +290,7 @@ public sealed class MainWindow : Window
         if (newSpeed != emulatorDisplay.EmulationSpeed)
         {
             emulatorDisplay.EmulationSpeed = newSpeed;
-            if (speedLabel != null)
-                speedLabel.Text = FormatSpeed(newSpeed);
+            speedLabel.Text = FormatSpeed(newSpeed);
         }
     }
 
