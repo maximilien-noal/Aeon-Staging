@@ -169,7 +169,7 @@ public sealed partial class MainWindow : Window
 
     private async Task<TaskDialogItem?> ShowTaskDialog(string title, string caption, params TaskDialogItem[] items)
     {
-        var taskDialog = new TaskDialog { Items = items, Title = title, Caption = caption };
+        var taskDialog = new TaskDialog { Items = items, Title = title, Caption = caption, Icon = this.Icon };
         var result = await taskDialog.ShowDialog<bool?>(this);
         if (result == true)
             return taskDialog.SelectedItem;
@@ -362,7 +362,7 @@ public sealed partial class MainWindow : Window
         }
         else
         {
-            this.paletteWindow = new PaletteDialog { EmulatorDisplay = this.emulatorDisplay };
+            this.paletteWindow = new PaletteDialog { EmulatorDisplay = this.emulatorDisplay, Icon = this.Icon };
             this.paletteWindow.Closed += PaletteWindow_Closed;
             this.paletteWindow.Show(this);
         }
