@@ -111,7 +111,10 @@ public partial class NumericUpDown : UserControl
     {
         if (!(e.Key >= Key.D0 && e.Key <= Key.D9) && !(e.Key >= Key.NumPad0 && e.Key <= Key.NumPad9)
             && e.Key != Key.Back && e.Key != Key.Delete && e.Key != Key.Left && e.Key != Key.Right
-            && e.Key != Key.Tab)
+            && e.Key != Key.Home && e.Key != Key.End && e.Key != Key.Tab
+            && !(e.Key == Key.A && e.KeyModifiers.HasFlag(KeyModifiers.Control))
+            && !(e.Key == Key.C && e.KeyModifiers.HasFlag(KeyModifiers.Control))
+            && !(e.Key == Key.V && e.KeyModifiers.HasFlag(KeyModifiers.Control)))
         {
             e.Handled = true;
         }

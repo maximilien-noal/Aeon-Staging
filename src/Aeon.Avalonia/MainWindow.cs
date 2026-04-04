@@ -311,7 +311,6 @@ public sealed partial class MainWindow : Window
     private void UpdateSpeedButtonStates()
     {
         slowerButton.IsEnabled = emulatorDisplay.EmulationSpeed > EmulatorHost.MinimumSpeed;
-        // No maximum speed in the original WPF (only minimum speed of 2 via validation)
     }
 
     private async void EmulatorDisplay_EmulationError(object? sender, EmulationErrorRoutedEventArgs e)
