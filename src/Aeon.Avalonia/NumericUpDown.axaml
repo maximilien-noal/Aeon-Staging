@@ -3,7 +3,7 @@
              x:Class="Aeon.Emulator.Launcher.NumericUpDown"
              x:Name="root">
     <Grid ColumnDefinitions="*,Auto" RowDefinitions="*,*">
-        <TextBox Name="valueText" Grid.RowSpan="2" Text="0" IsReadOnly="{Binding #root.IsReadOnly}" TextAlignment="Right" />
+        <TextBox Name="valueText" Grid.RowSpan="2" Text="0" IsReadOnly="{Binding #root.IsReadOnly}" TextAlignment="Right" KeyDown="ValueText_KeyDown" TextChanged="ValueText_TextChanged" />
         <Button Name="upButton" Grid.Column="1" Width="20" Click="UpButton_Click">
             <Polygon Points="3,0 6,3 0,3" Fill="Black" Stroke="Black" />
         </Button>

@@ -106,4 +106,27 @@ public partial class NumericUpDown : UserControl
         if (newMax < control.Value)
             control.Value = newMax;
     }
+
+    private void ValueText_KeyDown(object? sender, KeyEventArgs e)
+    {
+        if (!(e.Key >= Key.D0 && e.Key <= Key.D9) && !(e.Key >= Key.NumPad0 && e.Key <= Key.NumPad9)
+            && e.Key != Key.Back && e.Key != Key.Delete && e.Key != Key.Left && e.Key != Key.Right
+            && e.Key != Key.Tab)
+        {
+            e.Handled = true;
+        }
+    }
+
+    private void ValueText_TextChanged(object? sender, TextChangedEventArgs e)
+    {
+        string text = this.valueText.Text ?? string.Empty;
+        if (!string.IsNullOrEmpty(text))
+        {
+            if (int.TryParse(text, out int value))
+            {
+                if (this.Value != value)
+                    this.Value = value;
+            }
+        }
+    }
 }
