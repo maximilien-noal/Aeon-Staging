@@ -165,7 +165,7 @@ UI is defined in **AXAML files** (`.axaml`) faithfully porting WPF XAML, with **
 | `App.xaml` / `App.xaml.cs` | `App.axaml` / `App.cs` | AXAML defines FluentTheme, StyleIncludes for EmulatorDisplayStyles + TaskDialogStyles, and `backgroundGradient` resource. Code-behind uses `AvaloniaXamlLoader.Load(this)`. |
 | `MainWindow.xaml` / `.cs` | `MainWindow.axaml` / `MainWindow.cs` | AXAML defines full menu (_Aeon/_Edit/_View/_Debug), gradient toolbar with PNG icon buttons (play/pause polygon shapes, open folder, mouse integration), speed controls. Toolbar visibility bound to CheckBox via `{Binding #toolBarCheckBox.IsChecked}`. Code-behind handles file/folder dialogs via `StorageProvider`. |
 | `EmulatorDisplay.xaml` / `.cs` | `EmulatorDisplay.axaml` / `EmulatorDisplay.cs` | AXAML ports the Viewbox → Canvas → Image layout. Code-behind uses `StyledProperty<T>` for all DPs (EmulatorState, MouseInputMode, IsMouseCursorCaptured, EmulationSpeed, IsAspectRatioLocked, ScalingAlgorithm) enabling style selectors. Static constructor registers property change handlers. |
-| `EmulatorDisplayResources.xaml` | `EmulatorDisplayStyles.axaml` | Style selectors: `EmulatorDisplay[EmulatorState=Paused]` → Opacity 0.5, `[EmulatorState=Running][MouseInputMode=Absolute]` → Cursor None, `[EmulatorState=Running][IsMouseCursorCaptured=True]` → Cursor None, `[EmulatorState=ProgramExited]` → Opacity 0.5. |
+| `EmulatorDisplayResources.xaml` | `EmulatorDisplayStyles.axaml` | Style selectors: `EmulatorDisplay[EmulatorState=Paused]` → Opacity 0.5, `[EmulatorState=Running][MouseInputMode=Absolute]` → Cursor None, `[EmulatorState=Running][IsMouseCursorCaptured=True]` → Cursor None, `[EmulatorState=ProgramExited]` → 2-second fade to Opacity 0.5 (Animation matching WPF Storyboard). |
 | `TaskDialog.xaml` / `.cs` | `TaskDialog.axaml` / `TaskDialog.cs` | AXAML ports Grid + TextBlock + ItemsControl layout. Code-behind sets caption and items, handles button click → Close(true). |
 | `TaskDialogTemplates.xaml` | `TaskDialogStyles.axaml` | AXAML ControlTemplate for TaskDialogItem: Border + Grid with TaskArrow.png icon, Text + Description via `TemplateBinding`. `:pointerover` style selector adds blue border/gradient background on hover. |
 | `PaletteDialog.xaml` / `.cs` | `PaletteDialog.axaml` / `PaletteDialog.cs` | AXAML: Window + `UniformGrid Rows="16" Columns="16"`. Code-behind adds 256 Rectangles and updates colors at 30fps via DispatcherTimer. |
@@ -196,12 +196,12 @@ UI is defined in **AXAML files** (`.axaml`) faithfully porting WPF XAML, with **
 | `Dispatcher.BeginInvoke()` | `Dispatcher.UIThread.Post()` |
 | XAML `Style.Triggers` / `MultiTrigger` | AXAML `Style Selector="Type[Property=Value]"` |
 | XAML `ControlTemplate.Triggers` | AXAML pseudo-class selectors (`:pointerover`, etc.) |
-| `Storyboard` / `DoubleAnimation` | Avalonia `Transitions` or style selectors for instant state changes |
+| `Storyboard` / `DoubleAnimation` | Avalonia `Animation` with `KeyFrame` for animated transitions (e.g., 2-second fade) |
 | `InteropBitmap` | `WriteableBitmap` (Bgra8888) |
 | `System.Windows.Input.Key` | `Avalonia.Input.Key` |
 | `FolderBrowserDialog` (WinForms) | `IStorageProvider.OpenFolderPickerAsync()` |
 | `OpenFileDialog` (WPF/WinForms) | `IStorageProvider.OpenFilePickerAsync()` |
-| `Clipboard.SetImage(bmp)` | Not directly supported (platform-specific; text clipboard works) |
+| `Clipboard.SetImage(bmp)` | `DataObject` with PNG bytes via `SetDataObjectAsync` |
 | Image Source path `"Resources/file.png"` | `avares://AssemblyName/Resources/file.png"` URI |
 | `Visibility.Collapsed` / `Visible` | `IsVisible = false` / `true` |
 | `ToolTip="text"` | `ToolTip.Tip="text"` |
