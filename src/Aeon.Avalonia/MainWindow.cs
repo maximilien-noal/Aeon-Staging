@@ -334,7 +334,7 @@ public sealed class MainWindow : Window
             var path = folders[0].TryGetLocalPath();
             if (path != null)
             {
-                this.currentConfig = AeonConfiguration.GetQuickLaunchConfiguration(path, null!);
+                this.currentConfig = AeonConfiguration.GetQuickLaunchConfiguration(path, string.Empty);
                 this.LaunchCurrentConfig();
             }
         }

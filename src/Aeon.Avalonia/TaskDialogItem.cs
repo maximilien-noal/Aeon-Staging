@@ -17,7 +17,6 @@ public class TaskDialogItem : Button
         this.HorizontalAlignment = HorizontalAlignment.Stretch;
         this.HorizontalContentAlignment = HorizontalAlignment.Left;
         this.Margin = new Avalonia.Thickness(0, 2);
-        UpdateContent();
     }
     /// <summary>
     /// Initializes a new instance of the <see cref="TaskDialogItem"/> class.
