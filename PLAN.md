@@ -109,15 +109,15 @@ The Windows MIDI Mapper (`winmm.dll`) has no direct cross-platform equivalent. T
 
 ---
 
-## Phase 3: UI — Replace WPF with AvaloniaUI (C# Code-Only, No XAML) ✅ DONE
+## Phase 3: UI — Replace WPF with AvaloniaUI (AXAML + Code-Behind) ✅ DONE
 
 ### Rationale
 WPF is Windows-only. AvaloniaUI is a cross-platform UI framework for .NET with an API very close to WPF. It uses Skia for GPU-accelerated rendering and runs on Windows, macOS, and Linux.
 
-### Approach: Pure C# — No AXAML/XAML Files
-The Avalonia frontend will be written **entirely in C# code** (no `.axaml` files). This keeps the code as close as possible to the existing WPF code-behind style, where most logic is already in `.cs` files. The existing WPF project uses minimal XAML — the `EmulatorDisplay.xaml` is only 12 lines, `PaletteDialog.xaml` is 6 lines, and most UI logic lives in code-behind.
+### Approach: AXAML + Code-Behind (Faithful WPF Port)
+The Avalonia frontend uses **AXAML files** (`.axaml`) to faithfully port the WPF XAML layouts, styles, and templates. Code-behind (`.axaml.cs` / `.cs`) stays close to the existing WPF code-behind style. WPF `DependencyProperty` is replaced by Avalonia `StyledProperty<T>`, enabling Avalonia style selectors for visual states (opacity on pause, cursor hiding, etc.).
 
-**Spice86** ([`OpenRakis/Spice86`](https://github.com/OpenRakis/Spice86)) is a good reference for Avalonia `WriteableBitmap` usage and rendering patterns, but its MVVM + XAML architecture should **not** be followed. Aeon's UI will stay close to the existing imperative, event-driven WPF code-behind pattern.
+Resource images (toolbar icons, task dialog arrow) are copied from the WPF project and referenced via `avares://` URIs. The application icon (`Aeon.ico`) is included.
 
 ### Strategy
 Create a new `Aeon.Avalonia` project that replaces the `Aeon` (WPF) project. The existing `Aeon` project can be kept for reference or removed. The `AeonMonoGame` project remains as an alternative frontend.
@@ -134,11 +134,12 @@ Create a new `Aeon.Avalonia` project that replaces the `Aeon` (WPF) project. The
        <TargetFramework>net10.0</TargetFramework>
        <RootNamespace>Aeon.Emulator.Launcher</RootNamespace>
        <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
+       <ApplicationIcon>Aeon.ico</ApplicationIcon>
      </PropertyGroup>
      <ItemGroup>
-       <PackageReference Include="Avalonia" Version="11.*" />
-       <PackageReference Include="Avalonia.Desktop" Version="11.*" />
-       <PackageReference Include="Avalonia.Themes.Fluent" Version="11.*" />
+       <PackageReference Include="Avalonia" Version="11.3.13" />
+       <PackageReference Include="Avalonia.Desktop" Version="11.3.13" />
+       <PackageReference Include="Avalonia.Themes.Fluent" Version="11.3.13" />
      </ItemGroup>
      <ItemGroup>
        <ProjectReference Include="..\Aeon.Emulator.Configuration\Aeon.Emulator.Configuration.csproj" />
@@ -146,58 +147,65 @@ Create a new `Aeon.Avalonia` project that replaces the `Aeon` (WPF) project. The
        <ProjectReference Include="..\Aeon.DiskImages\Aeon.DiskImages.csproj" />
        <ProjectReference Include="..\Aeon.Emulator.Sound\Aeon.Emulator.Sound.csproj" />
      </ItemGroup>
+     <ItemGroup>
+       <AvaloniaResource Include="Resources\*.png" />
+       <AvaloniaResource Include="Aeon.ico" />
+     </ItemGroup>
    </Project>
    ```
 
 2. **Add to `Aeon.slnx`** solution file
 
-#### 3.2 File-by-File Migration Map (C#-Only)
+#### 3.2 File-by-File Migration Map (AXAML + Code-Behind)
 
-All UI is built in **pure C# code** — no AXAML files. Controls are instantiated and composed programmatically.
+UI is defined in **AXAML files** (`.axaml`) faithfully porting WPF XAML, with **code-behind** (`.cs`) staying close to the WPF code-behind style. WPF `DependencyProperty` → Avalonia `StyledProperty<T>`.
 
-| WPF File | Avalonia C# Equivalent | Migration Notes |
+| WPF File | Avalonia Equivalent | Migration Notes |
 |----------|----------------------|-----------------|
-| `App.xaml` / `App.xaml.cs` | `App.cs` (C# only) | Build `Application` subclass in C#. Use `AppBuilder.Configure<App>().UsePlatformDetect().StartWithClassicDesktopLifetime()`. Set theme via `Styles.Add(new FluentTheme())`. |
-| `MainWindow.xaml` / `.cs` | `MainWindow.cs` (C# only) | Build the menu bar, toolbar, and layout in C# using `new Menu { Items = { ... } }`, `new StackPanel { Children = { ... } }`, etc. Most logic is already in code-behind — keep it there. Replace `FolderBrowserDialog` → `StorageProvider.OpenFolderPickerAsync()`. |
-| `EmulatorDisplay.xaml` / `.cs` | `EmulatorDisplay.cs` (C# only) | The WPF XAML is only 12 lines (Viewbox → Canvas → Image). Build this trivially in C#: `new Viewbox { Child = new Canvas { Children = { displayImage } } }`. Replace `DependencyProperty` → `StyledProperty<T>`. Replace WPF `RoutedEvent` → Avalonia `RoutedEvent<T>`. Replace `System.Windows.Input` mouse/keyboard → `Avalonia.Input`. **Most complex file — all 380 lines of code-behind port directly.** |
-| `EmulatorDisplayResources.xaml` | Inline in `EmulatorDisplay.cs` | The WPF resource dictionary defines styles with MultiTrigger + Storyboard animations. Convert to Avalonia pseudo-classes and `Transitions` in C# (e.g., `new Setter(OpacityProperty, 0.0)` with `DoubleTransition`). |
-| `TaskDialog.xaml` / `.cs` | `TaskDialog.cs` (C# only) | Simple Grid + TextBlock + ItemsControl layout. Build in C# constructor. 2 `DependencyProperty` → `StyledProperty`. Event bubbling for button clicks ports directly. |
-| `TaskDialogTemplates.xaml` | Inline in `TaskDialogItem.cs` | The WPF ControlTemplate (Grid + Rectangle + Image + TextBlocks) builds easily in C# as a `FuncControlTemplate<TaskDialogItem>`. |
-| `PaletteDialog.xaml` / `.cs` | `PaletteDialog.cs` (C# only) | XAML is only 6 lines (Window + UniformGrid). Already creates 256 Rectangles programmatically in code-behind. Direct port — almost no changes. |
-| `PerformanceWindow.xaml` / `.cs` | `PerformanceWindow.cs` (C# only) | Build layout in C# using `StackPanel`, `Expander`, `Label`. All updates are already imperative (`Label.Content = value`). |
-| `NumericUpDown.xaml` / `.cs` | Use Avalonia's built-in `NumericUpDown` | Avalonia has a built-in `NumericUpDown` control. Drop the custom one entirely; bind `Value`, `Minimum`, `Maximum`, `Increment` properties. |
-| `RoundButtonResources.xaml` | `RoundButton.cs` style helper | Port the Ellipse + gradient + animation template to C# using `new ControlTemplate<Button>` with Avalonia's animation API. Or simplify to a styled button. |
-| `FastBitmap.cs` | `AvaloniaBitmap.cs` (C# only) | **Major rewrite.** Replace `InteropBitmap` + Win32 memory mapping with Avalonia's `WriteableBitmap`. Use `WriteableBitmap.Lock()` to get pixel buffer pointer. Reference Spice86's bitmap rendering for patterns. |
-| `WpfSynchronizer.cs` | `AvaloniaSynchronizer.cs` | Replace `Dispatcher.BeginInvoke` with `Avalonia.Threading.Dispatcher.UIThread.Post()`. |
-| `KeyExtensions.cs` | `KeyExtensions.cs` | Replace `System.Windows.Input.Key` → `Avalonia.Input.Key`. Update dictionary — key names are very similar. |
-| `MouseButtonExtensions.cs` | `MouseButtonExtensions.cs` | Replace WPF `MouseButton` → `Avalonia.Input.PointerPointProperties`. Same switch logic. |
-| `MouseModeConverter.cs` | `MouseModeConverter.cs` | `IValueConverter` is in `Avalonia.Data.Converters` — same interface pattern. Or replace with simple C# property logic (no converter needed in C#-only UI). |
-| `SpeedConverter.cs` | `SpeedConverter.cs` or inline | Same — or replace with direct string formatting in code-behind. |
-| `SimpleCommand.cs` | `SimpleCommand.cs` | `ICommand` is in `System.Windows.Input` namespace — works the same in Avalonia. No change needed. |
-| `NativeMethods.cs` (`SetCursorPos`) | `CursorHelper.cs` (C# only) | Port SDL2 cursor warping logic to **pure C#** with per-platform P/Invoke to OS system libraries only: `user32.dll` (Windows), `libX11.so` (Linux Xorg), Wayland client libs (Linux Wayland), `CoreGraphics.framework` (macOS). No native SDL2 dependency. See section 3.5. |
-| `BrowseInfo.cs` | Remove | Replace with Avalonia `StorageProvider` API. |
-| `EmulationErrorRoutedEventArgs.cs` | `EmulationErrorRoutedEventArgs.cs` | Port to Avalonia `RoutedEventArgs` — same pattern, different base class. |
-| `TaskDialogItem.cs` | `TaskDialogItem.cs` | Replace 3 `DependencyProperty` → `StyledProperty`. Same code structure. |
+| `App.xaml` / `App.xaml.cs` | `App.axaml` / `App.cs` | AXAML defines FluentTheme, StyleIncludes for EmulatorDisplayStyles + TaskDialogStyles, and `backgroundGradient` resource. Code-behind uses `AvaloniaXamlLoader.Load(this)`. |
+| `MainWindow.xaml` / `.cs` | `MainWindow.axaml` / `MainWindow.cs` | AXAML defines full menu (_Aeon/_Edit/_View/_Debug), gradient toolbar with PNG icon buttons (play/pause polygon shapes, open folder, mouse integration), speed controls. Toolbar visibility bound to CheckBox via `{Binding #toolBarCheckBox.IsChecked}`. Code-behind handles file/folder dialogs via `StorageProvider`. |
+| `EmulatorDisplay.xaml` / `.cs` | `EmulatorDisplay.axaml` / `EmulatorDisplay.cs` | AXAML ports the Viewbox → Canvas → Image layout. Code-behind uses `StyledProperty<T>` for all DPs (EmulatorState, MouseInputMode, IsMouseCursorCaptured, EmulationSpeed, IsAspectRatioLocked, ScalingAlgorithm) enabling style selectors. Static constructor registers property change handlers. |
+| `EmulatorDisplayResources.xaml` | `EmulatorDisplayStyles.axaml` | Style selectors: `EmulatorDisplay[EmulatorState=Paused]` → Opacity 0.5, `[EmulatorState=Running][MouseInputMode=Absolute]` → Cursor None, `[EmulatorState=Running][IsMouseCursorCaptured=True]` → Cursor None, `[EmulatorState=ProgramExited]` → Opacity 0.5. |
+| `TaskDialog.xaml` / `.cs` | `TaskDialog.axaml` / `TaskDialog.cs` | AXAML ports Grid + TextBlock + ItemsControl layout. Code-behind sets caption and items, handles button click → Close(true). |
+| `TaskDialogTemplates.xaml` | `TaskDialogStyles.axaml` | AXAML ControlTemplate for TaskDialogItem: Border + Grid with TaskArrow.png icon, Text + Description via `TemplateBinding`. `:pointerover` style selector adds blue border/gradient background on hover. |
+| `PaletteDialog.xaml` / `.cs` | `PaletteDialog.axaml` / `PaletteDialog.cs` | AXAML: Window + `UniformGrid Rows="16" Columns="16"`. Code-behind adds 256 Rectangles and updates colors at 30fps via DispatcherTimer. |
+| `PerformanceWindow.xaml` / `.cs` | `PerformanceWindow.axaml` / `PerformanceWindow.cs` | AXAML ports DockPanel + ScrollViewer + Expanders (Processor, Memory) with gradient separator rectangles. Code-behind updates labels at 1-second intervals. |
+| `NumericUpDown.xaml` / `.cs` | `NumericUpDown.axaml` / `NumericUpDown.cs` | AXAML ports Grid with TextBox + up/down Polygon buttons. Code-behind uses `StyledProperty<T>` with coerce callback for Value/Min/Max/Step/IsReadOnly. |
+| `RoundButtonResources.xaml` | (Simplified into toolbar buttons) | Avalonia Fluent theme buttons used instead; toolbar uses gradient Border background and Polygon/Rectangle shapes for icons. |
+| `FastBitmap.cs` | `AvaloniaBitmap.cs` | Replaces `InteropBitmap` + Win32 memory mapping with Avalonia's `WriteableBitmap(Bgra8888)`. Lock() returns pixel buffer Span<uint>. |
+| `WpfSynchronizer.cs` | `AvaloniaSynchronizer.cs` | `Dispatcher.UIThread.Post()` replaces `Dispatcher.BeginInvoke`. |
+| `KeyExtensions.cs` | `KeyExtensions.cs` | `Avalonia.Input.Key` → emulator `Keys` mapping. FrozenDictionary lookup. |
+| `MouseButtonExtensions.cs` | `MouseButtonExtensions.cs` | `Avalonia.Input.PointerUpdateKind` → emulator `MouseButtons`. |
+| `MouseModeConverter.cs` | (Replaced by direct event handler) | `AspectRatioCheckBox_Changed` handler in MainWindow code-behind. |
+| `SpeedConverter.cs` | (Replaced by `FormatSpeed()` method) | Inline `FormatSpeed()` in MainWindow code-behind. |
+| `SimpleCommand.cs` | `SimpleCommand.cs` | `ICommand` (System.Windows.Input) — unchanged, works in Avalonia. |
+| `NativeMethods.cs` | `CursorHelper.cs` | Cross-platform cursor warping: `user32.dll` (Windows), `libX11.so` (Linux Xorg), `CoreGraphics.framework` (macOS). |
+| `BrowseInfo.cs` | (Removed) | Replaced by Avalonia `StorageProvider` API. |
+| `EmulationErrorRoutedEventArgs.cs` | `EmulationErrorRoutedEventArgs.cs` | Avalonia `RoutedEventArgs` subclass. |
+| `TaskDialogItem.cs` | `TaskDialogItem.cs` | `StyledProperty<T>` for Text/Description, enabling `TemplateBinding` in AXAML ControlTemplate. |
+| `Resources/*.png` | `Resources/*.png` | Toolbar icons (openfolderHS.png, MouseIntegration.png) and TaskArrow.png copied to Avalonia project. Referenced via `avares://Aeon.Avalonia/Resources/` URIs. |
+| `Aeon.ico` | `Aeon.ico` | Application icon copied to Avalonia project, referenced in csproj `<ApplicationIcon>`. |
 
-#### 3.3 Key Avalonia Differences from WPF (C#-Only Context)
+#### 3.3 Key Avalonia Differences from WPF
 
-| WPF Pattern | Avalonia C# Equivalent |
+| WPF Pattern | Avalonia Equivalent |
 |-------------|----------------------|
 | `DependencyProperty.Register(...)` | `StyledProperty<T>` via `AvaloniaProperty.Register<TOwner, T>(...)` |
-| `DependencyProperty.RegisterReadOnly(...)` | `DirectProperty<TOwner, T>` via `AvaloniaProperty.RegisterDirect<TOwner, T>(...)` |
-| `DependencyPropertyKey` (read-only) | `DirectProperty` with getter only |
+| `DependencyProperty.RegisterReadOnly(...)` | `StyledProperty<T>` with private setter (for style selector support) |
 | `RoutedEvent` + `RoutedEventHandler` | `RoutedEvent<RoutedEventArgs>` (similar registration pattern) |
 | `Dispatcher.BeginInvoke()` | `Dispatcher.UIThread.Post()` |
-| `new Window { Content = ... }` | Same — `new Window { Content = ... }` |
-| `new Grid { RowDefinitions = ... }` | Same — `new Grid { RowDefinitions = ... }` |
-| `element.SetBinding(...)` | `element.Bind(property, binding)` or `element[property] = new Binding(...)` |
-| `ControlTemplate` in XAML | `new FuncControlTemplate<T>((control, scope) => ...)` in C# |
-| `Style` with `Trigger` | `new Style(x => x.OfType<T>()) { Setters = { ... } }` + pseudo-classes |
-| `DataTrigger` | Use `IObservable<T>` bindings or pseudo-classes in C# |
-| `Storyboard` / `DoubleAnimation` | `new Animation { Duration = ..., Children = { new KeyFrame { Setters = { ... } } } }` |
-| `InteropBitmap` | `WriteableBitmap` |
+| XAML `Style.Triggers` / `MultiTrigger` | AXAML `Style Selector="Type[Property=Value]"` |
+| XAML `ControlTemplate.Triggers` | AXAML pseudo-class selectors (`:pointerover`, etc.) |
+| `Storyboard` / `DoubleAnimation` | Avalonia `Transitions` or style selectors for instant state changes |
+| `InteropBitmap` | `WriteableBitmap` (Bgra8888) |
 | `System.Windows.Input.Key` | `Avalonia.Input.Key` |
 | `FolderBrowserDialog` (WinForms) | `IStorageProvider.OpenFolderPickerAsync()` |
+| `OpenFileDialog` (WPF/WinForms) | `IStorageProvider.OpenFilePickerAsync()` |
+| `Clipboard.SetImage(bmp)` | Not directly supported (platform-specific; text clipboard works) |
+| Image Source path `"Resources/file.png"` | `avares://AssemblyName/Resources/file.png"` URI |
+| `Visibility.Collapsed` / `Visible` | `IsVisible = false` / `true` |
+| `ToolTip="text"` | `ToolTip.Tip="text"` |
+| `UniformGrid` | `UniformGrid` (same API) |
 
 #### 3.4 Video Rendering (FastBitmap replacement)
 
@@ -325,23 +333,27 @@ Phase 5 (CI)        ──→  ✅ Done — multi-platform build matrix
 - `Aeon.Emulator.Sound/Midi/GeneralMidi.cs` — add TODO comment for Linux/macOS MIDI passthrough
 - `Aeon.Emulator.Sound/Midi/MidiEngine.cs` — document MidiMapper as Windows-only
 
-### Phase 3 ✅ (15 new files, 1 modified)
-- New `Aeon.Avalonia/Aeon.Avalonia.csproj` — Avalonia 11.3.13, cross-platform desktop app
-- New `Aeon.Avalonia/App.cs` — Application entry point with FluentTheme
-- New `Aeon.Avalonia/MainWindow.cs` — Full menu, toolbar, file dialogs (Avalonia StorageProvider)
-- New `Aeon.Avalonia/EmulatorDisplay.cs` — Main emulator display with keyboard/mouse handling
-- New `Aeon.Avalonia/AvaloniaBitmap.cs` — WriteableBitmap replacement for FastBitmap
-- New `Aeon.Avalonia/AvaloniaSynchronizer.cs` — Dispatcher.UIThread.Post() replacement for WpfSynchronizer
-- New `Aeon.Avalonia/CursorHelper.cs` — Cross-platform cursor warping (user32.dll / libX11.so / CoreGraphics.framework)
-- New `Aeon.Avalonia/KeyExtensions.cs` — Avalonia Key → emulator Keys mapping
-- New `Aeon.Avalonia/MouseButtonExtensions.cs` — Avalonia PointerUpdateKind → emulator MouseButtons
-- New `Aeon.Avalonia/SimpleCommand.cs` — ICommand implementation (unchanged logic)
-- New `Aeon.Avalonia/MouseInputMode.cs` — Enum (unchanged)
-- New `Aeon.Avalonia/EmulationErrorRoutedEventArgs.cs` — Avalonia RoutedEventArgs
-- New `Aeon.Avalonia/TaskDialog.cs` — Pure C# task dialog
-- New `Aeon.Avalonia/TaskDialogItem.cs` — Task dialog item control
-- New `Aeon.Avalonia/PaletteDialog.cs` — Color palette debug window
-- New `Aeon.Avalonia/PerformanceWindow.cs` — Performance statistics window
+### Phase 3 ✅ (9 new AXAML files, 3 PNG resources, 1 icon, 1 new control, 7 C# files rewritten, 1 modified)
+- New `Aeon.Avalonia/App.axaml` — FluentTheme, StyleIncludes, backgroundGradient resource
+- Rewritten `Aeon.Avalonia/App.cs` — code-behind with AvaloniaXamlLoader.Load()
+- New `Aeon.Avalonia/MainWindow.axaml` — Full menu, gradient toolbar with PNG icon buttons, speed controls
+- Rewritten `Aeon.Avalonia/MainWindow.cs` — code-behind with file dialogs via StorageProvider
+- New `Aeon.Avalonia/EmulatorDisplay.axaml` — Viewbox/Canvas/Image layout (faithful WPF port)
+- Rewritten `Aeon.Avalonia/EmulatorDisplay.cs` — StyledProperty for all DPs, static change handlers
+- New `Aeon.Avalonia/EmulatorDisplayStyles.axaml` — Style selectors for Paused/Running/ProgramExited states
+- New `Aeon.Avalonia/TaskDialog.axaml` — Grid + TextBlock + ItemsControl layout
+- Rewritten `Aeon.Avalonia/TaskDialog.cs` — code-behind with ItemsSource binding
+- New `Aeon.Avalonia/TaskDialogStyles.axaml` — ControlTemplate with icon + hover animation
+- Rewritten `Aeon.Avalonia/TaskDialogItem.cs` — StyledProperty for Text/Description (TemplateBinding support)
+- New `Aeon.Avalonia/PaletteDialog.axaml` — UniformGrid 16×16 (replaces WrapPanel)
+- Rewritten `Aeon.Avalonia/PaletteDialog.cs` — code-behind with DispatcherTimer color updates
+- New `Aeon.Avalonia/PerformanceWindow.axaml` — Expanders with gradient separators (faithful WPF port)
+- Rewritten `Aeon.Avalonia/PerformanceWindow.cs` — code-behind with timer updates
+- New `Aeon.Avalonia/NumericUpDown.axaml` — TextBox + up/down Polygon buttons
+- New `Aeon.Avalonia/NumericUpDown.cs` — StyledProperty with coerce callback
+- New `Aeon.Avalonia/Resources/openfolderHS.png`, `MouseIntegration.png`, `TaskArrow.png` — toolbar icons
+- New `Aeon.Avalonia/Aeon.ico` — application icon
+- Modified `Aeon.Avalonia/Aeon.Avalonia.csproj` — ApplicationIcon, AvaloniaResource includes
 - Modified `Aeon.slnx` — added Aeon.Avalonia project
 
 ### Phase 4 (2-4 new files)
