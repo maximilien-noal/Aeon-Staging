@@ -117,6 +117,9 @@ public sealed partial class MainWindow : Window
 
         emulatorDisplay.EmulationSpeed = config.EmulationSpeed ?? 100_000_000;
         emulatorDisplay.MouseInputMode = config.IsMouseAbsolute.GetValueOrDefault() ? MouseInputMode.Absolute : MouseInputMode.Relative;
+        mouseIntegrationButton.IsChecked = emulatorDisplay.MouseInputMode == MouseInputMode.Absolute;
+        speedLabel.Text = FormatSpeed(emulatorDisplay.EmulationSpeed);
+        UpdateSpeedButtonStates();
         if (!string.IsNullOrEmpty(config.Title))
             this.Title = config.Title;
 
@@ -216,7 +219,16 @@ public sealed partial class MainWindow : Window
         var bmp = emulatorDisplay.DisplayBitmap;
         if (bmp != null && this.Clipboard != null)
         {
-            await this.Clipboard.SetTextAsync("[Screen copied - image clipboard not yet implemented]");
+            using var stream = new MemoryStream();
+            bmp.Save(stream);
+            stream.Position = 0;
+            var bytes = stream.ToArray();
+
+#pragma warning disable CS0618 // DataObject/SetDataObjectAsync are deprecated but replacement API is complex
+            var dataObject = new DataObject();
+            dataObject.Set("PNG", bytes);
+            await this.Clipboard.SetDataObjectAsync(dataObject);
+#pragma warning restore CS0618
         }
     }
 
@@ -240,9 +252,9 @@ public sealed partial class MainWindow : Window
         ToggleFullScreen();
     }
 
-    private void MouseIntegration_Click(object? sender, RoutedEventArgs e)
+    private void MouseIntegration_Changed(object? sender, RoutedEventArgs e)
     {
-        emulatorDisplay.MouseInputMode = emulatorDisplay.MouseInputMode == MouseInputMode.Relative
+        emulatorDisplay.MouseInputMode = mouseIntegrationButton.IsChecked == true
             ? MouseInputMode.Absolute
             : MouseInputMode.Relative;
     }
@@ -282,6 +294,7 @@ public sealed partial class MainWindow : Window
             emulatorDisplay.EmulationSpeed = newSpeed;
             speedLabel.Text = FormatSpeed(newSpeed);
         }
+        UpdateSpeedButtonStates();
     }
 
     private void FasterButton_Click(object? sender, RoutedEventArgs e)
@@ -292,6 +305,13 @@ public sealed partial class MainWindow : Window
             emulatorDisplay.EmulationSpeed = newSpeed;
             speedLabel.Text = FormatSpeed(newSpeed);
         }
+        UpdateSpeedButtonStates();
+    }
+
+    private void UpdateSpeedButtonStates()
+    {
+        slowerButton.IsEnabled = emulatorDisplay.EmulationSpeed > EmulatorHost.MinimumSpeed;
+        // No maximum speed in the original WPF (only minimum speed of 2 via validation)
     }
 
     private async void EmulatorDisplay_EmulationError(object? sender, EmulationErrorRoutedEventArgs e)

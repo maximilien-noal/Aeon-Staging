@@ -64,16 +64,16 @@
                         </Canvas>
                     </Button>
                     <Separator />
-                    <Button ToolTip.Tip="Toggle Mouse Integration" Click="MouseIntegration_Click">
+                    <ToggleButton Name="mouseIntegrationButton" ToolTip.Tip="Toggle Mouse Integration" IsCheckedChanged="MouseIntegration_Changed">
                         <Image Width="16" Height="16" Source="avares://Aeon.Avalonia/Resources/MouseIntegration.png" />
-                    </Button>
+                    </ToggleButton>
                     <Separator />
                     <TextBlock Text="Speed:" VerticalAlignment="Center" />
-                    <Button ToolTip.Tip="Slow Down Emulation" Click="SlowerButton_Click" Padding="4,2" MinWidth="24">
+                    <Button Name="slowerButton" ToolTip.Tip="Slow Down Emulation" Click="SlowerButton_Click" Padding="4,2" MinWidth="24">
                         <TextBlock FontFamily="Courier New" FontWeight="Bold" Text="-" />
                     </Button>
                     <TextBlock Name="speedLabel" Width="50" TextAlignment="Center" VerticalAlignment="Center" />
-                    <Button ToolTip.Tip="Speed Up Emulation" Click="FasterButton_Click" Padding="4,2" MinWidth="24">
+                    <Button Name="fasterButton" ToolTip.Tip="Speed Up Emulation" Click="FasterButton_Click" Padding="4,2" MinWidth="24">
                         <TextBlock FontFamily="Courier New" FontWeight="Bold" Text="+" />
                     </Button>
                 </StackPanel>
