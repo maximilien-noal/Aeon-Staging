@@ -21,52 +21,45 @@ public sealed class SpeedControlSteps
     [Given("the default emulation speed is {int}")]
     public void GivenTheDefaultEmulationSpeedIs(int speed)
     {
-        var actual = TestHelpers.RunOnUIThread(() =>
-            Window.FindControl<EmulatorDisplay>("emulatorDisplay")!.EmulationSpeed);
+        var actual = Window.FindControl<EmulatorDisplay>("emulatorDisplay")!.EmulationSpeed;
         Assert.AreEqual(speed, actual);
     }
 
     [Given("the emulation speed is set to {int}")]
     public void GivenTheEmulationSpeedIsSetTo(int speed)
     {
-        TestHelpers.RunOnUIThread(() =>
-        {
-            var display = Window.FindControl<EmulatorDisplay>("emulatorDisplay")!;
-            display.EmulationSpeed = speed;
-            Window.FindControl<TextBlock>("speedLabel")!.Text = FormatSpeed(speed);
-            Window.FindControl<Button>("slowerButton")!.IsEnabled = speed > Aeon.Emulator.EmulatorHost.MinimumSpeed;
-            Window.FindControl<Button>("fasterButton")!.IsEnabled = true;
-        });
+        var display = Window.FindControl<EmulatorDisplay>("emulatorDisplay")!;
+        display.EmulationSpeed = speed;
+        Window.FindControl<TextBlock>("speedLabel")!.Text = FormatSpeed(speed);
+        Window.FindControl<Button>("slowerButton")!.IsEnabled = speed > Aeon.Emulator.EmulatorHost.MinimumSpeed;
+        Window.FindControl<Button>("fasterButton")!.IsEnabled = true;
+        TestHelpers.Flush();
     }
 
     [When("I click the faster button")]
     public void WhenIClickTheFasterButton()
     {
-        TestHelpers.RunOnUIThread(() =>
-        {
-            var display = Window.FindControl<EmulatorDisplay>("emulatorDisplay")!;
-            var speedLabel = Window.FindControl<TextBlock>("speedLabel")!;
-            var slower = Window.FindControl<Button>("slowerButton")!;
-            int newSpeed = display.EmulationSpeed + 100_000;
-            display.EmulationSpeed = newSpeed;
-            speedLabel.Text = FormatSpeed(newSpeed);
-            slower.IsEnabled = newSpeed > Aeon.Emulator.EmulatorHost.MinimumSpeed;
-        });
+        var display = Window.FindControl<EmulatorDisplay>("emulatorDisplay")!;
+        var speedLabel = Window.FindControl<TextBlock>("speedLabel")!;
+        var slower = Window.FindControl<Button>("slowerButton")!;
+        int newSpeed = display.EmulationSpeed + 100_000;
+        display.EmulationSpeed = newSpeed;
+        speedLabel.Text = FormatSpeed(newSpeed);
+        slower.IsEnabled = newSpeed > Aeon.Emulator.EmulatorHost.MinimumSpeed;
+        TestHelpers.Flush();
     }
 
     [When("I click the slower button")]
     public void WhenIClickTheSlowerButton()
     {
-        TestHelpers.RunOnUIThread(() =>
-        {
-            var display = Window.FindControl<EmulatorDisplay>("emulatorDisplay")!;
-            var speedLabel = Window.FindControl<TextBlock>("speedLabel")!;
-            var slower = Window.FindControl<Button>("slowerButton")!;
-            int newSpeed = Math.Max(Aeon.Emulator.EmulatorHost.MinimumSpeed, display.EmulationSpeed - 100_000);
-            display.EmulationSpeed = newSpeed;
-            speedLabel.Text = FormatSpeed(newSpeed);
-            slower.IsEnabled = newSpeed > Aeon.Emulator.EmulatorHost.MinimumSpeed;
-        });
+        var display = Window.FindControl<EmulatorDisplay>("emulatorDisplay")!;
+        var speedLabel = Window.FindControl<TextBlock>("speedLabel")!;
+        var slower = Window.FindControl<Button>("slowerButton")!;
+        int newSpeed = Math.Max(Aeon.Emulator.EmulatorHost.MinimumSpeed, display.EmulationSpeed - 100_000);
+        display.EmulationSpeed = newSpeed;
+        speedLabel.Text = FormatSpeed(newSpeed);
+        slower.IsEnabled = newSpeed > Aeon.Emulator.EmulatorHost.MinimumSpeed;
+        TestHelpers.Flush();
     }
 
     [When("I click the faster button {int} times")]
@@ -86,25 +79,20 @@ public sealed class SpeedControlSteps
     [Then("the emulation speed should be {int}")]
     public void ThenTheEmulationSpeedShouldBe(int expected)
     {
-        var actual = TestHelpers.RunOnUIThread(() =>
-            Window.FindControl<EmulatorDisplay>("emulatorDisplay")!.EmulationSpeed);
+        var actual = Window.FindControl<EmulatorDisplay>("emulatorDisplay")!.EmulationSpeed;
         Assert.AreEqual(expected, actual);
     }
 
     [Then("the slower button should be disabled")]
     public void ThenTheSlowerButtonShouldBeDisabled()
     {
-        var enabled = TestHelpers.RunOnUIThread(() =>
-            Window.FindControl<Button>("slowerButton")!.IsEnabled);
-        Assert.IsFalse(enabled);
+        Assert.IsFalse(Window.FindControl<Button>("slowerButton")!.IsEnabled);
     }
 
     [Then("the faster button should be enabled")]
     public void ThenTheFasterButtonShouldBeEnabled()
     {
-        var enabled = TestHelpers.RunOnUIThread(() =>
-            Window.FindControl<Button>("fasterButton")!.IsEnabled);
-        Assert.IsTrue(enabled);
+        Assert.IsTrue(Window.FindControl<Button>("fasterButton")!.IsEnabled);
     }
 
     private static string FormatSpeed(int speed)

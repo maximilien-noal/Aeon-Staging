@@ -20,36 +20,31 @@ public sealed class PerformanceWindowSteps : IDisposable
     [Then("the performance window should be visible")]
     public void ThenThePerformanceWindowShouldBeVisible()
     {
-        var visible = TestHelpers.RunOnUIThread(() => window!.IsVisible);
-        Assert.IsTrue(visible);
+        Assert.IsTrue(window!.IsVisible);
     }
 
     [Then("the {string} expander should exist")]
     public void ThenTheExpanderShouldExist(string name)
     {
-        var exists = TestHelpers.RunOnUIThread(() => window!.FindControl<Expander>(name) != null);
-        Assert.IsTrue(exists, $"Expander '{name}' not found.");
+        Assert.IsTrue(window!.FindControl<Expander>(name) != null, $"Expander '{name}' not found.");
     }
 
     [Then("the {string} expander should be expanded")]
     public void ThenTheExpanderShouldBeExpanded(string name)
     {
-        var expanded = TestHelpers.RunOnUIThread(() => window!.FindControl<Expander>(name)!.IsExpanded);
-        Assert.IsTrue(expanded, $"Expander '{name}' should be expanded.");
+        Assert.IsTrue(window!.FindControl<Expander>(name)!.IsExpanded, $"Expander '{name}' should be expanded.");
     }
 
     [Then("the {string} text block should exist in the processor expander")]
     public void ThenTheTextBlockShouldExistInTheProcessorExpander(string name)
     {
-        var exists = TestHelpers.RunOnUIThread(() => window!.FindControl<TextBlock>(name) != null);
-        Assert.IsTrue(exists, $"TextBlock '{name}' not found in processor expander.");
+        Assert.IsTrue(window!.FindControl<TextBlock>(name) != null, $"TextBlock '{name}' not found in processor expander.");
     }
 
     [Then("the {string} text block should exist in the memory expander")]
     public void ThenTheTextBlockShouldExistInTheMemoryExpander(string name)
     {
-        var exists = TestHelpers.RunOnUIThread(() => window!.FindControl<TextBlock>(name) != null);
-        Assert.IsTrue(exists, $"TextBlock '{name}' not found in memory expander.");
+        Assert.IsTrue(window!.FindControl<TextBlock>(name) != null, $"TextBlock '{name}' not found in memory expander.");
     }
 
     [AfterScenario]
@@ -57,7 +52,8 @@ public sealed class PerformanceWindowSteps : IDisposable
     {
         if (window != null)
         {
-            TestHelpers.RunOnUIThread(() => window.Close());
+            window.Close();
+            TestHelpers.Flush();
             window = null;
         }
     }

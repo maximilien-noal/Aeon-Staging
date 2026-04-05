@@ -35,12 +35,8 @@ public sealed class ClipboardCopySteps : IDisposable
         caughtException = null;
         try
         {
-            TestHelpers.RunOnUIThread(() =>
-            {
-                var display = Window.FindControl<EmulatorDisplay>("emulatorDisplay")!;
-                // Access the bitmap without crashing
-                _ = display.DisplayBitmap;
-            });
+            var display = Window.FindControl<EmulatorDisplay>("emulatorDisplay")!;
+            _ = display.DisplayBitmap;
         }
         catch (Exception ex)
         {
@@ -60,13 +56,11 @@ public sealed class ClipboardCopySteps : IDisposable
         var comBytes = TestHelpers.GetVgaPatternComBytes();
         tempDir = TestHelpers.CreateTempDirWithComFile("VGA.COM", comBytes);
 
-        TestHelpers.RunOnUIThread(() =>
-        {
-            var display = Window.FindControl<EmulatorDisplay>("emulatorDisplay")!;
-            var config = AeonConfiguration.GetQuickLaunchConfiguration(tempDir, "VGA.COM");
-            var host = EmulatorHost.CreateWithConfig(config);
-            display.EmulatorHost = host;
-        });
+        var display = Window.FindControl<EmulatorDisplay>("emulatorDisplay")!;
+        var config = AeonConfiguration.GetQuickLaunchConfiguration(tempDir, "VGA.COM");
+        var host = EmulatorHost.CreateWithConfig(config);
+        display.EmulatorHost = host;
+        TestHelpers.Flush();
 
         // Let the emulator run briefly to render
         Thread.Sleep(500);
@@ -75,8 +69,7 @@ public sealed class ClipboardCopySteps : IDisposable
     [Then("the display bitmap should not be null")]
     public void ThenTheDisplayBitmapShouldNotBeNull()
     {
-        var bitmap = TestHelpers.RunOnUIThread(() =>
-            Window.FindControl<EmulatorDisplay>("emulatorDisplay")!.DisplayBitmap);
+        var bitmap = Window.FindControl<EmulatorDisplay>("emulatorDisplay")!.DisplayBitmap;
         Assert.IsNotNull(bitmap);
     }
 

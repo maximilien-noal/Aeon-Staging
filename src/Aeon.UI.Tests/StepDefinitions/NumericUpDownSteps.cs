@@ -15,90 +15,87 @@ public sealed class NumericUpDownSteps : IDisposable
     [Given("a new NumericUpDown control is created")]
     public void GivenANewNumericUpDownControlIsCreated()
     {
-        control = TestHelpers.RunOnUIThread(() => new NumericUpDown());
+        control = new NumericUpDown();
+        TestHelpers.Flush();
     }
 
     [Then("the NumericUpDown value should be {int}")]
     public void ThenTheNumericUpDownValueShouldBe(int expected)
     {
-        var actual = TestHelpers.RunOnUIThread(() => control!.Value);
-        Assert.AreEqual(expected, actual);
+        Assert.AreEqual(expected, control!.Value);
     }
 
     [Then("the NumericUpDown minimum value should be {int}")]
     public void ThenTheNumericUpDownMinimumValueShouldBe(int expected)
     {
-        var actual = TestHelpers.RunOnUIThread(() => control!.MinimumValue);
-        Assert.AreEqual(expected, actual);
+        Assert.AreEqual(expected, control!.MinimumValue);
     }
 
     [Then("the NumericUpDown maximum value should be {int}")]
     public void ThenTheNumericUpDownMaximumValueShouldBe(int expected)
     {
-        var actual = TestHelpers.RunOnUIThread(() => control!.MaximumValue);
-        Assert.AreEqual(expected, actual);
+        Assert.AreEqual(expected, control!.MaximumValue);
     }
 
     [Then("the NumericUpDown step value should be {int}")]
     public void ThenTheNumericUpDownStepValueShouldBe(int expected)
     {
-        var actual = TestHelpers.RunOnUIThread(() => control!.StepValue);
-        Assert.AreEqual(expected, actual);
+        Assert.AreEqual(expected, control!.StepValue);
     }
 
     [Then("the NumericUpDown IsReadOnly should be false")]
     public void ThenTheNumericUpDownIsReadOnlyShouldBeFalse()
     {
-        var actual = TestHelpers.RunOnUIThread(() => control!.IsReadOnly);
-        Assert.IsFalse(actual);
+        Assert.IsFalse(control!.IsReadOnly);
     }
 
     [Given("the NumericUpDown value is {int}")]
     public void GivenTheNumericUpDownValueIs(int value)
     {
-        TestHelpers.RunOnUIThread(() => control!.Value = value);
+        control!.Value = value;
+        TestHelpers.Flush();
     }
 
     [Given("the NumericUpDown step value is {int}")]
     public void GivenTheNumericUpDownStepValueIs(int step)
     {
-        TestHelpers.RunOnUIThread(() => control!.StepValue = step);
+        control!.StepValue = step;
+        TestHelpers.Flush();
     }
 
     [Given("the NumericUpDown maximum value is {int}")]
     public void GivenTheNumericUpDownMaximumValueIs(int max)
     {
-        TestHelpers.RunOnUIThread(() => control!.MaximumValue = max);
+        control!.MaximumValue = max;
+        TestHelpers.Flush();
     }
 
     [Given("the NumericUpDown minimum value is {int}")]
     public void GivenTheNumericUpDownMinimumValueIs(int min)
     {
-        TestHelpers.RunOnUIThread(() => control!.MinimumValue = min);
+        control!.MinimumValue = min;
+        TestHelpers.Flush();
     }
 
     [When("I click the up button")]
     public void WhenIClickTheUpButton()
     {
-        TestHelpers.RunOnUIThread(() =>
-        {
-            control!.Value = Math.Min(control.Value + control.StepValue, control.MaximumValue);
-        });
+        control!.Value = Math.Min(control.Value + control.StepValue, control.MaximumValue);
+        TestHelpers.Flush();
     }
 
     [When("I click the down button")]
     public void WhenIClickTheDownButton()
     {
-        TestHelpers.RunOnUIThread(() =>
-        {
-            control!.Value = Math.Max(control.Value - control.StepValue, control.MinimumValue);
-        });
+        control!.Value = Math.Max(control.Value - control.StepValue, control.MinimumValue);
+        TestHelpers.Flush();
     }
 
     [When("I set the NumericUpDown value to {int}")]
     public void WhenISetTheNumericUpDownValueTo(int value)
     {
-        TestHelpers.RunOnUIThread(() => control!.Value = value);
+        control!.Value = value;
+        TestHelpers.Flush();
     }
 
     [AfterScenario]
