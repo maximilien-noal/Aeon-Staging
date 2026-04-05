@@ -5,6 +5,60 @@
         Title="Aeon" Width="800" Height="600" MinWidth="360" MinHeight="270"
         Icon="avares://Aeon.Avalonia/Aeon.ico"
         Background="{StaticResource backgroundGradient}">
+    <Window.Styles>
+        <Style Selector="Menu#mainMenu">
+            <Setter Property="Background" Value="White" />
+            <Setter Property="Foreground" Value="#222" />
+            <Setter Property="BorderBrush" Value="#C8C8C8" />
+            <Setter Property="BorderThickness" Value="0,0,0,1" />
+        </Style>
+        <Style Selector="Menu#mainMenu > MenuItem">
+            <Setter Property="Background" Value="Transparent" />
+            <Setter Property="Padding" Value="8,4" />
+        </Style>
+        <Style Selector="Menu#mainMenu > MenuItem:pointerover">
+            <Setter Property="Background" Value="#DCECF8" />
+        </Style>
+        <Style Selector="Menu#mainMenu > MenuItem:open">
+            <Setter Property="Background" Value="#DCECF8" />
+        </Style>
+        <Style Selector="Menu#mainMenu MenuItem:pointerover">
+            <Setter Property="Background" Value="#DCECF8" />
+        </Style>
+        <Style Selector="Border#toolBar">
+            <Setter Property="BorderBrush" Value="#737373" />
+            <Setter Property="BorderThickness" Value="0,0,0,1" />
+        </Style>
+        <Style Selector="Border#toolBar Button">
+            <Setter Property="Background" Value="Transparent" />
+            <Setter Property="BorderBrush" Value="Transparent" />
+            <Setter Property="BorderThickness" Value="1" />
+            <Setter Property="CornerRadius" Value="2" />
+        </Style>
+        <Style Selector="Border#toolBar Button:pointerover">
+            <Setter Property="Background" Value="#DCECF8" />
+            <Setter Property="BorderBrush" Value="#7DA2CE" />
+        </Style>
+        <Style Selector="Border#toolBar Button:pressed">
+            <Setter Property="Background" Value="#C6DDF4" />
+            <Setter Property="BorderBrush" Value="#6C8FB8" />
+        </Style>
+        <Style Selector="Border#toolBar ToggleButton">
+            <Setter Property="Background" Value="Transparent" />
+            <Setter Property="BorderBrush" Value="Transparent" />
+            <Setter Property="BorderThickness" Value="1" />
+            <Setter Property="CornerRadius" Value="2" />
+        </Style>
+        <Style Selector="Border#toolBar ToggleButton:pointerover">
+            <Setter Property="Background" Value="#DCECF8" />
+            <Setter Property="BorderBrush" Value="#7DA2CE" />
+        </Style>
+        <Style Selector="Border#toolBar ToggleButton:checked">
+            <Setter Property="Background" Value="#C6DDF4" />
+            <Setter Property="BorderBrush" Value="#6C8FB8" />
+        </Style>
+    </Window.Styles>
+
     <DockPanel>
         <StackPanel Name="menuContainer" DockPanel.Dock="Top">
             <Menu Name="mainMenu">
@@ -41,6 +95,7 @@
                     <MenuItem Header="Color Palette" Click="ShowPalette_Click" />
                 </MenuItem>
             </Menu>
+
             <Border Name="toolBar" IsVisible="{Binding #toolBarCheckBox.IsChecked}">
                 <Border.Background>
                     <LinearGradientBrush StartPoint="50%,0%" EndPoint="50%,100%">
@@ -48,11 +103,14 @@
                         <GradientStop Color="DimGray" Offset="1.0" />
                     </LinearGradientBrush>
                 </Border.Background>
-                <StackPanel Orientation="Horizontal" Margin="2" Spacing="4">
+
+                <StackPanel Orientation="Horizontal" Margin="4,2" Spacing="2" VerticalAlignment="Center">
                     <Button ToolTip.Tip="Run Program..." Click="QuickLaunch_Click">
                         <Image Width="16" Height="16" Source="avares://Aeon.Avalonia/Resources/openfolderHS.png" />
                     </Button>
-                    <Separator />
+
+                    <Border Width="28" Height="1" Background="#666" VerticalAlignment="Center" Margin="6,0" />
+
                     <Button Click="Resume_Click" ToolTip.Tip="Resume">
                         <Canvas Width="16" Height="16">
                             <Polygon Points="6,4 6,13 11,8" Fill="Green" Stroke="DarkGreen" />
@@ -64,12 +122,16 @@
                             <Rectangle Canvas.Left="8" Canvas.Top="3" Width="4" Height="10" Fill="Green" Stroke="DarkGreen" />
                         </Canvas>
                     </Button>
-                    <Separator />
+
+                    <Border Width="28" Height="1" Background="#666" VerticalAlignment="Center" Margin="6,0" />
+
                     <ToggleButton Name="mouseIntegrationButton" ToolTip.Tip="Toggle Mouse Integration" IsCheckedChanged="MouseIntegration_Changed">
                         <Image Width="16" Height="16" Source="avares://Aeon.Avalonia/Resources/MouseIntegration.png" />
                     </ToggleButton>
-                    <Separator />
-                    <TextBlock Text="Speed:" VerticalAlignment="Center" />
+
+                    <Border Width="28" Height="1" Background="#666" VerticalAlignment="Center" Margin="6,0" />
+
+                    <TextBlock Text="Speed:" VerticalAlignment="Center" Margin="4,0,2,0" />
                     <Button Name="slowerButton" ToolTip.Tip="Slow Down Emulation" Click="SlowerButton_Click" Padding="4,2" MinWidth="24">
                         <TextBlock FontFamily="Courier New" FontWeight="Bold" Text="-" />
                     </Button>
@@ -80,6 +142,7 @@
                 </StackPanel>
             </Border>
         </StackPanel>
+
         <local:EmulatorDisplay x:Name="emulatorDisplay" Margin="0,7,0,0" />
     </DockPanel>
 </Window>
