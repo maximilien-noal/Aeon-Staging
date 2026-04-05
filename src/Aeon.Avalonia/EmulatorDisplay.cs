@@ -232,12 +232,12 @@ public sealed partial class EmulatorDisplay : ContentControl
                 using var fb = this.renderTarget.Lock();
                 unsafe
                 {
-                    var span = new Span<uint>(fb.Address.ToPointer(), this.renderTargetWidth * this.renderTargetHeight);
+                    var span = new Span<uint>(fb.Address.ToPointer(), fb.Size.Width * fb.Size.Height);
                     presenter.Draw(span);
                 }
-            }
 
-            this.displayImage.InvalidateVisual();
+                this.displayImage.InvalidateVisual();
+            }
         }
     }
 
