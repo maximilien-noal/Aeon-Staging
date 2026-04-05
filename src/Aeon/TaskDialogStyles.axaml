@@ -11,7 +11,7 @@
                 <Border Name="border" CornerRadius="3" Background="Transparent"
                         BorderBrush="Transparent" BorderThickness="1" Padding="2">
                     <Grid ColumnDefinitions="Auto,*" RowDefinitions="Auto,*">
-                        <Image Source="avares://Aeon.Avalonia/Resources/TaskArrow.png" VerticalAlignment="Center" Margin="2" />
+                        <Image Source="avares://Aeon/Resources/TaskArrow.png" VerticalAlignment="Center" Margin="2" />
                         <TextBlock Grid.Column="1" Text="{TemplateBinding Text}" FontSize="16" Margin="5,1" Foreground="Navy" />
                         <TextBlock Grid.Column="1" Grid.Row="1" Text="{TemplateBinding Description}" TextWrapping="Wrap" Margin="5,1" Foreground="Navy" />
                     </Grid>
@@ -30,3 +30,4 @@
         </Setter>
     </Style>
 </Styles>
+

@@ -1,27 +1,25 @@
-﻿using System.Windows.Input;
-using Aeon.Emulator;
+using Avalonia.Input;
 
-namespace Aeon.Emulator.Launcher
+namespace Aeon.Emulator.Launcher;
+
+/// <summary>
+/// Contains extension methods for Avalonia pointer input.
+/// </summary>
+public static class MouseButtonExtensions
 {
     /// <summary>
-    /// Contains extension methods for the System.Windows.Input.MouseButton type.
+    /// Returns an Aeon.Emulator.MouseButtons value from an Avalonia PointerUpdateKind.
     /// </summary>
-    public static class MouseButtonExtensions
+    /// <param name="kind">PointerUpdateKind to convert.</param>
+    /// <returns>Aeon.Emulator.MouseButtons value.</returns>
+    public static MouseButtons ToEmulatorButtons(this PointerUpdateKind kind)
     {
-        /// <summary>
-        /// Returns an Aeon.Emulator.MouseButtons value from a System.Windows.Input.MouseButton value.
-        /// </summary>
-        /// <param name="mouseButton">System.Windows.Input.MouseButton value to convert.</param>
-        /// <returns>Aeon.Emulator.MouseButtons value.</returns>
-        public static MouseButtons ToEmulatorButtons(this MouseButton mouseButton)
+        return kind switch
         {
-            return mouseButton switch
-            {
-                MouseButton.Left => MouseButtons.Left,
-                MouseButton.Middle => MouseButtons.Middle,
-                MouseButton.Right => MouseButtons.Right,
-                _ => MouseButtons.None,
-            };
-        }
+            PointerUpdateKind.LeftButtonPressed or PointerUpdateKind.LeftButtonReleased => MouseButtons.Left,
+            PointerUpdateKind.MiddleButtonPressed or PointerUpdateKind.MiddleButtonReleased => MouseButtons.Middle,
+            PointerUpdateKind.RightButtonPressed or PointerUpdateKind.RightButtonReleased => MouseButtons.Right,
+            _ => MouseButtons.None,
+        };
     }
 }

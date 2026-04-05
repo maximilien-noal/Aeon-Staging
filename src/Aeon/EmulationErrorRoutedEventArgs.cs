@@ -1,26 +1,27 @@
-﻿using System.Windows;
+using Avalonia.Interactivity;
 
-namespace Aeon.Emulator.Launcher
+namespace Aeon.Emulator.Launcher;
+
+/// <summary>
+/// Contains information about an emulation error.
+/// </summary>
+public sealed class EmulationErrorRoutedEventArgs : RoutedEventArgs
 {
     /// <summary>
-    /// Contains information about an emulation error.
+    /// Initializes a new instance of the EmulationErrorRoutedEventArgs class.
     /// </summary>
-    public sealed class EmulationErrorRoutedEventArgs : RoutedEventArgs
+    /// <param name="routedEvent">RoutedEvent identifier.</param>
+    /// <param name="message">Message describing the error.</param>
+    public EmulationErrorRoutedEventArgs(RoutedEvent routedEvent, string message)
+        : base(routedEvent)
     {
-        /// <summary>
-        /// Initializes a new instance of the EmulationErrorRoutedEventArgs class.
-        /// </summary>
-        /// <param name="routedEvent">RoutedEvent identifier.</param>
-        /// <param name="message">Message describing the error.</param>
-        public EmulationErrorRoutedEventArgs(RoutedEvent routedEvent, string message)
-            : base(routedEvent)
-        {
-            this.Message = message;
-        }
-
-        /// <summary>
-        /// Gets a message which describes the error.
-        /// </summary>
-        public string Message { get; }
+        this.Message = message;
     }
+
+    /// <summary>
+    /// Gets a message which describes the error.
+    /// </summary>
+    public string Message { get; }
 }
+
+public delegate void EmulationErrorRoutedEventHandler(object? sender, EmulationErrorRoutedEventArgs e);
