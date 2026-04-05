@@ -25,3 +25,27 @@ Feature: Clipboard Copy
         And pixel 1,0 should have BGRA value 0x00,0x80,0x00,0xFF
         And pixel 2,0 should have BGRA value 0x00,0x00,0x80,0xFF
         And not all pixels should be zero
+
+    Scenario: Every pixel in exported bitmap matches the test pattern
+        Given the main window is open
+        And the display has a 320x200 test pattern rendered
+        When I export the display bitmap as PNG bytes
+        And I decode the PNG to pixel data
+        Then every pixel in the decoded bitmap should match the test pattern
+
+    Scenario: Clipboard copy command sets PNG data on clipboard
+        Given the main window is open
+        And the display has a 320x200 test pattern rendered
+        When I invoke the actual Copy Screen clipboard command
+        Then the clipboard should contain image data
+
+    Scenario: Clipboard bitmap pixels match the test pattern
+        Given the main window is open
+        And the display has a 320x200 test pattern rendered
+        When I invoke the actual Copy Screen clipboard command
+        And I read the clipboard bitmap data
+        Then the clipboard bitmap should be 320x200
+        And clipboard pixel 0,0 should have BGRA value 0x80,0x00,0x00,0xFF
+        And clipboard pixel 1,0 should have BGRA value 0x00,0x80,0x00,0xFF
+        And clipboard pixel 2,0 should have BGRA value 0x00,0x00,0x80,0xFF
+        And not all clipboard pixels should be zero
