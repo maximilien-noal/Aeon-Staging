@@ -37,7 +37,7 @@ Feature: Configuration
         Given a configuration file with the following JSON
             """
             {
-                "Title": "My DOS Game"
+                "title": "My DOS Game"
             }
             """
         When the configuration is loaded
@@ -47,9 +47,9 @@ Feature: Configuration
         Given a configuration file with the following JSON
             """
             {
-                "Drives": {
-                    "C": { "Path": "/mnt/dos/games" },
-                    "D": { "Path": "/mnt/dos/apps" }
+                "drives": {
+                    "C": { "type": "Fixed", "host-path": "/mnt/dos/games" },
+                    "D": { "type": "Fixed", "host-path": "/mnt/dos/apps" }
                 }
             }
             """
@@ -84,18 +84,18 @@ Feature: Configuration
         Given a configuration file with the following JSON
             """
             {
-                "StartupPath": "C:\\"
+                "startup-path": "C:\\"
             }
             """
         When the configuration is loaded
-        Then the configuration StartupPath should be "C:\\"
+        Then the configuration StartupPath should be "C:\"
 
     Scenario: Config with MIDI engine
         Given a configuration file with the following JSON
             """
             {
-                "MidiEngine": "GeneralMidi"
+                "midi-engine": "MeltySynth"
             }
             """
         When the configuration is loaded
-        Then the configuration MidiEngine should be "GeneralMidi"
+        Then the configuration MidiEngine should be "MeltySynth"

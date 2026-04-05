@@ -250,7 +250,7 @@ namespace Aeon.UI.Tests.Features
             {
                 await this.ScenarioStartAsync();
 #line 37
-        await testRunner.GivenAsync("a configuration file with the following JSON", "{\n    \"Title\": \"My DOS Game\"\n}", ((global::Reqnroll.Table)(null)), "Given ");
+        await testRunner.GivenAsync("a configuration file with the following JSON", "{\n    \"title\": \"My DOS Game\"\n}", ((global::Reqnroll.Table)(null)), "Given ");
 #line hidden
 #line 43
         await testRunner.WhenAsync("the configuration is loaded", ((string)(null)), ((global::Reqnroll.Table)(null)), "When ");
@@ -285,8 +285,8 @@ namespace Aeon.UI.Tests.Features
             {
                 await this.ScenarioStartAsync();
 #line 47
-        await testRunner.GivenAsync("a configuration file with the following JSON", "{\n    \"Drives\": {\n        \"C\": { \"Path\": \"/mnt/dos/games\" },\n        \"D\": { \"Path" +
-                        "\": \"/mnt/dos/apps\" }\n    }\n}", ((global::Reqnroll.Table)(null)), "Given ");
+        await testRunner.GivenAsync("a configuration file with the following JSON", "{\n    \"drives\": {\n        \"C\": { \"type\": \"Fixed\", \"host-path\": \"/mnt/dos/games\" }" +
+                        ",\n        \"D\": { \"type\": \"Fixed\", \"host-path\": \"/mnt/dos/apps\" }\n    }\n}", ((global::Reqnroll.Table)(null)), "Given ");
 #line hidden
 #line 56
         await testRunner.WhenAsync("the configuration is loaded", ((string)(null)), ((global::Reqnroll.Table)(null)), "When ");
@@ -438,13 +438,13 @@ namespace Aeon.UI.Tests.Features
             {
                 await this.ScenarioStartAsync();
 #line 84
-        await testRunner.GivenAsync("a configuration file with the following JSON", "{\n    \"StartupPath\": \"C:\\\\\"\n}", ((global::Reqnroll.Table)(null)), "Given ");
+        await testRunner.GivenAsync("a configuration file with the following JSON", "{\n    \"startup-path\": \"C:\\\\\"\n}", ((global::Reqnroll.Table)(null)), "Given ");
 #line hidden
 #line 90
         await testRunner.WhenAsync("the configuration is loaded", ((string)(null)), ((global::Reqnroll.Table)(null)), "When ");
 #line hidden
 #line 91
-        await testRunner.ThenAsync("the configuration StartupPath should be \"C:\\\\\"", ((string)(null)), ((global::Reqnroll.Table)(null)), "Then ");
+        await testRunner.ThenAsync("the configuration StartupPath should be \"C:\\\"", ((string)(null)), ((global::Reqnroll.Table)(null)), "Then ");
 #line hidden
             }
             await this.ScenarioCleanupAsync();
@@ -473,13 +473,13 @@ namespace Aeon.UI.Tests.Features
             {
                 await this.ScenarioStartAsync();
 #line 94
-        await testRunner.GivenAsync("a configuration file with the following JSON", "{\n    \"MidiEngine\": \"GeneralMidi\"\n}", ((global::Reqnroll.Table)(null)), "Given ");
+        await testRunner.GivenAsync("a configuration file with the following JSON", "{\n    \"midi-engine\": \"MeltySynth\"\n}", ((global::Reqnroll.Table)(null)), "Given ");
 #line hidden
 #line 100
         await testRunner.WhenAsync("the configuration is loaded", ((string)(null)), ((global::Reqnroll.Table)(null)), "When ");
 #line hidden
 #line 101
-        await testRunner.ThenAsync("the configuration MidiEngine should be \"GeneralMidi\"", ((string)(null)), ((global::Reqnroll.Table)(null)), "Then ");
+        await testRunner.ThenAsync("the configuration MidiEngine should be \"MeltySynth\"", ((string)(null)), ((global::Reqnroll.Table)(null)), "Then ");
 #line hidden
             }
             await this.ScenarioCleanupAsync();

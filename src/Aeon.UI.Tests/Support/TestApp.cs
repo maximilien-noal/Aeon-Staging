@@ -2,6 +2,7 @@ using Avalonia;
 using Avalonia.Controls.ApplicationLifetimes;
 using Avalonia.Headless;
 using Avalonia.Markup.Xaml;
+using Avalonia.Media;
 using Avalonia.Themes.Fluent;
 
 namespace Aeon.UI.Tests.Support;
@@ -24,6 +25,16 @@ public sealed class TestApp : Application
         {
             Source = new Uri("avares://Aeon/TaskDialogStyles.axaml")
         });
+
+        // Add the backgroundGradient resource matching App.axaml
+        this.Resources["backgroundGradient"] = new LinearGradientBrush
+        {
+            GradientStops =
+            {
+                new GradientStop(Color.Parse("SteelBlue"), 0),
+                new GradientStop(Color.Parse("#102040"), 1)
+            }
+        };
     }
 
     public override void OnFrameworkInitializationCompleted()

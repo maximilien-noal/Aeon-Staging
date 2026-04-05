@@ -74,7 +74,8 @@ public sealed class MainWindowSteps
         var menu = Window.FindControl<Menu>("mainMenu")!;
         var topItem = menu.Items.OfType<MenuItem>().First(mi => (string?)mi.Header == header);
         topItem.Open();
-        TestHelpers.Flush();
+        // Don't flush here — headless mode cannot render FluentIcons glyphs.
+        // The sub-items are already populated in the visual tree.
         currentMenuItems = topItem.Items.OfType<MenuItem>().ToList();
     }
 
