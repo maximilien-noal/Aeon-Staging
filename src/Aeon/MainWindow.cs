@@ -1,4 +1,3 @@
-using System.IO;
 using System.Windows.Input;
 using Avalonia;
 using Avalonia.Controls;
@@ -214,16 +213,17 @@ public sealed partial class MainWindow : Window
         }
     }
 
-    private async Task CopyToClipboardAsync()
+    internal async Task CopyToClipboardAsync()
     {
         var pngBytes = this.emulatorDisplay.ExportDisplayAsPngBytes();
         if (pngBytes is not { Length: > 0 } || this.Clipboard == null)
             return;
 
-        using var ms = new MemoryStream(pngBytes);
-        using var snapshot = new Avalonia.Media.Imaging.Bitmap(ms);
-        await this.Clipboard.SetBitmapAsync(snapshot);
-        await this.Clipboard.FlushAsync();
+        var dataObject = new DataObject();
+        dataObject.Set("image/png", pngBytes);
+#pragma warning disable CS0618 // SetDataObjectAsync is obsolete but SetDataAsync requires IAsyncDataTransfer
+        await this.Clipboard.SetDataObjectAsync(dataObject);
+#pragma warning restore CS0618
     }
 
     private async void Copy_Click(object? sender, RoutedEventArgs e)

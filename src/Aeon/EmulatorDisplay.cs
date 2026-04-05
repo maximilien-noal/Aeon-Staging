@@ -1,4 +1,3 @@
-using System.Runtime.InteropServices;
 using System.Windows.Input;
 using Avalonia;
 using Avalonia.Controls;
@@ -46,6 +45,9 @@ public sealed partial class EmulatorDisplay : ContentControl
     private WriteableBitmap? renderTarget;
     private int renderTargetWidth;
     private int renderTargetHeight;
+    private uint[]? lastRenderedPixels;
+    private int lastRenderedWidth;
+    private int lastRenderedHeight;
 
     static EmulatorDisplay()
     {
@@ -159,25 +161,30 @@ public sealed partial class EmulatorDisplay : ContentControl
 
     /// <summary>
     /// Exports the current display bitmap as PNG bytes.
-    /// Returns null if no bitmap is available.
+    /// Returns null if no frame has been rendered yet.
     /// Uses SkiaSharp directly so it works in headless mode.
+    /// Reads from the shadow pixel buffer (not the WriteableBitmap lock)
+    /// because Avalonia's WriteableBitmap may not preserve data between locks.
     /// </summary>
     public byte[]? ExportDisplayAsPngBytes()
     {
-        var bitmap = this.renderTarget;
-        if (bitmap == null)
+        var pixels = this.lastRenderedPixels;
+        if (pixels == null)
             return null;
 
-        using var fb = bitmap.Lock();
-        int width = fb.Size.Width;
-        int height = fb.Size.Height;
+        int width = this.lastRenderedWidth;
+        int height = this.lastRenderedHeight;
 
         var info = new SKImageInfo(width, height, SKColorType.Bgra8888, SKAlphaType.Opaque);
         using var skBitmap = new SKBitmap(info);
-        int byteCount = fb.RowBytes * height;
-        var pixelData = new byte[byteCount];
-        Marshal.Copy(fb.Address, pixelData, 0, byteCount);
-        Marshal.Copy(pixelData, 0, skBitmap.GetPixels(), byteCount);
+
+        unsafe
+        {
+            fixed (uint* src = pixels)
+            {
+                Buffer.MemoryCopy(src, (void*)skBitmap.GetPixels(), skBitmap.ByteCount, (long)pixels.Length * 4);
+            }
+        }
 
         using var image = SKImage.FromBitmap(skBitmap);
         using var data = image.Encode(SKEncodedImageFormat.Png, 100);
@@ -187,11 +194,16 @@ public sealed partial class EmulatorDisplay : ContentControl
     /// <summary>
     /// Sets the render target for testing purposes.
     /// Allows headless tests to inject a known bitmap.
+    /// The pixel data must be provided directly because Avalonia's
+    /// WriteableBitmap does not preserve data between Lock() calls.
     /// </summary>
-    internal void SetRenderTargetForTesting(WriteableBitmap bitmap)
+    internal void SetRenderTargetForTesting(WriteableBitmap bitmap, uint[] pixels, int width, int height)
     {
         this.renderTarget?.Dispose();
         this.renderTarget = bitmap;
+        this.lastRenderedWidth = width;
+        this.lastRenderedHeight = height;
+        this.lastRenderedPixels = (uint[])pixels.Clone();
     }
 
     protected override void OnAttachedToVisualTree(VisualTreeAttachmentEventArgs e)
@@ -276,6 +288,14 @@ public sealed partial class EmulatorDisplay : ContentControl
                 {
                     var span = new Span<uint>(fb.Address.ToPointer(), fb.Size.Width * fb.Size.Height);
                     presenter.Draw(span);
+
+                    // Keep a shadow copy for ExportDisplayAsPngBytes.
+                    // WriteableBitmap may not preserve pixel data between Lock() calls.
+                    if (this.lastRenderedPixels == null || this.lastRenderedPixels.Length != span.Length)
+                        this.lastRenderedPixels = new uint[span.Length];
+                    span.CopyTo(this.lastRenderedPixels);
+                    this.lastRenderedWidth = fb.Size.Width;
+                    this.lastRenderedHeight = fb.Size.Height;
                 }
 
                 this.displayImage.InvalidateVisual();

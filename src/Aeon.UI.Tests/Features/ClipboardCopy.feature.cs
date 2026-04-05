@@ -120,7 +120,7 @@ namespace Aeon.UI.Tests.Features
         
         private static global::Reqnroll.Formatters.RuntimeSupport.FeatureLevelCucumberMessages InitializeCucumberMessages()
         {
-            return new global::Reqnroll.Formatters.RuntimeSupport.FeatureLevelCucumberMessages("Features/ClipboardCopy.feature.ndjson", 5);
+            return new global::Reqnroll.Formatters.RuntimeSupport.FeatureLevelCucumberMessages("Features/ClipboardCopy.feature.ndjson", 8);
         }
         
         [global::Microsoft.VisualStudio.TestTools.UnitTesting.TestMethodAttribute(callerLineNumber: 7, DisplayName="Copy screen when no program is loaded does not crash")]
@@ -244,6 +244,138 @@ namespace Aeon.UI.Tests.Features
 #line hidden
 #line 27
         await testRunner.AndAsync("not all pixels should be zero", ((string)(null)), ((global::Reqnroll.Table)(null)), "And ");
+#line hidden
+            }
+            await this.ScenarioCleanupAsync();
+        }
+        
+        [global::Microsoft.VisualStudio.TestTools.UnitTesting.TestMethodAttribute(callerLineNumber: 29, DisplayName="Every pixel in exported bitmap matches the test pattern")]
+        [global::Microsoft.VisualStudio.TestTools.UnitTesting.DescriptionAttribute("Every pixel in exported bitmap matches the test pattern")]
+        [global::Microsoft.VisualStudio.TestTools.UnitTesting.TestPropertyAttribute("FeatureTitle", "Clipboard Copy")]
+        [global::Microsoft.VisualStudio.TestTools.UnitTesting.TestCategoryAttribute("ui")]
+        public async global::System.Threading.Tasks.Task EveryPixelInExportedBitmapMatchesTheTestPattern()
+        {
+            string[] tagsOfScenario = ((string[])(null));
+            global::System.Collections.Specialized.OrderedDictionary argumentsOfScenario = new global::System.Collections.Specialized.OrderedDictionary();
+            string pickleIndex = "3";
+            global::Reqnroll.ScenarioInfo scenarioInfo = new global::Reqnroll.ScenarioInfo("Every pixel in exported bitmap matches the test pattern", null, tagsOfScenario, argumentsOfScenario, featureTags, pickleIndex);
+            string[] tagsOfRule = ((string[])(null));
+            global::Reqnroll.RuleInfo ruleInfo = null;
+#line 29
+    this.ScenarioInitialize(scenarioInfo, ruleInfo);
+#line hidden
+            if ((global::Reqnroll.TagHelper.ContainsIgnoreTag(scenarioInfo.CombinedTags) || global::Reqnroll.TagHelper.ContainsIgnoreTag(featureTags)))
+            {
+                await testRunner.SkipScenarioAsync();
+            }
+            else
+            {
+                await this.ScenarioStartAsync();
+#line 30
+        await testRunner.GivenAsync("the main window is open", ((string)(null)), ((global::Reqnroll.Table)(null)), "Given ");
+#line hidden
+#line 31
+        await testRunner.AndAsync("the display has a 320x200 test pattern rendered", ((string)(null)), ((global::Reqnroll.Table)(null)), "And ");
+#line hidden
+#line 32
+        await testRunner.WhenAsync("I export the display bitmap as PNG bytes", ((string)(null)), ((global::Reqnroll.Table)(null)), "When ");
+#line hidden
+#line 33
+        await testRunner.AndAsync("I decode the PNG to pixel data", ((string)(null)), ((global::Reqnroll.Table)(null)), "And ");
+#line hidden
+#line 34
+        await testRunner.ThenAsync("every pixel in the decoded bitmap should match the test pattern", ((string)(null)), ((global::Reqnroll.Table)(null)), "Then ");
+#line hidden
+            }
+            await this.ScenarioCleanupAsync();
+        }
+        
+        [global::Microsoft.VisualStudio.TestTools.UnitTesting.TestMethodAttribute(callerLineNumber: 36, DisplayName="Clipboard copy command sets PNG data on clipboard")]
+        [global::Microsoft.VisualStudio.TestTools.UnitTesting.DescriptionAttribute("Clipboard copy command sets PNG data on clipboard")]
+        [global::Microsoft.VisualStudio.TestTools.UnitTesting.TestPropertyAttribute("FeatureTitle", "Clipboard Copy")]
+        [global::Microsoft.VisualStudio.TestTools.UnitTesting.TestCategoryAttribute("ui")]
+        public async global::System.Threading.Tasks.Task ClipboardCopyCommandSetsPNGDataOnClipboard()
+        {
+            string[] tagsOfScenario = ((string[])(null));
+            global::System.Collections.Specialized.OrderedDictionary argumentsOfScenario = new global::System.Collections.Specialized.OrderedDictionary();
+            string pickleIndex = "4";
+            global::Reqnroll.ScenarioInfo scenarioInfo = new global::Reqnroll.ScenarioInfo("Clipboard copy command sets PNG data on clipboard", null, tagsOfScenario, argumentsOfScenario, featureTags, pickleIndex);
+            string[] tagsOfRule = ((string[])(null));
+            global::Reqnroll.RuleInfo ruleInfo = null;
+#line 36
+    this.ScenarioInitialize(scenarioInfo, ruleInfo);
+#line hidden
+            if ((global::Reqnroll.TagHelper.ContainsIgnoreTag(scenarioInfo.CombinedTags) || global::Reqnroll.TagHelper.ContainsIgnoreTag(featureTags)))
+            {
+                await testRunner.SkipScenarioAsync();
+            }
+            else
+            {
+                await this.ScenarioStartAsync();
+#line 37
+        await testRunner.GivenAsync("the main window is open", ((string)(null)), ((global::Reqnroll.Table)(null)), "Given ");
+#line hidden
+#line 38
+        await testRunner.AndAsync("the display has a 320x200 test pattern rendered", ((string)(null)), ((global::Reqnroll.Table)(null)), "And ");
+#line hidden
+#line 39
+        await testRunner.WhenAsync("I invoke the actual Copy Screen clipboard command", ((string)(null)), ((global::Reqnroll.Table)(null)), "When ");
+#line hidden
+#line 40
+        await testRunner.ThenAsync("the clipboard should contain image data", ((string)(null)), ((global::Reqnroll.Table)(null)), "Then ");
+#line hidden
+            }
+            await this.ScenarioCleanupAsync();
+        }
+        
+        [global::Microsoft.VisualStudio.TestTools.UnitTesting.TestMethodAttribute(callerLineNumber: 42, DisplayName="Clipboard bitmap pixels match the test pattern")]
+        [global::Microsoft.VisualStudio.TestTools.UnitTesting.DescriptionAttribute("Clipboard bitmap pixels match the test pattern")]
+        [global::Microsoft.VisualStudio.TestTools.UnitTesting.TestPropertyAttribute("FeatureTitle", "Clipboard Copy")]
+        [global::Microsoft.VisualStudio.TestTools.UnitTesting.TestCategoryAttribute("ui")]
+        public async global::System.Threading.Tasks.Task ClipboardBitmapPixelsMatchTheTestPattern()
+        {
+            string[] tagsOfScenario = ((string[])(null));
+            global::System.Collections.Specialized.OrderedDictionary argumentsOfScenario = new global::System.Collections.Specialized.OrderedDictionary();
+            string pickleIndex = "5";
+            global::Reqnroll.ScenarioInfo scenarioInfo = new global::Reqnroll.ScenarioInfo("Clipboard bitmap pixels match the test pattern", null, tagsOfScenario, argumentsOfScenario, featureTags, pickleIndex);
+            string[] tagsOfRule = ((string[])(null));
+            global::Reqnroll.RuleInfo ruleInfo = null;
+#line 42
+    this.ScenarioInitialize(scenarioInfo, ruleInfo);
+#line hidden
+            if ((global::Reqnroll.TagHelper.ContainsIgnoreTag(scenarioInfo.CombinedTags) || global::Reqnroll.TagHelper.ContainsIgnoreTag(featureTags)))
+            {
+                await testRunner.SkipScenarioAsync();
+            }
+            else
+            {
+                await this.ScenarioStartAsync();
+#line 43
+        await testRunner.GivenAsync("the main window is open", ((string)(null)), ((global::Reqnroll.Table)(null)), "Given ");
+#line hidden
+#line 44
+        await testRunner.AndAsync("the display has a 320x200 test pattern rendered", ((string)(null)), ((global::Reqnroll.Table)(null)), "And ");
+#line hidden
+#line 45
+        await testRunner.WhenAsync("I invoke the actual Copy Screen clipboard command", ((string)(null)), ((global::Reqnroll.Table)(null)), "When ");
+#line hidden
+#line 46
+        await testRunner.AndAsync("I read the clipboard bitmap data", ((string)(null)), ((global::Reqnroll.Table)(null)), "And ");
+#line hidden
+#line 47
+        await testRunner.ThenAsync("the clipboard bitmap should be 320x200", ((string)(null)), ((global::Reqnroll.Table)(null)), "Then ");
+#line hidden
+#line 48
+        await testRunner.AndAsync("clipboard pixel 0,0 should have BGRA value 0x80,0x00,0x00,0xFF", ((string)(null)), ((global::Reqnroll.Table)(null)), "And ");
+#line hidden
+#line 49
+        await testRunner.AndAsync("clipboard pixel 1,0 should have BGRA value 0x00,0x80,0x00,0xFF", ((string)(null)), ((global::Reqnroll.Table)(null)), "And ");
+#line hidden
+#line 50
+        await testRunner.AndAsync("clipboard pixel 2,0 should have BGRA value 0x00,0x00,0x80,0xFF", ((string)(null)), ((global::Reqnroll.Table)(null)), "And ");
+#line hidden
+#line 51
+        await testRunner.AndAsync("not all clipboard pixels should be zero", ((string)(null)), ((global::Reqnroll.Table)(null)), "And ");
 #line hidden
             }
             await this.ScenarioCleanupAsync();
