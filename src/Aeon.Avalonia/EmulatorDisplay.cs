@@ -163,9 +163,12 @@ public sealed partial class EmulatorDisplay : ContentControl
 
     protected override void OnKeyDown(KeyEventArgs e)
     {
-        if (e.Key == Key.Enter && e.KeyModifiers.HasFlag(KeyModifiers.Alt))
+        bool isAltEnter = e.Key == Key.Enter && e.KeyModifiers.HasFlag(KeyModifiers.Alt);
+        if (isAltEnter)
         {
-            // Handled by MainWindow
+            // Let MainWindow handle fullscreen toggle.
+            base.OnKeyDown(e);
+            return;
         }
 
         if (this.emulator != null && this.emulator.State == EmulatorState.Running)
