@@ -7,31 +7,19 @@ namespace Aeon.UI.Tests.Support;
 
 /// <summary>
 /// Helper methods for Avalonia headless testing.
+/// After <see cref="AvaloniaHooks.EnsureInitialized"/>, UI objects can
+/// be created directly on the current (test) thread.
+/// Call <see cref="Flush"/> to pump the dispatcher when needed.
 /// </summary>
 internal static class TestHelpers
 {
     /// <summary>
-    /// Runs an action on the Avalonia UI thread and waits for completion.
+    /// Pumps the Avalonia dispatcher so pending jobs (layout, bindings,
+    /// timers queued during the current tick) are processed.
     /// </summary>
-    public static T RunOnUIThread<T>(Func<T> action)
+    public static void Flush()
     {
-        return Dispatcher.UIThread.InvokeAsync(action).GetAwaiter().GetResult();
-    }
-
-    /// <summary>
-    /// Runs an action on the Avalonia UI thread and waits for completion.
-    /// </summary>
-    public static void RunOnUIThread(Action action)
-    {
-        Dispatcher.UIThread.InvokeAsync(action).GetAwaiter().GetResult();
-    }
-
-    /// <summary>
-    /// Runs an async action on the Avalonia UI thread and waits for completion.
-    /// </summary>
-    public static async Task RunOnUIThreadAsync(Func<Task> action)
-    {
-        await Dispatcher.UIThread.InvokeAsync(action);
+        Dispatcher.UIThread.RunJobs();
     }
 
     /// <summary>
@@ -39,12 +27,10 @@ internal static class TestHelpers
     /// </summary>
     public static T ShowWindow<T>() where T : Window, new()
     {
-        return RunOnUIThread(() =>
-        {
-            var window = new T();
-            window.Show();
-            return window;
-        });
+        var window = new T();
+        window.Show();
+        Flush();
+        return window;
     }
 
     /// <summary>
@@ -78,21 +64,5 @@ internal static class TestHelpers
     {
         var testDataPath = Path.Combine(AppContext.BaseDirectory, "TestData", "vga_pattern.com");
         return File.ReadAllBytes(testDataPath);
-    }
-
-    /// <summary>
-    /// Finds a named control inside a window.
-    /// </summary>
-    public static T? FindControl<T>(Control parent, string name) where T : Control
-    {
-        return parent.FindControl<T>(name);
-    }
-
-    /// <summary>
-    /// Gets all menu items from a Menu control.
-    /// </summary>
-    public static List<MenuItem> GetMenuItems(Menu menu)
-    {
-        return menu.Items.OfType<MenuItem>().ToList();
     }
 }

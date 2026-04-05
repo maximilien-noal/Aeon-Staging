@@ -31,63 +31,51 @@ public sealed class MainWindowSteps
     [Then("the window width should be {int}")]
     public void ThenTheWindowWidthShouldBe(int width)
     {
-        var actual = TestHelpers.RunOnUIThread(() => Window.Width);
-        Assert.AreEqual(width, (int)actual);
+        Assert.AreEqual(width, (int)Window.Width);
     }
 
     [Then("the window height should be {int}")]
     public void ThenTheWindowHeightShouldBe(int height)
     {
-        var actual = TestHelpers.RunOnUIThread(() => Window.Height);
-        Assert.AreEqual(height, (int)actual);
+        Assert.AreEqual(height, (int)Window.Height);
     }
 
     [Then("the window minimum width should be {int}")]
     public void ThenTheWindowMinimumWidthShouldBe(int minWidth)
     {
-        var actual = TestHelpers.RunOnUIThread(() => Window.MinWidth);
-        Assert.AreEqual(minWidth, (int)actual);
+        Assert.AreEqual(minWidth, (int)Window.MinWidth);
     }
 
     [Then("the window minimum height should be {int}")]
     public void ThenTheWindowMinimumHeightShouldBe(int minHeight)
     {
-        var actual = TestHelpers.RunOnUIThread(() => Window.MinHeight);
-        Assert.AreEqual(minHeight, (int)actual);
+        Assert.AreEqual(minHeight, (int)Window.MinHeight);
     }
 
     [Then("the main menu should have {int} items")]
     public void ThenTheMainMenuShouldHaveItems(int count)
     {
-        var actual = TestHelpers.RunOnUIThread(() =>
-        {
-            var menu = Window.FindControl<Menu>("mainMenu")!;
-            return TestHelpers.GetMenuItems(menu).Count;
-        });
+        var menu = Window.FindControl<Menu>("mainMenu")!;
+        var actual = menu.Items.OfType<MenuItem>().Count();
         Assert.AreEqual(count, actual);
     }
 
     [Then("the main menu should contain a {string} menu")]
     public void ThenTheMainMenuShouldContainAMenu(string header)
     {
-        var found = TestHelpers.RunOnUIThread(() =>
-        {
-            var menu = Window.FindControl<Menu>("mainMenu")!;
-            return TestHelpers.GetMenuItems(menu).Any(mi => (string?)mi.Header == header);
-        });
+        var menu = Window.FindControl<Menu>("mainMenu")!;
+        var found = menu.Items.OfType<MenuItem>().Any(mi => (string?)mi.Header == header);
         Assert.IsTrue(found, $"Menu '{header}' not found.");
     }
 
     [When("I open the {string} menu")]
     public void WhenIOpenTheMenu(string header)
     {
-        currentMenuItems = TestHelpers.RunOnUIThread(() =>
-        {
-            var menu = Window.FindControl<Menu>("mainMenu")!;
-            var topItem = TestHelpers.GetMenuItems(menu).First(mi => (string?)mi.Header == header);
-            topItem.Open();
-            return topItem.Items.OfType<MenuItem>().ToList();
-        });
+        var menu = Window.FindControl<Menu>("mainMenu")!;
+        var topItem = menu.Items.OfType<MenuItem>().First(mi => (string?)mi.Header == header);
+        topItem.Open();
+        TestHelpers.Flush();
+        currentMenuItems = topItem.Items.OfType<MenuItem>().ToList();
     }
 
     [Then("the menu should contain the following items")]
@@ -108,57 +96,49 @@ public sealed class MainWindowSteps
         Assert.IsNotNull(currentMenuItems);
         var item = currentMenuItems.FirstOrDefault(mi => (string?)mi.Header == header);
         Assert.IsNotNull(item, $"Menu item '{header}' not found.");
-        var isChecked = TestHelpers.RunOnUIThread(() => item.IsChecked);
-        Assert.IsTrue(isChecked, $"Menu item '{header}' should be checked.");
+        Assert.IsTrue(item.IsChecked, $"Menu item '{header}' should be checked.");
     }
 
     [Then("the toolbar should be visible")]
     public void ThenTheToolbarShouldBeVisible()
     {
-        var visible = TestHelpers.RunOnUIThread(() => Window.FindControl<Border>("toolBar")!.IsVisible);
-        Assert.IsTrue(visible);
+        Assert.IsTrue(Window.FindControl<Border>("toolBar")!.IsVisible);
     }
 
     [Then("the toolbar should contain a {string} toggle button")]
     public void ThenTheToolbarShouldContainAToggleButton(string name)
     {
-        var exists = TestHelpers.RunOnUIThread(() => Window.FindControl<ToggleButton>(name) != null);
-        Assert.IsTrue(exists, $"ToggleButton '{name}' not found.");
+        Assert.IsTrue(Window.FindControl<ToggleButton>(name) != null, $"ToggleButton '{name}' not found.");
     }
 
     [Then("the toolbar should contain a {string} button")]
     public void ThenTheToolbarShouldContainAButton(string name)
     {
-        var exists = TestHelpers.RunOnUIThread(() => Window.FindControl<Button>(name) != null);
-        Assert.IsTrue(exists, $"Button '{name}' not found.");
+        Assert.IsTrue(Window.FindControl<Button>(name) != null, $"Button '{name}' not found.");
     }
 
     [Then("the toolbar should contain a {string} text block")]
     public void ThenTheToolbarShouldContainATextBlock(string name)
     {
-        var exists = TestHelpers.RunOnUIThread(() => Window.FindControl<TextBlock>(name) != null);
-        Assert.IsTrue(exists, $"TextBlock '{name}' not found.");
+        Assert.IsTrue(Window.FindControl<TextBlock>(name) != null, $"TextBlock '{name}' not found.");
     }
 
     [Then("the speed label should display {string}")]
     public void ThenTheSpeedLabelShouldDisplay(string expected)
     {
-        var actual = TestHelpers.RunOnUIThread(() => Window.FindControl<TextBlock>("speedLabel")!.Text);
-        Assert.AreEqual(expected, actual);
+        Assert.AreEqual(expected, Window.FindControl<TextBlock>("speedLabel")!.Text);
     }
 
     [Then("the {string} control should exist")]
     public void ThenTheControlShouldExist(string name)
     {
-        var exists = TestHelpers.RunOnUIThread(() => Window.FindControl<Control>(name) != null);
-        Assert.IsTrue(exists, $"Control '{name}' not found.");
+        Assert.IsTrue(Window.FindControl<Control>(name) != null, $"Control '{name}' not found.");
     }
 
     [Then("the menu container should be visible")]
     public void ThenTheMenuContainerShouldBeVisible()
     {
-        var visible = TestHelpers.RunOnUIThread(() => Window.FindControl<StackPanel>("menuContainer")!.IsVisible);
-        Assert.IsTrue(visible);
+        Assert.IsTrue(Window.FindControl<StackPanel>("menuContainer")!.IsVisible);
     }
 
     [AfterScenario]
@@ -166,7 +146,8 @@ public sealed class MainWindowSteps
     {
         if (state.MainWindow != null)
         {
-            TestHelpers.RunOnUIThread(() => state.MainWindow.Close());
+            state.MainWindow.Close();
+            TestHelpers.Flush();
             state.MainWindow = null;
         }
     }

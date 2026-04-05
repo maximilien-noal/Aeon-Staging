@@ -24,29 +24,26 @@ public sealed class FullScreenSteps
     [Then("the window state should be {string}")]
     public void ThenTheWindowStateShouldBe(string expected)
     {
-        var actual = TestHelpers.RunOnUIThread(() => Window.WindowState.ToString());
-        Assert.AreEqual(expected, actual);
+        Assert.AreEqual(expected, Window.WindowState.ToString());
     }
 
     [When("I toggle full screen mode")]
     public void WhenIToggleFullScreenMode()
     {
-        TestHelpers.RunOnUIThread(() =>
+        if (Window.WindowState != Avalonia.Controls.WindowState.FullScreen)
         {
-            if (Window.WindowState != Avalonia.Controls.WindowState.FullScreen)
-            {
-                savedBackground ??= Window.Background;
-                Window.FindControl<StackPanel>("menuContainer")!.IsVisible = false;
-                Window.WindowState = Avalonia.Controls.WindowState.FullScreen;
-                Window.Background = Brushes.Black;
-            }
-            else
-            {
-                Window.FindControl<StackPanel>("menuContainer")!.IsVisible = true;
-                Window.WindowState = Avalonia.Controls.WindowState.Normal;
-                Window.Background = (IBrush?)Window.FindResource("backgroundGradient") ?? savedBackground ?? Brushes.Transparent;
-            }
-        });
+            savedBackground ??= Window.Background;
+            Window.FindControl<StackPanel>("menuContainer")!.IsVisible = false;
+            Window.WindowState = Avalonia.Controls.WindowState.FullScreen;
+            Window.Background = Brushes.Black;
+        }
+        else
+        {
+            Window.FindControl<StackPanel>("menuContainer")!.IsVisible = true;
+            Window.WindowState = Avalonia.Controls.WindowState.Normal;
+            Window.Background = (IBrush?)Window.FindResource("backgroundGradient") ?? savedBackground ?? Brushes.Transparent;
+        }
+        TestHelpers.Flush();
     }
 
     [Given("the window is in full screen mode")]
@@ -58,30 +55,20 @@ public sealed class FullScreenSteps
     [Then("the menu container should not be visible")]
     public void ThenTheMenuContainerShouldNotBeVisible()
     {
-        var visible = TestHelpers.RunOnUIThread(() =>
-            Window.FindControl<StackPanel>("menuContainer")!.IsVisible);
-        Assert.IsFalse(visible);
+        Assert.IsFalse(Window.FindControl<StackPanel>("menuContainer")!.IsVisible);
     }
 
     [Then("the window background should be black")]
     public void ThenTheWindowBackgroundShouldBeBlack()
     {
-        var isBlack = TestHelpers.RunOnUIThread(() =>
-        {
-            var brush = Window.Background as ISolidColorBrush;
-            return brush != null && brush.Color == Colors.Black;
-        });
-        Assert.IsTrue(isBlack);
+        var brush = Window.Background as ISolidColorBrush;
+        Assert.IsTrue(brush != null && brush.Color == Colors.Black);
     }
 
     [Then("the window background should not be black")]
     public void ThenTheWindowBackgroundShouldNotBeBlack()
     {
-        var isBlack = TestHelpers.RunOnUIThread(() =>
-        {
-            var brush = Window.Background as ISolidColorBrush;
-            return brush != null && brush.Color == Colors.Black;
-        });
-        Assert.IsFalse(isBlack);
+        var brush = Window.Background as ISolidColorBrush;
+        Assert.IsFalse(brush != null && brush.Color == Colors.Black);
     }
 }
