@@ -37,34 +37,18 @@ jobs:
           dotnet-version: '10.0.x'
           dotnet-quality: 'preview'
 
-      # Windows: build full solution (includes WPF project)
-      - name: Restore (full solution)
-        if: runner.os == 'Windows'
+      - name: Restore
         run: dotnet restore src/Aeon.slnx
 
-      - name: Build (full solution)
-        if: runner.os == 'Windows'
+      - name: Build
         run: dotnet build src/Aeon.slnx --no-restore
 
-      # Linux/macOS: build cross-platform projects only (WPF project targets net10.0-windows)
-      - name: Restore (cross-platform)
-        if: runner.os != 'Windows'
-        run: |
-          dotnet restore src/Aeon.Avalonia/Aeon.Avalonia.csproj
-          dotnet restore src/Aeon.Test/Aeon.Test.csproj
-
-      - name: Build (cross-platform)
-        if: runner.os != 'Windows'
-        run: dotnet build src/Aeon.Avalonia/Aeon.Avalonia.csproj --no-restore
-
-      # Tests run on all platforms
       - name: Test
         run: dotnet test src/Aeon.Test/Aeon.Test.csproj --no-restore --verbosity normal
 
-      # Publish Avalonia frontend for all platforms
-      - name: Publish Aeon.Avalonia
+      - name: Publish
         run: >
-          dotnet publish src/Aeon.Avalonia/Aeon.Avalonia.csproj
+          dotnet publish src/Aeon/Aeon.csproj
           -c Release
           -r ${{ matrix.rid }}
           --self-contained
