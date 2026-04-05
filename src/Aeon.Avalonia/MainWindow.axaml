@@ -1,7 +1,9 @@
 <Window xmlns="https://github.com/avaloniaui"
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
         xmlns:local="clr-namespace:Aeon.Emulator.Launcher"
+        xmlns:ic="using:FluentIcons.Avalonia.Fluent"
         x:Class="Aeon.Emulator.Launcher.MainWindow"
+        x:Name="window"
         Title="Aeon" Width="800" Height="600" MinWidth="360" MinHeight="270"
         Icon="avares://Aeon.Avalonia/Aeon.ico"
         Background="{StaticResource backgroundGradient}">
@@ -28,6 +30,7 @@
         <Style Selector="Border#toolBar">
             <Setter Property="BorderBrush" Value="#737373" />
             <Setter Property="BorderThickness" Value="0,0,0,1" />
+            <Setter Property="BoxShadow" Value="0 1 4 0 #66000000" />
         </Style>
         <Style Selector="Border#toolBar Button">
             <Setter Property="Background" Value="Transparent" />
@@ -57,46 +60,121 @@
             <Setter Property="Background" Value="#C6DDF4" />
             <Setter Property="BorderBrush" Value="#6C8FB8" />
         </Style>
+        <Style Selector="Border#toolBar Button.commandButton Polygon.commandGlyph">
+            <Setter Property="Stroke" Value="DarkGreen" />
+            <Setter Property="Fill">
+                <LinearGradientBrush StartPoint="0,0" EndPoint="1,1">
+                    <GradientStop Color="LightGreen" Offset="0.0" />
+                    <GradientStop Color="DarkGreen" Offset="1.0" />
+                </LinearGradientBrush>
+            </Setter>
+        </Style>
+        <Style Selector="Border#toolBar Button.commandButton Rectangle.commandGlyph">
+            <Setter Property="Stroke" Value="DarkGreen" />
+            <Setter Property="Fill">
+                <LinearGradientBrush StartPoint="0,0" EndPoint="1,1">
+                    <GradientStop Color="LightGreen" Offset="0.0" />
+                    <GradientStop Color="DarkGreen" Offset="1.0" />
+                </LinearGradientBrush>
+            </Setter>
+        </Style>
+        <Style Selector="Border#toolBar Button.commandButton:disabled Polygon.commandGlyph">
+            <Setter Property="Stroke" Value="DimGray" />
+            <Setter Property="Fill">
+                <LinearGradientBrush StartPoint="0,0" EndPoint="1,1">
+                    <GradientStop Color="LightGray" Offset="0.0" />
+                    <GradientStop Color="DimGray" Offset="1.0" />
+                </LinearGradientBrush>
+            </Setter>
+        </Style>
+        <Style Selector="Border#toolBar Button.commandButton:disabled Rectangle.commandGlyph">
+            <Setter Property="Stroke" Value="DimGray" />
+            <Setter Property="Fill">
+                <LinearGradientBrush StartPoint="0,0" EndPoint="1,1">
+                    <GradientStop Color="LightGray" Offset="0.0" />
+                    <GradientStop Color="DimGray" Offset="1.0" />
+                </LinearGradientBrush>
+            </Setter>
+        </Style>
+        <Style Selector="Border#toolBar Button.speedButton">
+            <Setter Property="Width" Value="18" />
+            <Setter Property="Height" Value="18" />
+            <Setter Property="Padding" Value="0" />
+            <Setter Property="CornerRadius" Value="9" />
+            <Setter Property="BorderBrush" Value="Gray" />
+            <Setter Property="BorderThickness" Value="1" />
+            <Setter Property="Background" Value="#FFDDE8F2" />
+        </Style>
+        <Style Selector="Border#toolBar Button.speedButton:disabled">
+            <Setter Property="Opacity" Value="0.55" />
+        </Style>
     </Window.Styles>
 
     <DockPanel>
         <StackPanel Name="menuContainer" DockPanel.Dock="Top">
             <Menu Name="mainMenu">
                 <MenuItem Header="_Aeon">
-                    <MenuItem Header="_Quick Launch Program..." Click="QuickLaunch_Click" />
-                    <MenuItem Header="_Quick Launch Command Prompt..." Click="CommandPrompt_Click" />
+                    <MenuItem Header="_Quick Launch Program..." Click="QuickLaunch_Click">
+                        <MenuItem.Icon>
+                            <ic:SymbolIcon Symbol="Open" />
+                        </MenuItem.Icon>
+                    </MenuItem>
+                    <MenuItem Header="_Quick Launch Command Prompt..." Click="CommandPrompt_Click">
+                        <MenuItem.Icon>
+                            <ic:SymbolIcon Symbol="FolderOpen" />
+                        </MenuItem.Icon>
+                    </MenuItem>
                     <Separator />
-                    <MenuItem Header="_Pause" Click="Pause_Click" />
-                    <MenuItem Header="R_esume" Click="Resume_Click" />
+                    <MenuItem Header="_Pause" Command="{Binding #emulatorDisplay.PauseCommand}">
+                        <MenuItem.Icon>
+                            <ic:SymbolIcon Symbol="Pause" />
+                        </MenuItem.Icon>
+                    </MenuItem>
+                    <MenuItem Header="R_esume" Command="{Binding #emulatorDisplay.ResumeCommand}">
+                        <MenuItem.Icon>
+                            <ic:SymbolIcon Symbol="Play" />
+                        </MenuItem.Icon>
+                    </MenuItem>
                     <Separator />
-                    <MenuItem Header="E_xit" Click="Exit_Click" />
+                    <MenuItem Header="E_xit" Command="{Binding #window.CloseCommand}">
+                        <MenuItem.Icon>
+                            <ic:SymbolIcon Symbol="Dismiss" />
+                        </MenuItem.Icon>
+                    </MenuItem>
                 </MenuItem>
                 <MenuItem Header="_Edit">
-                    <MenuItem Header="_Copy Screen" Click="Copy_Click" />
+                    <MenuItem Header="_Copy Screen" Command="{Binding #window.CopyCommand}">
+                        <MenuItem.Icon>
+                            <ic:SymbolIcon Symbol="Copy" />
+                        </MenuItem.Icon>
+                    </MenuItem>
                 </MenuItem>
                 <MenuItem Header="_View">
-                    <MenuItem Name="viewToolBarMenuItem" Header="_Toolbar">
+                    <MenuItem Name="viewToolBarMenuItem" Header="_Toolbar" ToggleType="CheckBox" IsChecked="True" />
+                    <Separator />
+                    <MenuItem Header="_Lock Aspect Ratio" ToggleType="CheckBox" IsChecked="{Binding #emulatorDisplay.IsAspectRatioLocked, Mode=TwoWay}" />
+                    <MenuItem Header="_Full Screen" Click="FullScreen_Click">
                         <MenuItem.Icon>
-                            <CheckBox Name="toolBarCheckBox" IsChecked="True" />
+                            <ic:SymbolIcon Symbol="FullScreenMaximize" />
                         </MenuItem.Icon>
                     </MenuItem>
                     <Separator />
-                    <MenuItem Header="_Lock Aspect Ratio">
+                    <MenuItem Header="_Performance Window" Click="PerformanceWindow_Click">
                         <MenuItem.Icon>
-                            <CheckBox Name="aspectRatioCheckBox" IsChecked="True"
-                                      IsCheckedChanged="AspectRatioCheckBox_Changed" />
+                            <ic:SymbolIcon Symbol="Gauge" />
                         </MenuItem.Icon>
                     </MenuItem>
-                    <MenuItem Header="_Full Screen" Click="FullScreen_Click" />
-                    <Separator />
-                    <MenuItem Header="_Performance Window" Click="PerformanceWindow_Click" />
                 </MenuItem>
                 <MenuItem Header="_Debug">
-                    <MenuItem Header="Color Palette" Click="ShowPalette_Click" />
+                    <MenuItem Header="Color Palette" Click="ShowPalette_Click">
+                        <MenuItem.Icon>
+                            <ic:SymbolIcon Symbol="Color" />
+                        </MenuItem.Icon>
+                    </MenuItem>
                 </MenuItem>
             </Menu>
 
-            <Border Name="toolBar" IsVisible="{Binding #toolBarCheckBox.IsChecked}">
+            <Border Name="toolBar" IsVisible="{Binding #viewToolBarMenuItem.IsChecked}">
                 <Border.Background>
                     <LinearGradientBrush StartPoint="50%,0%" EndPoint="50%,100%">
                         <GradientStop Color="WhiteSmoke" Offset="0.0" />
@@ -111,15 +189,15 @@
 
                     <Border Width="28" Height="1" Background="#666" VerticalAlignment="Center" Margin="6,0" />
 
-                    <Button Click="Resume_Click" ToolTip.Tip="Resume">
+                    <Button Classes="commandButton" Command="{Binding #emulatorDisplay.ResumeCommand}" ToolTip.Tip="Resume">
                         <Canvas Width="16" Height="16">
-                            <Polygon Points="6,4 6,13 11,8" Fill="Green" Stroke="DarkGreen" />
+                            <Polygon Classes="commandGlyph" Points="6,4 6,13 11,8" />
                         </Canvas>
                     </Button>
-                    <Button Click="Pause_Click" ToolTip.Tip="Pause">
+                    <Button Classes="commandButton" Command="{Binding #emulatorDisplay.PauseCommand}" ToolTip.Tip="Pause">
                         <Canvas Width="16" Height="16">
-                            <Rectangle Canvas.Left="3" Canvas.Top="3" Width="4" Height="10" Fill="Green" Stroke="DarkGreen" />
-                            <Rectangle Canvas.Left="8" Canvas.Top="3" Width="4" Height="10" Fill="Green" Stroke="DarkGreen" />
+                            <Rectangle Classes="commandGlyph" Canvas.Left="3" Canvas.Top="3" Width="4" Height="10" />
+                            <Rectangle Classes="commandGlyph" Canvas.Left="8" Canvas.Top="3" Width="4" Height="10" />
                         </Canvas>
                     </Button>
 
@@ -132,11 +210,11 @@
                     <Border Width="28" Height="1" Background="#666" VerticalAlignment="Center" Margin="6,0" />
 
                     <TextBlock Text="Speed:" VerticalAlignment="Center" Margin="4,0,2,0" />
-                    <Button Name="slowerButton" ToolTip.Tip="Slow Down Emulation" Click="SlowerButton_Click" Padding="4,2" MinWidth="24">
+                    <Button Name="slowerButton" Classes="speedButton" ToolTip.Tip="Slow Down Emulation" Click="SlowerButton_Click">
                         <TextBlock FontFamily="Courier New" FontWeight="Bold" Text="-" />
                     </Button>
                     <TextBlock Name="speedLabel" Width="50" TextAlignment="Center" VerticalAlignment="Center" />
-                    <Button Name="fasterButton" ToolTip.Tip="Speed Up Emulation" Click="FasterButton_Click" Padding="4,2" MinWidth="24">
+                    <Button Name="fasterButton" Classes="speedButton" ToolTip.Tip="Speed Up Emulation" Click="FasterButton_Click">
                         <TextBlock FontFamily="Courier New" FontWeight="Bold" Text="+" />
                     </Button>
                 </StackPanel>

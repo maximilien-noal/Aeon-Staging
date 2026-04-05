@@ -5,7 +5,7 @@
                 MinWidth="160" MinHeight="100" Background="Transparent" Focusable="True">
     <Viewbox Name="outerViewbox">
         <Canvas Name="displayArea">
-            <Image Name="displayImage" Stretch="None" />
+            <Image Name="displayImage" Stretch="None" RenderOptions.BitmapInterpolationMode="None" />
         </Canvas>
     </Viewbox>
 </ContentControl>

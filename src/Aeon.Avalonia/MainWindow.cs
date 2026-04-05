@@ -1,4 +1,5 @@
 using System.IO;
+using System.Windows.Input;
 using Avalonia;
 using Avalonia.Controls;
 using Avalonia.Input;
@@ -13,42 +14,43 @@ namespace Aeon.Emulator.Launcher;
 
 public sealed partial class MainWindow : Window
 {
+    private const int MaximumEmulationSpeed = int.MaxValue - 100_000;
+
     private PerformanceWindow? performanceWindow;
     private AeonConfiguration? currentConfig;
     private bool hasActivated;
     private PaletteDialog? paletteWindow;
+    private readonly SimpleCommand closeCommand;
+    private readonly SimpleCommand copyCommand;
 
     public MainWindow()
     {
         InitializeComponent();
+        this.closeCommand = new SimpleCommand(() => true, () => this.Close());
+        this.copyCommand = new SimpleCommand(() => this.emulatorDisplay.DisplayBitmap != null, () => _ = this.CopyToClipboardAsync());
+
+        this.Activated += this.MainWindow_Activated;
         this.emulatorDisplay.EmulatorStateChanged += EmulatorDisplay_EmulatorStateChanged;
         this.emulatorDisplay.EmulationError += EmulatorDisplay_EmulationError;
         this.emulatorDisplay.CurrentProcessChanged += EmulatorDisplay_CurrentProcessChanged;
         this.speedLabel.Text = FormatSpeed(emulatorDisplay.EmulationSpeed);
+        this.UpdateSpeedButtonStates();
     }
+
+    public ICommand CloseCommand => this.closeCommand;
+    public ICommand CopyCommand => this.copyCommand;
 
     protected override void OnOpened(EventArgs e)
     {
         base.OnOpened(e);
-
-        if (!this.hasActivated)
-        {
-            var args = App.Args;
-
-            if (args.Length > 0)
-                QuickLaunch(args[0]);
-
-            this.hasActivated = true;
-        }
-
-        this.emulatorDisplay.Focus();
+        this.copyCommand.UpdateState();
     }
 
     protected override void OnKeyDown(KeyEventArgs e)
     {
         if (e.Key == Key.Enter && e.KeyModifiers.HasFlag(KeyModifiers.Alt))
         {
-            ToggleFullScreen();
+            this.ToggleFullScreen();
             e.Handled = true;
         }
 
@@ -82,44 +84,46 @@ public sealed partial class MainWindow : Window
         if (config.Drives != null)
         {
             foreach (var (letter, info) in config.Drives)
-        {
-            var driveLetter = ParseDriveLetter(letter);
-
-            var vmDrive = this.emulatorDisplay.EmulatorHost!.VirtualMachine.FileSystem.Drives[driveLetter];
-            vmDrive.DriveType = info.Type;
-            vmDrive.VolumeLabel = info.Label;
-            if (info.FreeSpace != null)
-                vmDrive.FreeSpace = info.FreeSpace.GetValueOrDefault();
-
-            if (!string.IsNullOrEmpty(info.HostPath))
             {
-                vmDrive.Mapping = info.ReadOnly ? new MappedFolder(info.HostPath) : new WritableMappedFolder(info.HostPath);
-            }
-            else if (!string.IsNullOrEmpty(info.ImagePath))
-            {
-                if (Path.GetExtension(info.ImagePath).Equals(".iso", StringComparison.OrdinalIgnoreCase))
-                    vmDrive.Mapping = new ISOImage(info.ImagePath);
-                else if (Path.GetExtension(info.ImagePath).Equals(".cue", StringComparison.OrdinalIgnoreCase))
-                    vmDrive.Mapping = new CueSheetImage(info.ImagePath);
+                var driveLetter = ParseDriveLetter(letter);
+
+                var vmDrive = this.emulatorDisplay.EmulatorHost!.VirtualMachine.FileSystem.Drives[driveLetter];
+                vmDrive.DriveType = info.Type;
+                vmDrive.VolumeLabel = info.Label;
+                if (info.FreeSpace != null)
+                    vmDrive.FreeSpace = info.FreeSpace.GetValueOrDefault();
+
+                if (!string.IsNullOrEmpty(info.HostPath))
+                {
+                    vmDrive.Mapping = info.ReadOnly ? new MappedFolder(info.HostPath) : new WritableMappedFolder(info.HostPath);
+                }
+                else if (!string.IsNullOrEmpty(info.ImagePath))
+                {
+                    if (Path.GetExtension(info.ImagePath).Equals(".iso", StringComparison.OrdinalIgnoreCase))
+                        vmDrive.Mapping = new ISOImage(info.ImagePath);
+                    else if (Path.GetExtension(info.ImagePath).Equals(".cue", StringComparison.OrdinalIgnoreCase))
+                        vmDrive.Mapping = new CueSheetImage(info.ImagePath);
+                    else
+                        throw new FormatException();
+                }
                 else
+                {
                     throw new FormatException();
-            }
-            else
-            {
-                throw new FormatException();
-            }
+                }
 
-            vmDrive.HasCommandInterpreter = vmDrive.DriveType == DriveType.Fixed;
-        }
+                vmDrive.HasCommandInterpreter = vmDrive.DriveType == DriveType.Fixed;
+            }
         }
 
         this.emulatorDisplay.EmulatorHost!.VirtualMachine.FileSystem.WorkingDirectory = new VirtualPath(config.StartupPath ?? string.Empty);
 
-        emulatorDisplay.EmulationSpeed = config.EmulationSpeed ?? 100_000_000;
+        var requestedSpeed = config.EmulationSpeed ?? 100_000_000;
+        emulatorDisplay.EmulationSpeed = Math.Clamp(requestedSpeed, EmulatorHost.MinimumSpeed, MaximumEmulationSpeed);
         emulatorDisplay.MouseInputMode = config.IsMouseAbsolute.GetValueOrDefault() ? MouseInputMode.Absolute : MouseInputMode.Relative;
         mouseIntegrationButton.IsChecked = emulatorDisplay.MouseInputMode == MouseInputMode.Absolute;
         speedLabel.Text = FormatSpeed(emulatorDisplay.EmulationSpeed);
         UpdateSpeedButtonStates();
+        this.copyCommand.UpdateState();
         if (!string.IsNullOrEmpty(config.Title))
             this.Title = config.Title;
 
@@ -214,7 +218,7 @@ public sealed partial class MainWindow : Window
         }
     }
 
-    private async void Copy_Click(object? sender, RoutedEventArgs e)
+    private async Task CopyToClipboardAsync()
     {
         var bmp = emulatorDisplay.DisplayBitmap;
         if (bmp != null && this.Clipboard != null)
@@ -230,6 +234,11 @@ public sealed partial class MainWindow : Window
             await this.Clipboard.SetDataObjectAsync(dataObject);
 #pragma warning restore CS0618
         }
+    }
+
+    private async void Copy_Click(object? sender, RoutedEventArgs e)
+    {
+        await this.CopyToClipboardAsync();
     }
 
     private void Pause_Click(object? sender, RoutedEventArgs e)
@@ -249,7 +258,7 @@ public sealed partial class MainWindow : Window
 
     private void FullScreen_Click(object? sender, RoutedEventArgs e)
     {
-        ToggleFullScreen();
+        this.ToggleFullScreen();
     }
 
     private void MouseIntegration_Changed(object? sender, RoutedEventArgs e)
@@ -257,11 +266,6 @@ public sealed partial class MainWindow : Window
         emulatorDisplay.MouseInputMode = mouseIntegrationButton.IsChecked == true
             ? MouseInputMode.Absolute
             : MouseInputMode.Relative;
-    }
-
-    private void AspectRatioCheckBox_Changed(object? sender, RoutedEventArgs e)
-    {
-        emulatorDisplay.IsAspectRatioLocked = aspectRatioCheckBox.IsChecked == true;
     }
 
     private void ToggleFullScreen()
@@ -282,6 +286,7 @@ public sealed partial class MainWindow : Window
 
     private void EmulatorDisplay_EmulatorStateChanged(object? sender, RoutedEventArgs e)
     {
+        this.copyCommand.UpdateState();
         if (this.emulatorDisplay.EmulatorState == EmulatorState.ProgramExited && this.currentConfig != null)
             this.Close();
     }
@@ -299,7 +304,7 @@ public sealed partial class MainWindow : Window
 
     private void FasterButton_Click(object? sender, RoutedEventArgs e)
     {
-        int newSpeed = emulatorDisplay.EmulationSpeed + 100_000;
+        int newSpeed = Math.Min(MaximumEmulationSpeed, emulatorDisplay.EmulationSpeed + 100_000);
         if (newSpeed != emulatorDisplay.EmulationSpeed)
         {
             emulatorDisplay.EmulationSpeed = newSpeed;
@@ -311,6 +316,7 @@ public sealed partial class MainWindow : Window
     private void UpdateSpeedButtonStates()
     {
         slowerButton.IsEnabled = emulatorDisplay.EmulationSpeed > EmulatorHost.MinimumSpeed;
+        fasterButton.IsEnabled = emulatorDisplay.EmulationSpeed < MaximumEmulationSpeed;
     }
 
     private async void EmulatorDisplay_EmulationError(object? sender, EmulationErrorRoutedEventArgs e)
@@ -374,5 +380,21 @@ public sealed partial class MainWindow : Window
             this.paletteWindow.Closed -= this.PaletteWindow_Closed;
             this.paletteWindow = null;
         }
+    }
+
+    private void MainWindow_Activated(object? sender, EventArgs e)
+    {
+        if (!this.hasActivated)
+        {
+            var args = App.Args;
+
+            if (args.Length > 0)
+                QuickLaunch(args[0]);
+
+            this.hasActivated = true;
+        }
+
+        if (this.WindowState != WindowState.Minimized)
+            this.emulatorDisplay.Focus();
     }
 }
