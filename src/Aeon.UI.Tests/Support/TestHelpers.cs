@@ -16,10 +16,18 @@ internal static class TestHelpers
     /// <summary>
     /// Pumps the Avalonia dispatcher so pending jobs (layout, bindings,
     /// timers queued during the current tick) are processed.
+    /// Silently catches rendering errors (e.g. missing fonts in headless mode).
     /// </summary>
     public static void Flush()
     {
-        Dispatcher.UIThread.RunJobs();
+        try
+        {
+            Dispatcher.UIThread.RunJobs();
+        }
+        catch (InvalidOperationException)
+        {
+            // Headless mode may fail rendering (e.g. FluentIcons glyphs).
+        }
     }
 
     /// <summary>

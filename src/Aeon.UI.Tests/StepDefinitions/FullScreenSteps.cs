@@ -41,7 +41,8 @@ public sealed class FullScreenSteps
         {
             Window.FindControl<StackPanel>("menuContainer")!.IsVisible = true;
             Window.WindowState = Avalonia.Controls.WindowState.Normal;
-            Window.Background = (IBrush?)Window.FindResource("backgroundGradient") ?? savedBackground ?? Brushes.Transparent;
+            var resource = Window.FindResource("backgroundGradient");
+            Window.Background = resource is IBrush brush ? brush : savedBackground ?? Brushes.Transparent;
         }
         TestHelpers.Flush();
     }

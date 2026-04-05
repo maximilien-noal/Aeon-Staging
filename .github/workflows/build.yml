@@ -46,6 +46,9 @@ jobs:
       - name: Test
         run: dotnet test src/Aeon.Test/Aeon.Test.csproj --no-restore --verbosity normal
 
+      - name: UI Tests (BDD)
+        run: dotnet test src/Aeon.UI.Tests/Aeon.UI.Tests.csproj --no-restore --verbosity normal
+
       - name: Publish
         run: >
           dotnet publish src/Aeon/Aeon.csproj
