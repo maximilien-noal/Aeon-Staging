@@ -24,6 +24,8 @@ internal sealed class AvaloniaSynchronizer : IEventSynchronizer
                 mmh(source, (MouseMoveEventArgs)e);
             else if (method is EventHandler<ErrorEventArgs> errh)
                 errh(source, (ErrorEventArgs)e);
+            else
+                throw new ArgumentException($"Unsupported delegate type: {method.GetType().Name}", nameof(method));
         });
     }
 }
