@@ -24,6 +24,7 @@ public sealed partial class App : Application
         base.OnFrameworkInitializationCompleted();
     }
 
+    [STAThread]
     public static void Main(string[] args)
     {
         BuildAvaloniaApp().StartWithClassicDesktopLifetime(args);
