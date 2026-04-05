@@ -1,3 +1,4 @@
+using System.Runtime.InteropServices;
 using System.Windows.Input;
 using Avalonia;
 using Avalonia.Controls;
@@ -8,6 +9,7 @@ using Avalonia.Media.Imaging;
 using Avalonia.Platform;
 using Avalonia.Threading;
 using Aeon.Emulator.Video.Rendering;
+using SkiaSharp;
 
 namespace Aeon.Emulator.Launcher;
 
@@ -154,6 +156,43 @@ public sealed partial class EmulatorDisplay : ContentControl
     public Emulator.Dos.DosProcess? CurrentProcess { get; private set; }
     public ICommand ResumeCommand => this.resumeCommand;
     public ICommand PauseCommand => this.pauseCommand;
+
+    /// <summary>
+    /// Exports the current display bitmap as PNG bytes.
+    /// Returns null if no bitmap is available.
+    /// Uses SkiaSharp directly so it works in headless mode.
+    /// </summary>
+    public byte[]? ExportDisplayAsPngBytes()
+    {
+        var bitmap = this.renderTarget;
+        if (bitmap == null)
+            return null;
+
+        using var fb = bitmap.Lock();
+        int width = fb.Size.Width;
+        int height = fb.Size.Height;
+
+        var info = new SKImageInfo(width, height, SKColorType.Bgra8888, SKAlphaType.Opaque);
+        using var skBitmap = new SKBitmap(info);
+        int byteCount = fb.RowBytes * height;
+        var pixelData = new byte[byteCount];
+        Marshal.Copy(fb.Address, pixelData, 0, byteCount);
+        Marshal.Copy(pixelData, 0, skBitmap.GetPixels(), byteCount);
+
+        using var image = SKImage.FromBitmap(skBitmap);
+        using var data = image.Encode(SKEncodedImageFormat.Png, 100);
+        return data.ToArray();
+    }
+
+    /// <summary>
+    /// Sets the render target for testing purposes.
+    /// Allows headless tests to inject a known bitmap.
+    /// </summary>
+    internal void SetRenderTargetForTesting(WriteableBitmap bitmap)
+    {
+        this.renderTarget?.Dispose();
+        this.renderTarget = bitmap;
+    }
 
     protected override void OnAttachedToVisualTree(VisualTreeAttachmentEventArgs e)
     {

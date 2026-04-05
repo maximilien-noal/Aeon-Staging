@@ -47,9 +47,9 @@ internal static class TestHelpers
     /// </summary>
     public static string CreateTempDirWithComFile(string comFileName, byte[] comFileBytes)
     {
-        var tempDir = Path.Combine(Path.GetTempPath(), $"aeon-test-{Guid.NewGuid():N}");
+        var tempDir = $"{Path.GetTempPath()}aeon-test-{Guid.NewGuid():N}";
         Directory.CreateDirectory(tempDir);
-        File.WriteAllBytes(Path.Combine(tempDir, comFileName), comFileBytes);
+        File.WriteAllBytes($"{tempDir}/{comFileName}", comFileBytes);
         return tempDir;
     }
 
@@ -60,8 +60,7 @@ internal static class TestHelpers
     {
         if (!string.IsNullOrEmpty(path) && Directory.Exists(path))
         {
-            try { Directory.Delete(path, recursive: true); }
-            catch { /* best effort */ }
+            Directory.Delete(path, recursive: true);
         }
     }
 
@@ -70,7 +69,7 @@ internal static class TestHelpers
     /// </summary>
     public static byte[] GetVgaPatternComBytes()
     {
-        var testDataPath = Path.Combine(AppContext.BaseDirectory, "TestData", "vga_pattern.com");
+        var testDataPath = $"{AppContext.BaseDirectory}TestData/vga_pattern.com";
         return File.ReadAllBytes(testDataPath);
     }
 }
