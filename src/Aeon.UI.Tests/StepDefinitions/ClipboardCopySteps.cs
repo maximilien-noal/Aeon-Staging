@@ -308,12 +308,12 @@ public sealed class ClipboardCopySteps
         height = skBitmap.Height;
         pixels = new uint[width * height];
 
-        for (int y2 = 0; y2 < height; y2++)
+        for (int row = 0; row < height; row++)
         {
-            for (int x2 = 0; x2 < width; x2++)
+            for (int col = 0; col < width; col++)
             {
-                var color = skBitmap.GetPixel(x2, y2);
-                pixels[y2 * width + x2] =
+                var color = skBitmap.GetPixel(col, row);
+                pixels[row * width + col] =
                     (uint)(color.Blue | (color.Green << 8) | (color.Red << 16) | (color.Alpha << 24));
             }
         }
