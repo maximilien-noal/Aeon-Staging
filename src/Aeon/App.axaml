@@ -4,8 +4,8 @@
              RequestedThemeVariant="Light">
     <Application.Styles>
         <FluentTheme />
-        <StyleInclude Source="avares://Aeon.Avalonia/EmulatorDisplayStyles.axaml" />
-        <StyleInclude Source="avares://Aeon.Avalonia/TaskDialogStyles.axaml" />
+        <StyleInclude Source="avares://Aeon/EmulatorDisplayStyles.axaml" />
+        <StyleInclude Source="avares://Aeon/TaskDialogStyles.axaml" />
     </Application.Styles>
     <Application.Resources>
         <LinearGradientBrush x:Key="backgroundGradient">
@@ -14,3 +14,4 @@
         </LinearGradientBrush>
     </Application.Resources>
 </Application>
+

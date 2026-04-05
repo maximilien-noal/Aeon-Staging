@@ -5,7 +5,7 @@
         x:Class="Aeon.Emulator.Launcher.MainWindow"
         x:Name="window"
         Title="Aeon" Width="800" Height="600" MinWidth="360" MinHeight="270"
-        Icon="avares://Aeon.Avalonia/Aeon.ico"
+        Icon="avares://Aeon/Aeon.ico"
         Background="{StaticResource backgroundGradient}">
     <Window.Styles>
         <Style Selector="Menu#mainMenu">
@@ -184,7 +184,7 @@
 
                 <StackPanel Orientation="Horizontal" Margin="4,2" Spacing="2" VerticalAlignment="Center">
                     <Button ToolTip.Tip="Run Program..." Click="QuickLaunch_Click">
-                        <Image Width="16" Height="16" Source="avares://Aeon.Avalonia/Resources/openfolderHS.png" />
+                        <Image Width="16" Height="16" Source="avares://Aeon/Resources/openfolderHS.png" />
                     </Button>
 
                     <Border Width="28" Height="1" Background="#666" VerticalAlignment="Center" Margin="6,0" />
@@ -204,7 +204,7 @@
                     <Border Width="28" Height="1" Background="#666" VerticalAlignment="Center" Margin="6,0" />
 
                     <ToggleButton Name="mouseIntegrationButton" ToolTip.Tip="Toggle Mouse Integration" IsCheckedChanged="MouseIntegration_Changed">
-                        <Image Width="16" Height="16" Source="avares://Aeon.Avalonia/Resources/MouseIntegration.png" />
+                        <Image Width="16" Height="16" Source="avares://Aeon/Resources/MouseIntegration.png" />
                     </ToggleButton>
 
                     <Border Width="28" Height="1" Background="#666" VerticalAlignment="Center" Margin="6,0" />
@@ -224,3 +224,4 @@
         <local:EmulatorDisplay x:Name="emulatorDisplay" Margin="0,7,0,0" />
     </DockPanel>
 </Window>
+
