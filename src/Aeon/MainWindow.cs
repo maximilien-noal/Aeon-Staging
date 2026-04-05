@@ -3,6 +3,7 @@ using System.Windows.Input;
 using Avalonia;
 using Avalonia.Controls;
 using Avalonia.Input;
+using Avalonia.Input.Platform;
 using Avalonia.Interactivity;
 using Avalonia.Media;
 using Avalonia.Platform.Storage;
@@ -21,13 +22,11 @@ public sealed partial class MainWindow : Window
     private bool hasActivated;
     private PaletteDialog? paletteWindow;
     private readonly SimpleCommand closeCommand;
-    private readonly SimpleCommand copyCommand;
 
     public MainWindow()
     {
         InitializeComponent();
         this.closeCommand = new SimpleCommand(() => true, () => this.Close());
-        this.copyCommand = new SimpleCommand(() => this.emulatorDisplay.DisplayBitmap != null, () => _ = this.CopyToClipboardAsync());
 
         this.Activated += this.MainWindow_Activated;
         this.emulatorDisplay.EmulatorStateChanged += EmulatorDisplay_EmulatorStateChanged;
@@ -38,12 +37,10 @@ public sealed partial class MainWindow : Window
     }
 
     public ICommand CloseCommand => this.closeCommand;
-    public ICommand CopyCommand => this.copyCommand;
 
     protected override void OnOpened(EventArgs e)
     {
         base.OnOpened(e);
-        this.copyCommand.UpdateState();
     }
 
     protected override void OnKeyDown(KeyEventArgs e)
@@ -123,7 +120,6 @@ public sealed partial class MainWindow : Window
         mouseIntegrationButton.IsChecked = emulatorDisplay.MouseInputMode == MouseInputMode.Absolute;
         speedLabel.Text = FormatSpeed(emulatorDisplay.EmulationSpeed);
         UpdateSpeedButtonStates();
-        this.copyCommand.UpdateState();
         if (!string.IsNullOrEmpty(config.Title))
             this.Title = config.Title;
 
@@ -220,20 +216,9 @@ public sealed partial class MainWindow : Window
 
     private async Task CopyToClipboardAsync()
     {
-        var bmp = emulatorDisplay.DisplayBitmap;
+        var bmp = this.emulatorDisplay.DisplayBitmap;
         if (bmp != null && this.Clipboard != null)
-        {
-            using var stream = new MemoryStream();
-            bmp.Save(stream);
-            stream.Position = 0;
-            var bytes = stream.ToArray();
-
-#pragma warning disable CS0618 // DataObject/SetDataObjectAsync are deprecated but replacement API is complex
-            var dataObject = new DataObject();
-            dataObject.Set("PNG", bytes);
-            await this.Clipboard.SetDataObjectAsync(dataObject);
-#pragma warning restore CS0618
-        }
+            await this.Clipboard.SetBitmapAsync(bmp);
     }
 
     private async void Copy_Click(object? sender, RoutedEventArgs e)
@@ -286,7 +271,6 @@ public sealed partial class MainWindow : Window
 
     private void EmulatorDisplay_EmulatorStateChanged(object? sender, RoutedEventArgs e)
     {
-        this.copyCommand.UpdateState();
         if (this.emulatorDisplay.EmulatorState == EmulatorState.ProgramExited && this.currentConfig != null)
             this.Close();
     }
