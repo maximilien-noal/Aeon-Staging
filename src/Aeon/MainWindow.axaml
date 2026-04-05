@@ -143,7 +143,7 @@
                     </MenuItem>
                 </MenuItem>
                 <MenuItem Header="_Edit">
-                    <MenuItem Header="_Copy Screen" Command="{Binding #window.CopyCommand}">
+                    <MenuItem Header="_Copy Screen" Click="Copy_Click">
                         <MenuItem.Icon>
                             <ic:SymbolIcon Symbol="Copy" />
                         </MenuItem.Icon>
