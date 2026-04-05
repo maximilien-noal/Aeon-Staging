@@ -1,0 +1,27 @@
+<Project Sdk="Microsoft.NET.Sdk">
+  <PropertyGroup>
+    <TargetFramework>net10.0</TargetFramework>
+    <IsPackable>false</IsPackable>
+    <Nullable>enable</Nullable>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <RootNamespace>Aeon.UI.Tests</RootNamespace>
+  </PropertyGroup>
+  <ItemGroup>
+    <PackageReference Include="Microsoft.NET.Test.Sdk" Version="18.0.1" />
+    <PackageReference Include="MSTest.TestAdapter" Version="4.0.2" />
+    <PackageReference Include="MSTest.TestFramework" Version="4.0.2" />
+    <PackageReference Include="Reqnroll.MsTest" Version="3.3.4" />
+    <PackageReference Include="Avalonia.Headless" Version="11.3.13" />
+  </ItemGroup>
+  <ItemGroup>
+    <ProjectReference Include="..\Aeon\Aeon.csproj" />
+    <ProjectReference Include="..\Aeon.Emulator.Configuration\Aeon.Emulator.Configuration.csproj" />
+    <ProjectReference Include="..\Aeon.Emulator\Aeon.Emulator.csproj" />
+    <ProjectReference Include="..\Aeon.DiskImages\Aeon.DiskImages.csproj" />
+    <ProjectReference Include="..\Aeon.Emulator.Sound\Aeon.Emulator.Sound.csproj" />
+  </ItemGroup>
+  <ItemGroup>
+    <Content Include="TestData\**\*" CopyToOutputDirectory="PreserveNewest" />
+    <None Include="TestData\vga_pattern.asm" />
+  </ItemGroup>
+</Project>
