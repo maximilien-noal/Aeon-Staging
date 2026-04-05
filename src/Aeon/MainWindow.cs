@@ -216,9 +216,30 @@ public sealed partial class MainWindow : Window
 
     private async Task CopyToClipboardAsync()
     {
-        var bmp = this.emulatorDisplay.DisplayBitmap;
-        if (bmp != null && this.Clipboard != null)
-            await this.Clipboard.SetBitmapAsync(bmp);
+        var source = this.emulatorDisplay.DisplayBitmap;
+        if (source == null || this.Clipboard == null)
+            return;
+
+        var tempFile = Path.Combine(Path.GetTempPath(), $"aeon-clipboard-{Guid.NewGuid():N}.png");
+
+        try
+        {
+            source.Save(tempFile);
+            using var snapshot = new Avalonia.Media.Imaging.Bitmap(tempFile);
+            await this.Clipboard.SetBitmapAsync(snapshot);
+            await this.Clipboard.FlushAsync();
+        }
+        finally
+        {
+            try
+            {
+                if (File.Exists(tempFile))
+                    File.Delete(tempFile);
+            }
+            catch
+            {
+            }
+        }
     }
 
     private async void Copy_Click(object? sender, RoutedEventArgs e)
