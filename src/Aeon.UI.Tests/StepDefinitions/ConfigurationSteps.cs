@@ -19,9 +19,9 @@ public sealed class ConfigurationSteps : IDisposable
     [Given("a configuration file with the following JSON")]
     public void GivenAConfigurationFileWithTheFollowingJSON(string multilineText)
     {
-        tempDir = Path.Combine(Path.GetTempPath(), $"aeon-cfg-test-{Guid.NewGuid():N}");
+        tempDir = $"{Path.GetTempPath()}aeon-cfg-test-{Guid.NewGuid():N}";
         Directory.CreateDirectory(tempDir);
-        tempFilePath = Path.Combine(tempDir, "test.AeonConfig");
+        tempFilePath = $"{tempDir}/test.AeonConfig";
         File.WriteAllText(tempFilePath, multilineText);
     }
 

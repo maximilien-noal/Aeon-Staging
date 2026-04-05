@@ -29,7 +29,8 @@ namespace Aeon.UI.Tests.Features
                 "ui"};
         
         private static global::Reqnroll.FeatureInfo featureInfo = new global::Reqnroll.FeatureInfo(new global::System.Globalization.CultureInfo("en-US"), "Features", "Clipboard Copy", "    The Edit > Copy Screen command copies the current emulator display\n    bitmap" +
-                " to the clipboard as a PNG image.", global::Reqnroll.ProgrammingLanguage.CSharp, featureTags, InitializeCucumberMessages());
+                " to the clipboard as a PNG image. The exported image must\n    faithfully represe" +
+                "nt the framebuffer pixel data.", global::Reqnroll.ProgrammingLanguage.CSharp, featureTags, InitializeCucumberMessages());
         
 #line 1 "ClipboardCopy.feature"
 #line hidden
@@ -119,10 +120,10 @@ namespace Aeon.UI.Tests.Features
         
         private static global::Reqnroll.Formatters.RuntimeSupport.FeatureLevelCucumberMessages InitializeCucumberMessages()
         {
-            return new global::Reqnroll.Formatters.RuntimeSupport.FeatureLevelCucumberMessages("Features/ClipboardCopy.feature.ndjson", 4);
+            return new global::Reqnroll.Formatters.RuntimeSupport.FeatureLevelCucumberMessages("Features/ClipboardCopy.feature.ndjson", 5);
         }
         
-        [global::Microsoft.VisualStudio.TestTools.UnitTesting.TestMethodAttribute(callerLineNumber: 6, DisplayName="Copy screen when no program is loaded does not crash")]
+        [global::Microsoft.VisualStudio.TestTools.UnitTesting.TestMethodAttribute(callerLineNumber: 7, DisplayName="Copy screen when no program is loaded does not crash")]
         [global::Microsoft.VisualStudio.TestTools.UnitTesting.DescriptionAttribute("Copy screen when no program is loaded does not crash")]
         [global::Microsoft.VisualStudio.TestTools.UnitTesting.TestPropertyAttribute("FeatureTitle", "Clipboard Copy")]
         [global::Microsoft.VisualStudio.TestTools.UnitTesting.TestCategoryAttribute("ui")]
@@ -134,7 +135,7 @@ namespace Aeon.UI.Tests.Features
             global::Reqnroll.ScenarioInfo scenarioInfo = new global::Reqnroll.ScenarioInfo("Copy screen when no program is loaded does not crash", null, tagsOfScenario, argumentsOfScenario, featureTags, pickleIndex);
             string[] tagsOfRule = ((string[])(null));
             global::Reqnroll.RuleInfo ruleInfo = null;
-#line 6
+#line 7
     this.ScenarioInitialize(scenarioInfo, ruleInfo);
 #line hidden
             if ((global::Reqnroll.TagHelper.ContainsIgnoreTag(scenarioInfo.CombinedTags) || global::Reqnroll.TagHelper.ContainsIgnoreTag(featureTags)))
@@ -144,32 +145,29 @@ namespace Aeon.UI.Tests.Features
             else
             {
                 await this.ScenarioStartAsync();
-#line 7
+#line 8
         await testRunner.GivenAsync("the main window is open", ((string)(null)), ((global::Reqnroll.Table)(null)), "Given ");
 #line hidden
-#line 8
+#line 9
         await testRunner.AndAsync("no program is loaded in the emulator", ((string)(null)), ((global::Reqnroll.Table)(null)), "And ");
 #line hidden
-#line 9
-        await testRunner.WhenAsync("I invoke the Copy Screen command", ((string)(null)), ((global::Reqnroll.Table)(null)), "When ");
-#line hidden
 #line 10
-        await testRunner.ThenAsync("no exception should be thrown", ((string)(null)), ((global::Reqnroll.Table)(null)), "Then ");
+        await testRunner.WhenAsync("I invoke the Copy Screen command", ((string)(null)), ((global::Reqnroll.Table)(null)), "When ");
 #line hidden
             }
             await this.ScenarioCleanupAsync();
         }
         
-        [global::Microsoft.VisualStudio.TestTools.UnitTesting.TestMethodAttribute(callerLineNumber: 12, DisplayName="Copy screen produces a bitmap after VGA rendering")]
-        [global::Microsoft.VisualStudio.TestTools.UnitTesting.DescriptionAttribute("Copy screen produces a bitmap after VGA rendering")]
+        [global::Microsoft.VisualStudio.TestTools.UnitTesting.TestMethodAttribute(callerLineNumber: 12, DisplayName="Export display bitmap produces valid PNG bytes")]
+        [global::Microsoft.VisualStudio.TestTools.UnitTesting.DescriptionAttribute("Export display bitmap produces valid PNG bytes")]
         [global::Microsoft.VisualStudio.TestTools.UnitTesting.TestPropertyAttribute("FeatureTitle", "Clipboard Copy")]
         [global::Microsoft.VisualStudio.TestTools.UnitTesting.TestCategoryAttribute("ui")]
-        public async global::System.Threading.Tasks.Task CopyScreenProducesABitmapAfterVGARendering()
+        public async global::System.Threading.Tasks.Task ExportDisplayBitmapProducesValidPNGBytes()
         {
             string[] tagsOfScenario = ((string[])(null));
             global::System.Collections.Specialized.OrderedDictionary argumentsOfScenario = new global::System.Collections.Specialized.OrderedDictionary();
             string pickleIndex = "1";
-            global::Reqnroll.ScenarioInfo scenarioInfo = new global::Reqnroll.ScenarioInfo("Copy screen produces a bitmap after VGA rendering", null, tagsOfScenario, argumentsOfScenario, featureTags, pickleIndex);
+            global::Reqnroll.ScenarioInfo scenarioInfo = new global::Reqnroll.ScenarioInfo("Export display bitmap produces valid PNG bytes", null, tagsOfScenario, argumentsOfScenario, featureTags, pickleIndex);
             string[] tagsOfRule = ((string[])(null));
             global::Reqnroll.RuleInfo ruleInfo = null;
 #line 12
@@ -186,13 +184,66 @@ namespace Aeon.UI.Tests.Features
         await testRunner.GivenAsync("the main window is open", ((string)(null)), ((global::Reqnroll.Table)(null)), "Given ");
 #line hidden
 #line 14
-        await testRunner.AndAsync("a VGA mode 13h pattern program has been loaded and executed", ((string)(null)), ((global::Reqnroll.Table)(null)), "And ");
+        await testRunner.AndAsync("the display has a 320x200 test pattern rendered", ((string)(null)), ((global::Reqnroll.Table)(null)), "And ");
 #line hidden
 #line 15
-        await testRunner.WhenAsync("I invoke the Copy Screen command", ((string)(null)), ((global::Reqnroll.Table)(null)), "When ");
+        await testRunner.WhenAsync("I export the display bitmap as PNG bytes", ((string)(null)), ((global::Reqnroll.Table)(null)), "When ");
 #line hidden
 #line 16
-        await testRunner.ThenAsync("the display bitmap should not be null", ((string)(null)), ((global::Reqnroll.Table)(null)), "Then ");
+        await testRunner.ThenAsync("the PNG bytes should not be empty", ((string)(null)), ((global::Reqnroll.Table)(null)), "Then ");
+#line hidden
+#line 17
+        await testRunner.AndAsync("the PNG should decode to a 320x200 image", ((string)(null)), ((global::Reqnroll.Table)(null)), "And ");
+#line hidden
+            }
+            await this.ScenarioCleanupAsync();
+        }
+        
+        [global::Microsoft.VisualStudio.TestTools.UnitTesting.TestMethodAttribute(callerLineNumber: 19, DisplayName="Exported bitmap pixels match the rendered framebuffer")]
+        [global::Microsoft.VisualStudio.TestTools.UnitTesting.DescriptionAttribute("Exported bitmap pixels match the rendered framebuffer")]
+        [global::Microsoft.VisualStudio.TestTools.UnitTesting.TestPropertyAttribute("FeatureTitle", "Clipboard Copy")]
+        [global::Microsoft.VisualStudio.TestTools.UnitTesting.TestCategoryAttribute("ui")]
+        public async global::System.Threading.Tasks.Task ExportedBitmapPixelsMatchTheRenderedFramebuffer()
+        {
+            string[] tagsOfScenario = ((string[])(null));
+            global::System.Collections.Specialized.OrderedDictionary argumentsOfScenario = new global::System.Collections.Specialized.OrderedDictionary();
+            string pickleIndex = "2";
+            global::Reqnroll.ScenarioInfo scenarioInfo = new global::Reqnroll.ScenarioInfo("Exported bitmap pixels match the rendered framebuffer", null, tagsOfScenario, argumentsOfScenario, featureTags, pickleIndex);
+            string[] tagsOfRule = ((string[])(null));
+            global::Reqnroll.RuleInfo ruleInfo = null;
+#line 19
+    this.ScenarioInitialize(scenarioInfo, ruleInfo);
+#line hidden
+            if ((global::Reqnroll.TagHelper.ContainsIgnoreTag(scenarioInfo.CombinedTags) || global::Reqnroll.TagHelper.ContainsIgnoreTag(featureTags)))
+            {
+                await testRunner.SkipScenarioAsync();
+            }
+            else
+            {
+                await this.ScenarioStartAsync();
+#line 20
+        await testRunner.GivenAsync("the main window is open", ((string)(null)), ((global::Reqnroll.Table)(null)), "Given ");
+#line hidden
+#line 21
+        await testRunner.AndAsync("the display has a 320x200 test pattern rendered", ((string)(null)), ((global::Reqnroll.Table)(null)), "And ");
+#line hidden
+#line 22
+        await testRunner.WhenAsync("I export the display bitmap as PNG bytes", ((string)(null)), ((global::Reqnroll.Table)(null)), "When ");
+#line hidden
+#line 23
+        await testRunner.AndAsync("I decode the PNG to pixel data", ((string)(null)), ((global::Reqnroll.Table)(null)), "And ");
+#line hidden
+#line 24
+        await testRunner.ThenAsync("pixel 0,0 should have BGRA value 0x80,0x00,0x00,0xFF", ((string)(null)), ((global::Reqnroll.Table)(null)), "Then ");
+#line hidden
+#line 25
+        await testRunner.AndAsync("pixel 1,0 should have BGRA value 0x00,0x80,0x00,0xFF", ((string)(null)), ((global::Reqnroll.Table)(null)), "And ");
+#line hidden
+#line 26
+        await testRunner.AndAsync("pixel 2,0 should have BGRA value 0x00,0x00,0x80,0xFF", ((string)(null)), ((global::Reqnroll.Table)(null)), "And ");
+#line hidden
+#line 27
+        await testRunner.AndAsync("not all pixels should be zero", ((string)(null)), ((global::Reqnroll.Table)(null)), "And ");
 #line hidden
             }
             await this.ScenarioCleanupAsync();
