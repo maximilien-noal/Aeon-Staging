@@ -41,7 +41,9 @@ public sealed partial class EmulatorDisplay : ContentControl
     private readonly SimpleCommand resumeCommand;
     private readonly SimpleCommand pauseCommand;
     private VideoRenderer? aeonRenderer;
-    private AvaloniaBitmap? renderTarget;
+    private WriteableBitmap? renderTarget;
+    private int renderTargetWidth;
+    private int renderTargetHeight;
 
     static EmulatorDisplay()
     {
@@ -148,7 +150,7 @@ public sealed partial class EmulatorDisplay : ContentControl
         set => SetValue(ScalingAlgorithmProperty, value);
     }
 
-    public WriteableBitmap? DisplayBitmap => this.renderTarget?.Bitmap;
+    public WriteableBitmap? DisplayBitmap => this.renderTarget;
     public Emulator.Dos.DosProcess? CurrentProcess { get; private set; }
     public ICommand ResumeCommand => this.resumeCommand;
     public ICommand PauseCommand => this.pauseCommand;
@@ -227,20 +229,15 @@ public sealed partial class EmulatorDisplay : ContentControl
 
             if (this.renderTarget != null)
             {
-                var fb = this.renderTarget.Bitmap.Lock();
-                try
+                using var fb = this.renderTarget.Lock();
+                unsafe
                 {
-                    unsafe
-                    {
-                        var span = new Span<uint>(fb.Address.ToPointer(), this.renderTarget.Width * this.renderTarget.Height);
-                        presenter.Draw(span);
-                    }
-                }
-                finally
-                {
-                    fb.Dispose();
+                    var span = new Span<uint>(fb.Address.ToPointer(), this.renderTargetWidth * this.renderTargetHeight);
+                    presenter.Draw(span);
                 }
             }
+
+            this.displayImage.InvalidateVisual();
         }
     }
 
@@ -260,7 +257,7 @@ public sealed partial class EmulatorDisplay : ContentControl
 
         int pixelWidth = this.aeonRenderer.Width;
         int pixelHeight = this.aeonRenderer.Height;
-        this.displayImage.Source = this.renderTarget?.Bitmap;
+        this.displayImage.Source = this.renderTarget;
         this.displayImage.Width = pixelWidth;
         this.displayImage.Height = pixelHeight;
         this.displayArea.Width = pixelWidth;
@@ -271,10 +268,16 @@ public sealed partial class EmulatorDisplay : ContentControl
 
     private void EnsureRenderTarget(VideoRenderer presenter)
     {
-        if (this.renderTarget == null || presenter.Width != this.renderTarget.Width || presenter.Height != this.renderTarget.Height)
+        if (this.renderTarget == null || presenter.Width != this.renderTargetWidth || presenter.Height != this.renderTargetHeight)
         {
             this.renderTarget?.Dispose();
-            this.renderTarget = new AvaloniaBitmap(presenter.Width, presenter.Height);
+            this.renderTargetWidth = presenter.Width;
+            this.renderTargetHeight = presenter.Height;
+            this.renderTarget = new WriteableBitmap(
+                new PixelSize(this.renderTargetWidth, this.renderTargetHeight),
+                new Vector(96, 96),
+                Avalonia.Platform.PixelFormat.Bgra8888,
+                AlphaFormat.Opaque);
         }
     }
 
