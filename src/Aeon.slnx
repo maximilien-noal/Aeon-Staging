@@ -1,5 +1,4 @@
 <Solution>
-  <Project Path="Aeon.UI.Tests/Aeon.UI.Tests.csproj" />
   <Project Path="Aeon/Aeon.csproj" />
   <Project Path="Aeon.DiskImages/Aeon.DiskImages.csproj" />
   <Project Path="Aeon.Emulator.Configuration/Aeon.Emulator.Configuration.csproj" />
