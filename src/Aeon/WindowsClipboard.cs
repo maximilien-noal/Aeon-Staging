@@ -2,7 +2,6 @@ using System.Runtime.InteropServices;
 using System.Runtime.Versioning;
 using Avalonia;
 using Avalonia.Media.Imaging;
-using Avalonia.Platform;
 
 namespace Aeon.Emulator.Launcher;
 
