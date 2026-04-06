@@ -11,18 +11,18 @@
     <Description>Runtime environment for the Aeon x86 emulator.</Description>
     <ImplicitUsings>enable</ImplicitUsings>
     <Nullable>enable</Nullable>
-	<WarningsAsErrors>nullable</WarningsAsErrors>
+	<WarningsAsErrors>$(WarningsAsErrors);nullable</WarningsAsErrors>
     <ApplicationIcon>Aeon.ico</ApplicationIcon>
   </PropertyGroup>
   <ItemGroup>
     <InternalsVisibleTo Include="Aeon.UI.Tests" />
   </ItemGroup>
   <ItemGroup>
-    <PackageReference Include="Avalonia" Version="11.3.13" />
-    <PackageReference Include="Avalonia.Desktop" Version="11.3.13" />
-    <PackageReference Include="Avalonia.Themes.Fluent" Version="11.3.13" />
-    <PackageReference Include="FluentIcons.Avalonia.Fluent" Version="2.0.321" />
-    <PackageReference Include="Xaml.Behaviors.Avalonia" Version="11.3.9.5" />
+    <PackageReference Include="Avalonia" />
+    <PackageReference Include="Avalonia.Desktop" />
+    <PackageReference Include="Avalonia.Themes.Fluent" />
+    <PackageReference Include="FluentIcons.Avalonia.Fluent" />
+    <PackageReference Include="Xaml.Behaviors.Avalonia" />
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\Aeon.Emulator.Configuration\Aeon.Emulator.Configuration.csproj" />

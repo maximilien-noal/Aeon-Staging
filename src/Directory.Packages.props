@@ -1,0 +1,23 @@
+<Project>
+  <PropertyGroup>
+    <ManagePackageVersionsCentrally>true</ManagePackageVersionsCentrally>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <PackageVersion Include="Avalonia" Version="11.3.13" />
+    <PackageVersion Include="Avalonia.Desktop" Version="11.3.13" />
+    <PackageVersion Include="Avalonia.Themes.Fluent" Version="11.3.13" />
+    <PackageVersion Include="FluentIcons.Avalonia.Fluent" Version="2.0.321" />
+    <PackageVersion Include="Xaml.Behaviors.Avalonia" Version="11.3.9.5" />
+    <PackageVersion Include="Spice86.Audio" Version="11.4.0" />
+    <PackageVersion Include="MeltySynth" Version="2.4.1" />
+    <PackageVersion Include="Mt32emu.net" Version="1.0.0-rc.1" />
+    <PackageVersion Include="Ymf262Emu" Version="1.1.0" />
+    <PackageVersion Include="Microsoft.NET.Test.Sdk" Version="18.0.1" />
+    <PackageVersion Include="MSTest.TestAdapter" Version="4.0.2" />
+    <PackageVersion Include="MSTest.TestFramework" Version="4.0.2" />
+    <PackageVersion Include="MonoGame.Framework.DesktopGL" Version="3.8.4.1" />
+    <PackageVersion Include="Microsoft.CodeAnalysis.Analyzers" Version="3.11.0" />
+    <PackageVersion Include="Microsoft.CodeAnalysis.CSharp" Version="5.0.0" />
+  </ItemGroup>
+</Project>
