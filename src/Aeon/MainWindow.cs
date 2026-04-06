@@ -9,6 +9,8 @@ using Avalonia.Platform.Storage;
 using Aeon.DiskImages;
 using Aeon.Emulator.Configuration;
 using Aeon.Emulator.Dos.VirtualFileSystem;
+using Avalonia.Media.Imaging;
+using System.IO;
 
 namespace Aeon.Emulator.Launcher;
 
@@ -213,17 +215,25 @@ public sealed partial class MainWindow : Window
         }
     }
 
+    internal Bitmap? CreateClipboardBitmap()
+    {
+        var sourceBitmap = this.emulatorDisplay.DisplayBitmap;
+        if (sourceBitmap == null)
+            return null;
+
+        using var stream = new MemoryStream();
+        sourceBitmap.Save(stream);
+        stream.Position = 0;
+        return new Bitmap(stream);
+    }
+
     internal async Task CopyToClipboardAsync()
     {
-        var pngBytes = this.emulatorDisplay.ExportDisplayAsPngBytes();
-        if (pngBytes is not { Length: > 0 } || this.Clipboard == null)
+        using var bitmap = this.CreateClipboardBitmap();
+        if (bitmap == null || this.Clipboard == null)
             return;
 
-        var dataObject = new DataObject();
-        dataObject.Set("image/png", pngBytes);
-#pragma warning disable CS0618 // SetDataObjectAsync is obsolete but SetDataAsync requires IAsyncDataTransfer
-        await this.Clipboard.SetDataObjectAsync(dataObject);
-#pragma warning restore CS0618
+        await this.Clipboard.SetBitmapAsync(bitmap);
     }
 
     private async void Copy_Click(object? sender, RoutedEventArgs e)

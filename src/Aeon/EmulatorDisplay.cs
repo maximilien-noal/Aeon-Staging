@@ -1,4 +1,5 @@
 using System.Windows.Input;
+using Aeon.Emulator.Video.Rendering;
 using Avalonia;
 using Avalonia.Controls;
 using Avalonia.Input;
@@ -7,8 +8,6 @@ using Avalonia.Media;
 using Avalonia.Media.Imaging;
 using Avalonia.Platform;
 using Avalonia.Threading;
-using Aeon.Emulator.Video.Rendering;
-using SkiaSharp;
 
 namespace Aeon.Emulator.Launcher;
 
@@ -45,9 +44,6 @@ public sealed partial class EmulatorDisplay : ContentControl
     private WriteableBitmap? renderTarget;
     private int renderTargetWidth;
     private int renderTargetHeight;
-    private uint[]? lastRenderedPixels;
-    private int lastRenderedWidth;
-    private int lastRenderedHeight;
 
     static EmulatorDisplay()
     {
@@ -159,53 +155,6 @@ public sealed partial class EmulatorDisplay : ContentControl
     public ICommand ResumeCommand => this.resumeCommand;
     public ICommand PauseCommand => this.pauseCommand;
 
-    /// <summary>
-    /// Exports the current display bitmap as PNG bytes.
-    /// Returns null if no frame has been rendered yet.
-    /// Uses SkiaSharp directly so it works in headless mode.
-    /// Reads from the shadow pixel buffer (not the WriteableBitmap lock)
-    /// because Avalonia's WriteableBitmap may not preserve data between locks.
-    /// </summary>
-    public byte[]? ExportDisplayAsPngBytes()
-    {
-        var pixels = this.lastRenderedPixels;
-        if (pixels == null)
-            return null;
-
-        int width = this.lastRenderedWidth;
-        int height = this.lastRenderedHeight;
-
-        var info = new SKImageInfo(width, height, SKColorType.Bgra8888, SKAlphaType.Opaque);
-        using var skBitmap = new SKBitmap(info);
-
-        unsafe
-        {
-            fixed (uint* src = pixels)
-            {
-                Buffer.MemoryCopy(src, (void*)skBitmap.GetPixels(), skBitmap.ByteCount, (long)pixels.Length * 4);
-            }
-        }
-
-        using var image = SKImage.FromBitmap(skBitmap);
-        using var data = image.Encode(SKEncodedImageFormat.Png, 100);
-        return data.ToArray();
-    }
-
-    /// <summary>
-    /// Sets the render target for testing purposes.
-    /// Allows headless tests to inject a known bitmap.
-    /// The pixel data must be provided directly because Avalonia's
-    /// WriteableBitmap does not preserve data between Lock() calls.
-    /// </summary>
-    internal void SetRenderTargetForTesting(WriteableBitmap bitmap, uint[] pixels, int width, int height)
-    {
-        this.renderTarget?.Dispose();
-        this.renderTarget = bitmap;
-        this.lastRenderedWidth = width;
-        this.lastRenderedHeight = height;
-        this.lastRenderedPixels = (uint[])pixels.Clone();
-    }
-
     protected override void OnAttachedToVisualTree(VisualTreeAttachmentEventArgs e)
     {
         base.OnAttachedToVisualTree(e);
@@ -288,19 +237,20 @@ public sealed partial class EmulatorDisplay : ContentControl
                 {
                     var span = new Span<uint>(fb.Address.ToPointer(), fb.Size.Width * fb.Size.Height);
                     presenter.Draw(span);
-
-                    // Keep a shadow copy for ExportDisplayAsPngBytes.
-                    // WriteableBitmap may not preserve pixel data between Lock() calls.
-                    if (this.lastRenderedPixels == null || this.lastRenderedPixels.Length != span.Length)
-                        this.lastRenderedPixels = new uint[span.Length];
-                    span.CopyTo(this.lastRenderedPixels);
-                    this.lastRenderedWidth = fb.Size.Width;
-                    this.lastRenderedHeight = fb.Size.Height;
                 }
-
                 this.displayImage.InvalidateVisual();
             }
         }
+    }
+
+    internal MemoryStream GetBitmap()
+    {
+        if (this.DisplayBitmap == null)
+            return new MemoryStream();
+
+        var memoryStream = new MemoryStream();
+        this.DisplayBitmap.Save(memoryStream);
+        return memoryStream;
     }
 
     private void HandleModeChange(object? sender, EventArgs e) => Dispatcher.UIThread.Post(() => this.InitializePresenter());
