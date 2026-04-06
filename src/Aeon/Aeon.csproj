@@ -11,6 +11,7 @@
     <Description>Runtime environment for the Aeon x86 emulator.</Description>
     <ImplicitUsings>enable</ImplicitUsings>
     <Nullable>enable</Nullable>
+	<WarningsAsErrors>nullable</WarningsAsErrors>
     <ApplicationIcon>Aeon.ico</ApplicationIcon>
   </PropertyGroup>
   <ItemGroup>
