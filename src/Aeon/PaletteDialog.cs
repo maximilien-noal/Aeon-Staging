@@ -5,24 +5,15 @@ using Avalonia.Threading;
 
 namespace Aeon.Emulator.Launcher;
 
-/// <summary>
-/// Displays the current color palette.
-/// </summary>
 public partial class PaletteDialog : Window
 {
     private DispatcherTimer? timer;
 
-    /// <summary>
-    /// Initializes a new instance of the <see cref="PaletteDialog"/> class.
-    /// </summary>
     public PaletteDialog()
     {
         InitializeComponent();
     }
 
-    /// <summary>
-    /// Gets or sets the current EmulatorDisplay control.
-    /// </summary>
     public EmulatorDisplay? EmulatorDisplay { get; set; }
 
     protected override void OnOpened(EventArgs e)
@@ -42,9 +33,6 @@ public partial class PaletteDialog : Window
         base.OnClosed(e);
     }
 
-    /// <summary>
-    /// Gets the palette to display.
-    /// </summary>
     private uint[]? GetPalette()
     {
         var display = this.EmulatorDisplay;

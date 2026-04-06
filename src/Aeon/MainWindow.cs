@@ -78,13 +78,17 @@ public sealed partial class MainWindow : Window
             EventSynchronizer = new AvaloniaSynchronizer()
         };
 
+        var emulatorHost = this.emulatorDisplay.EmulatorHost;
+        if (emulatorHost is null)
+            return;
+
         if (config.Drives != null)
         {
             foreach (var (letter, info) in config.Drives)
             {
                 var driveLetter = ParseDriveLetter(letter);
 
-                var vmDrive = this.emulatorDisplay.EmulatorHost!.VirtualMachine.FileSystem.Drives[driveLetter];
+                var vmDrive = emulatorHost.VirtualMachine.FileSystem.Drives[driveLetter];
                 vmDrive.DriveType = info.Type;
                 vmDrive.VolumeLabel = info.Label;
                 if (info.FreeSpace != null)
@@ -112,7 +116,7 @@ public sealed partial class MainWindow : Window
             }
         }
 
-        this.emulatorDisplay.EmulatorHost!.VirtualMachine.FileSystem.WorkingDirectory = new VirtualPath(config.StartupPath ?? string.Empty);
+        emulatorHost.VirtualMachine.FileSystem.WorkingDirectory = new VirtualPath(config.StartupPath ?? string.Empty);
 
         var requestedSpeed = config.EmulationSpeed ?? 100_000_000;
         emulatorDisplay.EmulationSpeed = Math.Clamp(requestedSpeed, EmulatorHost.MinimumSpeed, MaximumEmulationSpeed);
@@ -140,20 +144,23 @@ public sealed partial class MainWindow : Window
             return;
 
         ApplyConfiguration(this.currentConfig);
+        var emulatorHost = this.emulatorDisplay.EmulatorHost;
+        if (emulatorHost is null)
+            return;
         if (!string.IsNullOrEmpty(this.currentConfig.Launch))
         {
             var launchTargets = this.currentConfig.Launch.Split([' ', '\t'], 2, StringSplitOptions.RemoveEmptyEntries);
             if (launchTargets.Length == 1)
-                this.emulatorDisplay.EmulatorHost!.LoadProgram(launchTargets[0]);
+                emulatorHost.LoadProgram(launchTargets[0]);
             else
-                this.emulatorDisplay.EmulatorHost!.LoadProgram(launchTargets[0], launchTargets[1]);
+                emulatorHost.LoadProgram(launchTargets[0], launchTargets[1]);
         }
         else
         {
-            this.emulatorDisplay.EmulatorHost!.LoadProgram("COMMAND.COM");
+            emulatorHost.LoadProgram("COMMAND.COM");
         }
 
-        this.emulatorDisplay.EmulatorHost.Run();
+        emulatorHost.Run();
     }
 
     private void QuickLaunch(string fileName)
@@ -162,7 +169,13 @@ public sealed partial class MainWindow : Window
         if (hasConfig)
             this.currentConfig = AeonConfiguration.Load(fileName);
         else
-            this.currentConfig = AeonConfiguration.GetQuickLaunchConfiguration(Path.GetDirectoryName(fileName)!, Path.GetFileName(fileName));
+        {
+            var directoryName = Path.GetDirectoryName(fileName);
+            if (string.IsNullOrEmpty(directoryName))
+                return;
+
+            this.currentConfig = AeonConfiguration.GetQuickLaunchConfiguration(directoryName, Path.GetFileName(fileName));
+        }
 
         this.LaunchCurrentConfig();
     }
@@ -324,11 +337,8 @@ public sealed partial class MainWindow : Window
 
     private void PerformanceWindow_Closed(object? sender, EventArgs e)
     {
-        if (performanceWindow != null)
-        {
-            performanceWindow.Closed -= this.PerformanceWindow_Closed;
-            performanceWindow = null;
-        }
+        performanceWindow?.Closed -= this.PerformanceWindow_Closed;
+        performanceWindow = null;
     }
 
     private void ShowPalette_Click(object? sender, RoutedEventArgs e)
@@ -347,11 +357,8 @@ public sealed partial class MainWindow : Window
 
     private void PaletteWindow_Closed(object? sender, EventArgs e)
     {
-        if (this.paletteWindow != null)
-        {
-            this.paletteWindow.Closed -= this.PaletteWindow_Closed;
-            this.paletteWindow = null;
-        }
+        this.paletteWindow?.Closed -= this.PaletteWindow_Closed;
+        this.paletteWindow = null;
     }
 
     private void MainWindow_Activated(object? sender, EventArgs e)

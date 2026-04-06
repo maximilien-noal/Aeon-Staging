@@ -107,7 +107,7 @@ public sealed partial class EmulatorDisplay : ContentControl
                     this.emulator.CurrentProcessChanged += this.Emulator_CurrentProcessChanged;
                     this.emulator.EmulationSpeed = this.EmulationSpeed;
                     this.EnsureTimer();
-                    this.timer!.Start();
+                    this.timer?.Start();
                     this.InitializePresenter();
                 }
             }
@@ -295,19 +295,23 @@ public sealed partial class EmulatorDisplay : ContentControl
 
     private static void OnEmulationSpeedChanged(EmulatorDisplay obj, AvaloniaPropertyChangedEventArgs e)
     {
-        var newValue = (int)e.NewValue!;
+        if (e.NewValue is not int newValue)
+            return;
+
         if (newValue < EmulatorHost.MinimumSpeed)
         {
             obj.SetValue(EmulationSpeedProperty, EmulatorHost.MinimumSpeed);
             return;
         }
-        if (obj.emulator != null)
-            obj.emulator.EmulationSpeed = newValue;
+
+        obj.emulator?.EmulationSpeed = newValue;
     }
 
     private static void OnIsAspectRatioLockedChanged(EmulatorDisplay obj, AvaloniaPropertyChangedEventArgs e)
     {
-        bool value = (bool)e.NewValue!;
+        if (e.NewValue is not bool value)
+            return;
+
         obj.outerViewbox.Stretch = value ? Stretch.Uniform : Stretch.Fill;
     }
 

@@ -2,17 +2,8 @@ using System.Runtime.InteropServices;
 
 namespace Aeon.Emulator.Launcher;
 
-/// <summary>
-/// Cross-platform cursor warping helper using OS system libraries only.
-/// Ported from SDL2 cursor handling code (pure C#, no SDL2 dependency).
-/// </summary>
 internal static class CursorHelper
 {
-    /// <summary>
-    /// Warps the mouse cursor to the specified screen coordinates.
-    /// </summary>
-    /// <param name="x">Screen X coordinate.</param>
-    /// <param name="y">Screen Y coordinate.</param>
     public static void WarpCursor(int x, int y)
     {
         if (OperatingSystem.IsWindows())
@@ -23,20 +14,12 @@ internal static class CursorHelper
             MacCursor.WarpCursor(x, y);
     }
 
-    /// <summary>
-    /// Windows cursor warping via user32.dll SetCursorPos.
-    /// </summary>
     private static class WindowsCursor
     {
         [DllImport("user32.dll", CallingConvention = CallingConvention.Winapi)]
         public static extern uint SetCursorPos(int x, int y);
     }
 
-    /// <summary>
-    /// Linux (X11) cursor warping via libX11.so XWarpPointer.
-    /// Note: This only works on Xorg; Wayland does not support global cursor warping.
-    /// On Wayland, relative mouse mode should use zwp_relative_pointer_v1 protocol instead.
-    /// </summary>
     private static class LinuxCursor
     {
         [DllImport("libX11.so.6")]
@@ -62,7 +45,7 @@ internal static class CursorHelper
             {
                 display = XOpenDisplay(IntPtr.Zero);
                 if (display == IntPtr.Zero)
-                    return; // X11 not available (likely Wayland-only)
+                    return;
 
                 var rootWindow = XDefaultRootWindow(display);
                 XWarpPointer(display, IntPtr.Zero, rootWindow, 0, 0, 0, 0, x, y);
@@ -76,9 +59,6 @@ internal static class CursorHelper
         }
     }
 
-    /// <summary>
-    /// macOS cursor warping via CoreGraphics CGWarpMouseCursorPosition.
-    /// </summary>
     private static class MacCursor
     {
         [DllImport("/System/Library/Frameworks/CoreGraphics.framework/CoreGraphics")]

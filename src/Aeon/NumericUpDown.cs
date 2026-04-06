@@ -5,9 +5,6 @@ using Avalonia.Interactivity;
 
 namespace Aeon.Emulator.Launcher;
 
-/// <summary>
-/// A simple integer numeric up/down control.
-/// </summary>
 public partial class NumericUpDown : UserControl
 {
     public static readonly StyledProperty<int> ValueProperty =
@@ -85,7 +82,9 @@ public partial class NumericUpDown : UserControl
 
     private static void OnValueChanged(NumericUpDown control, AvaloniaPropertyChangedEventArgs e)
     {
-        var newValue = (int)e.NewValue!;
+        if (e.NewValue is not int newValue)
+            return;
+
         string text = control.valueText.Text ?? string.Empty;
         if (!string.IsNullOrEmpty(text) && int.TryParse(text, out int parsed) && parsed == newValue)
             return;
@@ -95,14 +94,18 @@ public partial class NumericUpDown : UserControl
 
     private static void OnMinimumValueChanged(NumericUpDown control, AvaloniaPropertyChangedEventArgs e)
     {
-        int newMin = (int)e.NewValue!;
+        if (e.NewValue is not int newMin)
+            return;
+
         if (newMin > control.Value)
             control.Value = newMin;
     }
 
     private static void OnMaximumValueChanged(NumericUpDown control, AvaloniaPropertyChangedEventArgs e)
     {
-        int newMax = (int)e.NewValue!;
+        if (e.NewValue is not int newMax)
+            return;
+
         if (newMax < control.Value)
             control.Value = newMax;
     }

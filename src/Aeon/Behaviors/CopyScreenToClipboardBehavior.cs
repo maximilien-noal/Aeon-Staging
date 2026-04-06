@@ -12,13 +12,13 @@ public sealed class CopyScreenToClipboardBehavior : Behavior<MenuItem>
     protected override void OnAttached()
     {
         base.OnAttached();
-        this.AssociatedObject!.Click += this.OnMenuItemClick;
+
+        this.AssociatedObject?.Click += this.OnMenuItemClick;
     }
 
     protected override void OnDetaching()
     {
-        if (this.AssociatedObject != null)
-            this.AssociatedObject.Click -= this.OnMenuItemClick;
+        this.AssociatedObject?.Click -= this.OnMenuItemClick;
 
         base.OnDetaching();
     }
@@ -49,8 +49,6 @@ public sealed class CopyScreenToClipboardBehavior : Behavior<MenuItem>
 
         if (OperatingSystem.IsWindows())
         {
-            // Bypass Avalonia's OLE clipboard pipeline which produces black bitmaps
-            // due to an issue in the Win32 OLE data object rendering path.
             WindowsClipboard.SetBitmap(snapshot);
         }
         else

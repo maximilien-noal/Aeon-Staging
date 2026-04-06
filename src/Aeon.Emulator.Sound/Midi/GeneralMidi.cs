@@ -130,9 +130,6 @@ public sealed class GeneralMidi : IInputPort, IOutputPort, IDisposable
         {
             MidiEngine.MeltySynth when !string.IsNullOrWhiteSpace(this.Options.SoundFontPath) => new MeltySynthMidiMapper(this.Options.SoundFontPath),
             MidiEngine.Mt32 when !string.IsNullOrWhiteSpace(this.Options.Mt32RomsPath) => new Mt32MidiDevice(this.Options.Mt32RomsPath),
-            // WindowsMidiMapper uses winmm.dll and is Windows-only.
-            // On Linux/macOS, native MIDI passthrough is not available — use MeltySynth or MT-32 instead.
-            // TODO: Implement MIDI passthrough for Linux (ALSA) and macOS (CoreMIDI)
             _ => OperatingSystem.IsWindows() ? new WindowsMidiMapper() : null
         };
     }

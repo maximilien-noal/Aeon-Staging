@@ -53,10 +53,6 @@ internal static partial class WindowsClipboard
         public uint biClrImportant;
     }
 
-    /// <summary>
-    /// Copies a bitmap to the Windows clipboard using the Win32 API directly,
-    /// bypassing Avalonia's OLE clipboard pipeline.
-    /// </summary>
     public static unsafe void SetBitmap(Bitmap bitmap)
     {
         var size = bitmap.PixelSize;
@@ -65,29 +61,26 @@ internal static partial class WindowsClipboard
         int stride = width * 4;
         int pixelDataSize = stride * height;
 
-        // Get pixel data from the bitmap
         byte[] pixels = new byte[pixelDataSize];
         fixed (byte* ptr = pixels)
         {
             bitmap.CopyPixels(new PixelRect(size), (nint)ptr, pixelDataSize, stride);
         }
 
-        // Flip rows to bottom-up order (DIB standard)
         byte[] flipped = new byte[pixelDataSize];
         for (int y = 0; y < height; y++)
         {
             Buffer.BlockCopy(pixels, y * stride, flipped, (height - 1 - y) * stride, stride);
         }
 
-        // Build DIB: BITMAPINFOHEADER + pixel data
         var header = new BITMAPINFOHEADER
         {
             biSize = (uint)sizeof(BITMAPINFOHEADER),
             biWidth = width,
-            biHeight = height, // positive = bottom-up
+            biHeight = height,
             biPlanes = 1,
             biBitCount = 32,
-            biCompression = 0, // BI_RGB
+            biCompression = 0,
             biSizeImage = (uint)pixelDataSize,
             biXPelsPerMeter = 0,
             biYPelsPerMeter = 0,
@@ -104,9 +97,7 @@ internal static partial class WindowsClipboard
         if (locked == 0)
             return;
 
-        // Write header
         *(BITMAPINFOHEADER*)locked = header;
-        // Write pixel data
         fixed (byte* src = flipped)
         {
             Buffer.MemoryCopy(src, (void*)(locked + sizeof(BITMAPINFOHEADER)), pixelDataSize, pixelDataSize);
@@ -119,7 +110,6 @@ internal static partial class WindowsClipboard
             EmptyClipboard();
             SetClipboardData(CF_DIB, hGlobal);
             CloseClipboard();
-            // hGlobal is now owned by the clipboard — do not free it
         }
     }
 }

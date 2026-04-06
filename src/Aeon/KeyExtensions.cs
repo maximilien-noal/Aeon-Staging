@@ -3,16 +3,8 @@ using Avalonia.Input;
 
 namespace Aeon.Emulator.Launcher;
 
-/// <summary>
-/// Contains extension methods for the Avalonia Key type.
-/// </summary>
 public static class KeyExtensions
 {
-    /// <summary>
-    /// Converts an Avalonia Key into an emulator Keys value.
-    /// </summary>
-    /// <param name="key">Key to convert.</param>
-    /// <returns>Equivalent Keys value.</returns>
     public static Keys ToEmulatorKey(this Key key) => keyLookup.TryGetValue(key, out var value) ? value : Keys.Null;
 
     private static readonly FrozenDictionary<Key, Keys> keyLookup = new Dictionary<Key, Keys>
