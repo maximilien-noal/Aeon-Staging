@@ -23,7 +23,6 @@
   </ItemGroup>
   <ItemGroup>
     <Content Include="TestData\**\*" CopyToOutputDirectory="PreserveNewest" />
-    <ReqnrollFeatureFile Remove="Features\ClipboardCopy.feature" />
     <None Include="TestData\vga_pattern.asm" />
   </ItemGroup>
 </Project>
