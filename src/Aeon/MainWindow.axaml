@@ -106,6 +106,8 @@
             <Setter Property="BorderBrush" Value="Gray" />
             <Setter Property="BorderThickness" Value="1" />
             <Setter Property="Background" Value="#FFDDE8F2" />
+            <Setter Property="HorizontalContentAlignment" Value="Center" />
+            <Setter Property="VerticalContentAlignment" Value="Center" />
         </Style>
         <Style Selector="Border#toolBar Button.speedButton:disabled">
             <Setter Property="Opacity" Value="0.55" />
