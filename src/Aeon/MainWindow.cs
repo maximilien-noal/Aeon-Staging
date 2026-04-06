@@ -9,6 +9,7 @@ using Avalonia.Platform.Storage;
 using Aeon.DiskImages;
 using Aeon.Emulator.Configuration;
 using Aeon.Emulator.Dos.VirtualFileSystem;
+using Avalonia.Media.Imaging;
 
 namespace Aeon.Emulator.Launcher;
 
@@ -211,24 +212,6 @@ public sealed partial class MainWindow : Window
                 this.LaunchCurrentConfig();
             }
         }
-    }
-
-    internal async Task CopyToClipboardAsync()
-    {
-        var pngBytes = this.emulatorDisplay.ExportDisplayAsPngBytes();
-        if (pngBytes is not { Length: > 0 } || this.Clipboard == null)
-            return;
-
-        var dataObject = new DataObject();
-        dataObject.Set("image/png", pngBytes);
-#pragma warning disable CS0618 // SetDataObjectAsync is obsolete but SetDataAsync requires IAsyncDataTransfer
-        await this.Clipboard.SetDataObjectAsync(dataObject);
-#pragma warning restore CS0618
-    }
-
-    private async void Copy_Click(object? sender, RoutedEventArgs e)
-    {
-        await this.CopyToClipboardAsync();
     }
 
     private void Pause_Click(object? sender, RoutedEventArgs e)

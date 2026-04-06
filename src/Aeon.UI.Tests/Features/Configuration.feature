@@ -88,7 +88,7 @@ Feature: Configuration
             }
             """
         When the configuration is loaded
-        Then the configuration StartupPath should be "C:\"
+        Then the configuration StartupPath should be "C:\\"
 
     Scenario: Config with MIDI engine
         Given a configuration file with the following JSON

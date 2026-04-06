@@ -133,7 +133,8 @@ public sealed class ConfigurationSteps : IDisposable
     public void ThenTheConfigurationStartupPathShouldBe(string expected)
     {
         Assert.IsNotNull(config);
-        Assert.AreEqual(expected, config.StartupPath);
+        var normalizedExpected = expected.Replace("\\\\", "\\", StringComparison.Ordinal);
+        Assert.AreEqual(normalizedExpected, config.StartupPath);
     }
 
     [Then("the configuration MidiEngine should be {string}")]

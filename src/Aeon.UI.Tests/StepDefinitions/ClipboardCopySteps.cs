@@ -1,15 +1,14 @@
+using System.Reflection;
 using Avalonia;
 using Avalonia.Controls;
-using Avalonia.Input;
 using Avalonia.Input.Platform;
 using Avalonia.Media.Imaging;
-using Avalonia.Platform;
-using Avalonia.Threading;
+using Avalonia.VisualTree;
 using Aeon.Emulator.Launcher;
+using Aeon.Emulator.Launcher.Behaviors;
 using Aeon.UI.Tests.Support;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using Reqnroll;
-using SkiaSharp;
 
 namespace Aeon.UI.Tests.StepDefinitions;
 
@@ -17,305 +16,198 @@ namespace Aeon.UI.Tests.StepDefinitions;
 public sealed class ClipboardCopySteps
 {
     private readonly SharedState state;
-    private byte[]? exportedPngBytes;
-    private uint[]? decodedPixels;
-    private int decodedWidth;
-    private int decodedHeight;
-    private uint[]? clipboardPixels;
-    private int clipboardWidth;
-    private int clipboardHeight;
+    private Exception? copyException;
+    private Bitmap? clipboardBitmap;
+    private string? tempDir;
+    private byte[]? expectedPixels;
+    private PixelSize expectedSize;
 
     public ClipboardCopySteps(SharedState state)
     {
         this.state = state;
     }
 
-    private MainWindow Window => state.MainWindow!;
-
-    /// <summary>
-    /// Generates the expected BGRA pixel value for a given pixel index
-    /// in the 320x200 test pattern. Must exactly match the pattern
-    /// written by GivenTheDisplayHasATestPatternRendered.
-    /// </summary>
-    private static uint ExpectedTestPatternPixel(int index)
-    {
-        // First 3 pixels are special sentinel values
-        if (index == 0) return 0xFF000080; // B=0x80, G=0x00, R=0x00, A=0xFF
-        if (index == 1) return 0xFF008000; // B=0x00, G=0x80, R=0x00, A=0xFF
-        if (index == 2) return 0xFF800000; // B=0x00, G=0x00, R=0x80, A=0xFF
-
-        byte v = (byte)(index & 0xFF);
-        return (uint)(v | ((v / 2) << 8) | ((v / 3) << 16) | (0xFF << 24));
-    }
+    private MainWindow Window => this.state.MainWindow!;
 
     [Given("no program is loaded in the emulator")]
     public void GivenNoProgramIsLoadedInTheEmulator()
     {
-        // Default state: no program loaded - nothing to do
+        var display = this.Window.FindControl<EmulatorDisplay>("emulatorDisplay");
+        Assert.IsNotNull(display);
+        Assert.IsNull(display.EmulatorHost);
     }
 
-    [Given("the display has a 320x200 test pattern rendered")]
-    public void GivenTheDisplayHasATestPatternRendered()
+    [Given("a VGA mode 13h pattern program has been loaded and executed")]
+    public async Task GivenAVgaModePatternProgramHasBeenLoadedAndExecuted()
     {
-        var display = Window.FindControl<EmulatorDisplay>("emulatorDisplay")!;
+        var comBytes = TestHelpers.GetVgaPatternComBytes();
+        this.tempDir = TestHelpers.CreateTempDirWithComFile("vga_pattern.com", comBytes);
+        var comPath = Path.Combine(this.tempDir, "vga_pattern.com");
 
-        const int width = 320;
-        const int height = 200;
-        int pixelCount = width * height;
+        var quickLaunch = typeof(MainWindow).GetMethod("QuickLaunch", BindingFlags.Instance | BindingFlags.NonPublic);
+        Assert.IsNotNull(quickLaunch, "Could not find MainWindow.QuickLaunch method.");
+        quickLaunch.Invoke(this.Window, [comPath]);
 
-        // Build the expected pixel array
-        var pixels = new uint[pixelCount];
-        for (int i = 0; i < pixelCount; i++)
+        var display = this.Window.FindControl<EmulatorDisplay>("emulatorDisplay");
+        Assert.IsNotNull(display);
+
+        var timeout = DateTime.UtcNow + TimeSpan.FromSeconds(5);
+        while (display.DisplayBitmap == null && DateTime.UtcNow < timeout)
         {
-            pixels[i] = ExpectedTestPatternPixel(i);
+            TestHelpers.Flush();
+            await Task.Delay(50);
         }
 
-        // Create a WriteableBitmap (for the display Image.Source)
-        var bitmap = new WriteableBitmap(
-            new PixelSize(width, height),
-            new Vector(96, 96),
-            PixelFormat.Bgra8888,
-            AlphaFormat.Opaque);
-
-        using (var fb = bitmap.Lock())
-        {
-            unsafe
-            {
-                var span = new Span<uint>(fb.Address.ToPointer(), fb.Size.Width * fb.Size.Height);
-                pixels.AsSpan().CopyTo(span);
-            }
-        }
-
-        // Pass both bitmap and pixel data; the bitmap may not preserve data between Lock() calls
-        display.SetRenderTargetForTesting(bitmap, pixels, width, height);
-        TestHelpers.Flush();
+        Assert.IsNotNull(display.DisplayBitmap, "Display bitmap was not initialized after running VGA pattern program.");
     }
 
     [When("I invoke the Copy Screen command")]
-    public void WhenIInvokeTheCopyScreenCommand()
+    public async Task WhenIInvokeTheCopyScreenCommand()
     {
-        var display = Window.FindControl<EmulatorDisplay>("emulatorDisplay")!;
-        _ = display.DisplayBitmap;
-    }
+        this.copyException = null;
+        this.clipboardBitmap?.Dispose();
+        this.clipboardBitmap = null;
+        this.expectedPixels = null;
 
-    [When("I export the display bitmap as PNG bytes")]
-    public void WhenIExportTheDisplayBitmapAsPngBytes()
-    {
-        var display = Window.FindControl<EmulatorDisplay>("emulatorDisplay")!;
-        exportedPngBytes = display.ExportDisplayAsPngBytes();
-    }
-
-    [When("I decode the PNG to pixel data")]
-    public void WhenIDecodeThePngToPixelData()
-    {
-        Assert.IsNotNull(exportedPngBytes, "No PNG bytes to decode");
-        Assert.IsTrue(exportedPngBytes.Length > 0, "PNG bytes are empty");
-
-        DecodePngToPixels(exportedPngBytes, out decodedPixels, out decodedWidth, out decodedHeight);
-    }
-
-    [When("I invoke the actual Copy Screen clipboard command")]
-    public void WhenIInvokeTheActualCopyScreenClipboardCommand()
-    {
-        // Call the actual CopyToClipboardAsync flow on the MainWindow
-        // This is the same code path as Edit > Copy Screen
-        var task = Window.CopyToClipboardAsync();
-        // Pump the dispatcher to let the async work complete
-        Dispatcher.UIThread.RunJobs();
-        task.GetAwaiter().GetResult();
-    }
-
-    [When("I read the clipboard bitmap data")]
-    public void WhenIReadTheClipboardBitmapData()
-    {
-        var clipboard = Window.Clipboard;
-        Assert.IsNotNull(clipboard, "Clipboard is null — headless platform may not support clipboard");
-
-#pragma warning disable CS0618 // Using deprecated clipboard API for compatibility
-        var formatsTask = clipboard.GetFormatsAsync();
-        Dispatcher.UIThread.RunJobs();
-        var formats = formatsTask.GetAwaiter().GetResult();
-
-        byte[]? pngBytes = null;
-
-        // Try known PNG format names
-        string[] pngFormatNames = ["image/png", "PNG", "png"];
-        foreach (var formatName in pngFormatNames)
+        try
         {
-            if (formats.Contains(formatName))
-            {
-                var dataTask = clipboard.GetDataAsync(formatName);
-                Dispatcher.UIThread.RunJobs();
-                var data = dataTask.GetAwaiter().GetResult();
-                if (data is byte[] bytes && bytes.Length > 0)
-                {
-                    pngBytes = bytes;
-                    break;
-                }
-            }
+            var display = this.Window.FindControl<EmulatorDisplay>("emulatorDisplay");
+            Assert.IsNotNull(display);
+
+            var imageControl = display.GetVisualDescendants()
+                .OfType<Image>()
+                .FirstOrDefault(img => img.Name == "displayImage");
+
+            Assert.IsNotNull(imageControl?.Source, "displayImage has no source bitmap.");
+            var sourceBitmap = (Bitmap)imageControl!.Source!;
+
+            this.expectedSize = sourceBitmap.PixelSize;
+            this.expectedPixels = ExtractPixels(sourceBitmap);
+
+            await CopyScreenToClipboardBehavior.CopyToClipboardAsync(sourceBitmap, this.Window.Clipboard!);
+            this.clipboardBitmap = await TryReadClipboardBitmapAsync(this.Window.Clipboard);
         }
-#pragma warning restore CS0618
-
-        Assert.IsNotNull(pngBytes, $"Clipboard does not contain PNG data. Available formats: [{string.Join(", ", formats)}]");
-        Assert.IsTrue(pngBytes.Length > 0, "Clipboard PNG bytes are empty");
-
-        DecodePngToPixels(pngBytes, out clipboardPixels, out clipboardWidth, out clipboardHeight);
-    }
-
-    [Then("the PNG bytes should not be empty")]
-    public void ThenThePngBytesShouldNotBeEmpty()
-    {
-        Assert.IsNotNull(exportedPngBytes, "ExportDisplayAsPngBytes returned null — no render target available.");
-        Assert.IsTrue(exportedPngBytes.Length > 0, "PNG bytes are empty (0 bytes).");
-    }
-
-    [Then("the PNG should decode to a 320x200 image")]
-    public void ThenThePngShouldDecodeTo320x200()
-    {
-        Assert.IsNotNull(exportedPngBytes);
-        using var skBitmap = SKBitmap.Decode(exportedPngBytes);
-        Assert.IsNotNull(skBitmap, "Failed to decode PNG via SkiaSharp");
-        Assert.AreEqual(320, skBitmap.Width, "PNG width mismatch");
-        Assert.AreEqual(200, skBitmap.Height, "PNG height mismatch");
-    }
-
-    [Then(@"pixel (\d+),(\d+) should have BGRA value (0x[0-9A-Fa-f]+),(0x[0-9A-Fa-f]+),(0x[0-9A-Fa-f]+),(0x[0-9A-Fa-f]+)")]
-    public void ThenPixelShouldHaveBGRAValue(int x, int y, string bHex, string gHex, string rHex, string aHex)
-    {
-        Assert.IsNotNull(decodedPixels, "Pixel data not decoded — run 'I decode the PNG to pixel data' first");
-        AssertPixelBGRA(decodedPixels, decodedWidth, x, y, bHex, gHex, rHex, aHex);
-    }
-
-    [Then("not all pixels should be zero")]
-    public void ThenNotAllPixelsShouldBeZero()
-    {
-        Assert.IsNotNull(decodedPixels, "No pixel data available");
-        bool anyNonZero = decodedPixels.Any(px => px != 0);
-        Assert.IsTrue(anyNonZero, "All pixels are zero (black) — the bitmap was not rendered");
-    }
-
-    [Then("every pixel in the decoded bitmap should match the test pattern")]
-    public void ThenEveryPixelShouldMatchTheTestPattern()
-    {
-        Assert.IsNotNull(decodedPixels, "Pixel data not decoded");
-        Assert.AreEqual(320, decodedWidth, "Decoded bitmap width mismatch");
-        Assert.AreEqual(200, decodedHeight, "Decoded bitmap height mismatch");
-
-        int totalPixels = decodedWidth * decodedHeight;
-        int mismatchCount = 0;
-        int firstMismatchIndex = -1;
-
-        for (int i = 0; i < totalPixels; i++)
+        catch (Exception ex)
         {
-            uint expected = ExpectedTestPatternPixel(i);
-            uint actual = decodedPixels[i];
-            if (expected != actual)
+            this.copyException = ex;
+        }
+    }
+
+    [Then("no exception should be thrown")]
+    public void ThenNoExceptionShouldBeThrown()
+    {
+        if (this.copyException != null)
+            Assert.Fail(this.copyException.ToString());
+    }
+
+    [Then("the clipboard bitmap should match the display bitmap exactly")]
+    public void ThenTheClipboardBitmapShouldMatchTheDisplayBitmapExactly()
+    {
+        Assert.IsNull(this.copyException, this.copyException?.ToString());
+        Assert.IsNotNull(this.clipboardBitmap, "Clipboard bitmap is null.");
+        Assert.IsNotNull(this.expectedPixels, "Expected display pixels are null.");
+
+        Assert.AreEqual(this.expectedSize.Width, this.clipboardBitmap.PixelSize.Width, "Clipboard width differs from display width.");
+        Assert.AreEqual(this.expectedSize.Height, this.clipboardBitmap.PixelSize.Height, "Clipboard height differs from display height.");
+
+        var actualPixels = ExtractPixels(this.clipboardBitmap);
+        CollectionAssert.AreEqual(this.expectedPixels, actualPixels, "Clipboard bitmap pixels differ from display bitmap pixels.");
+    }
+
+    [AfterScenario]
+    public void Cleanup()
+    {
+        this.clipboardBitmap?.Dispose();
+        this.clipboardBitmap = null;
+
+        TestHelpers.CleanupTempDir(this.tempDir);
+        this.tempDir = null;
+    }
+
+    private static unsafe byte[] ExtractPixels(Bitmap bitmap)
+    {
+        var width = bitmap.PixelSize.Width;
+        var height = bitmap.PixelSize.Height;
+        var bytesPerRow = width * 4;
+        var pixels = new byte[bytesPerRow * height];
+
+        fixed (byte* buffer = pixels)
+        {
+            bitmap.CopyPixels(new PixelRect(0, 0, width, height), (IntPtr)buffer, pixels.Length, bytesPerRow);
+        }
+
+        return pixels;
+    }
+
+    private static async Task<Bitmap?> TryReadClipboardBitmapAsync(IClipboard? clipboard)
+    {
+        if (clipboard == null)
+            return null;
+
+        var timeout = DateTime.UtcNow + TimeSpan.FromSeconds(3);
+        while (DateTime.UtcNow < timeout)
+        {
+            var fromExtension = await clipboard.TryGetBitmapAsync();
+            if (fromExtension != null)
+                return fromExtension;
+
+            var formats = await clipboard.GetFormatsAsync();
+            foreach (var format in formats.OrderByDescending(IsImageFormat))
             {
-                if (firstMismatchIndex == -1)
-                    firstMismatchIndex = i;
-                mismatchCount++;
+                var data = await clipboard.GetDataAsync(format);
+                var bitmap = ConvertClipboardDataToBitmap(data);
+                if (bitmap != null)
+                    return bitmap;
+            }
+
+            await Task.Delay(50);
+        }
+
+        return null;
+    }
+
+    private static Bitmap? ConvertClipboardDataToBitmap(object? data)
+    {
+        if (data is Bitmap bitmap)
+            return bitmap;
+
+        if (data is byte[] bytes && bytes.Length > 0)
+        {
+            try
+            {
+                return new Bitmap(new MemoryStream(bytes));
+            }
+            catch
+            {
+                return null;
             }
         }
 
-        if (mismatchCount > 0)
+        if (data is Stream stream)
         {
-            int x = firstMismatchIndex % decodedWidth;
-            int y = firstMismatchIndex / decodedWidth;
-            uint expected = ExpectedTestPatternPixel(firstMismatchIndex);
-            uint actual = decodedPixels[firstMismatchIndex];
-            Assert.Fail(
-                $"{mismatchCount} of {totalPixels} pixels do not match the test pattern. " +
-                $"First mismatch at pixel ({x},{y}) index {firstMismatchIndex}: " +
-                $"expected 0x{expected:X8}, got 0x{actual:X8}");
-        }
-    }
-
-    [Then("the clipboard should contain image data")]
-    public void ThenTheClipboardShouldContainImageData()
-    {
-        var clipboard = Window.Clipboard;
-        Assert.IsNotNull(clipboard, "Clipboard is null");
-
-#pragma warning disable CS0618 // Using deprecated clipboard API for compatibility
-        var formatsTask = clipboard.GetFormatsAsync();
-        Dispatcher.UIThread.RunJobs();
-        var formats = formatsTask.GetAwaiter().GetResult();
-#pragma warning restore CS0618
-
-        Assert.IsTrue(formats.Length > 0,
-            "Clipboard has no data formats after Copy Screen command");
-
-        // The clipboard should contain at least one image format
-        bool hasImageFormat = formats.Any(f =>
-            f.Contains("png", StringComparison.OrdinalIgnoreCase) ||
-            f.Contains("image", StringComparison.OrdinalIgnoreCase) ||
-            f.Contains("bitmap", StringComparison.OrdinalIgnoreCase));
-
-        Assert.IsTrue(hasImageFormat,
-            $"Clipboard does not contain any image format. Available: [{string.Join(", ", formats)}]");
-    }
-
-    [Then("the clipboard bitmap should be 320x200")]
-    public void ThenTheClipboardBitmapShouldBe320x200()
-    {
-        Assert.IsNotNull(clipboardPixels, "No clipboard pixel data");
-        Assert.AreEqual(320, clipboardWidth, "Clipboard bitmap width mismatch");
-        Assert.AreEqual(200, clipboardHeight, "Clipboard bitmap height mismatch");
-    }
-
-    [Then(@"clipboard pixel (\d+),(\d+) should have BGRA value (0x[0-9A-Fa-f]+),(0x[0-9A-Fa-f]+),(0x[0-9A-Fa-f]+),(0x[0-9A-Fa-f]+)")]
-    public void ThenClipboardPixelShouldHaveBGRAValue(int x, int y, string bHex, string gHex, string rHex, string aHex)
-    {
-        Assert.IsNotNull(clipboardPixels, "Clipboard pixel data not decoded");
-        AssertPixelBGRA(clipboardPixels, clipboardWidth, x, y, bHex, gHex, rHex, aHex);
-    }
-
-    [Then("not all clipboard pixels should be zero")]
-    public void ThenNotAllClipboardPixelsShouldBeZero()
-    {
-        Assert.IsNotNull(clipboardPixels, "No clipboard pixel data");
-        bool anyNonZero = clipboardPixels.Any(px => px != 0);
-        Assert.IsTrue(anyNonZero, "All clipboard pixels are zero (black) — clipboard copy produced a blank image");
-    }
-
-    private static void AssertPixelBGRA(uint[] pixels, int width, int x, int y, string bHex, string gHex, string rHex, string aHex)
-    {
-        byte expectedB = Convert.ToByte(bHex, 16);
-        byte expectedG = Convert.ToByte(gHex, 16);
-        byte expectedR = Convert.ToByte(rHex, 16);
-        byte expectedA = Convert.ToByte(aHex, 16);
-
-        int idx = y * width + x;
-        Assert.IsTrue(idx < pixels.Length, $"Pixel ({x},{y}) out of range");
-
-        uint pixel = pixels[idx];
-        byte actualB = (byte)(pixel & 0xFF);
-        byte actualG = (byte)((pixel >> 8) & 0xFF);
-        byte actualR = (byte)((pixel >> 16) & 0xFF);
-        byte actualA = (byte)((pixel >> 24) & 0xFF);
-
-        Assert.AreEqual(expectedB, actualB, $"Pixel ({x},{y}) Blue channel mismatch");
-        Assert.AreEqual(expectedG, actualG, $"Pixel ({x},{y}) Green channel mismatch");
-        Assert.AreEqual(expectedR, actualR, $"Pixel ({x},{y}) Red channel mismatch");
-        Assert.AreEqual(expectedA, actualA, $"Pixel ({x},{y}) Alpha channel mismatch");
-    }
-
-    private static void DecodePngToPixels(byte[] pngBytes, out uint[] pixels, out int width, out int height)
-    {
-        using var skBitmap = SKBitmap.Decode(pngBytes);
-        Assert.IsNotNull(skBitmap, "Failed to decode PNG via SkiaSharp");
-        width = skBitmap.Width;
-        height = skBitmap.Height;
-        pixels = new uint[width * height];
-
-        for (int row = 0; row < height; row++)
-        {
-            for (int col = 0; col < width; col++)
+            try
             {
-                var color = skBitmap.GetPixel(col, row);
-                pixels[row * width + col] =
-                    (uint)(color.Blue | (color.Green << 8) | (color.Red << 16) | (color.Alpha << 24));
+                using var memory = new MemoryStream();
+                if (stream.CanSeek)
+                    stream.Position = 0;
+                stream.CopyTo(memory);
+                memory.Position = 0;
+                return new Bitmap(memory);
+            }
+            catch
+            {
+                return null;
             }
         }
+
+        return null;
+    }
+
+    private static bool IsImageFormat(string format)
+    {
+        return format.Contains("image", StringComparison.OrdinalIgnoreCase)
+            || format.Contains("png", StringComparison.OrdinalIgnoreCase)
+            || format.Contains("bitmap", StringComparison.OrdinalIgnoreCase)
+            || format.Contains("dib", StringComparison.OrdinalIgnoreCase);
     }
 }

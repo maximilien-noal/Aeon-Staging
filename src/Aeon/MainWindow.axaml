@@ -2,6 +2,8 @@
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
         xmlns:local="clr-namespace:Aeon.Emulator.Launcher"
         xmlns:ic="using:FluentIcons.Avalonia.Fluent"
+        xmlns:i="using:Avalonia.Xaml.Interactivity"
+        xmlns:behaviors="clr-namespace:Aeon.Emulator.Launcher.Behaviors"
         x:Class="Aeon.Emulator.Launcher.MainWindow"
         x:Name="window"
         Title="Aeon" Width="800" Height="600" MinWidth="360" MinHeight="270"
@@ -143,7 +145,10 @@
                     </MenuItem>
                 </MenuItem>
                 <MenuItem Header="_Edit">
-                    <MenuItem Header="_Copy Screen" Click="Copy_Click">
+                    <MenuItem Header="_Copy Screen">
+                        <i:Interaction.Behaviors>
+                            <behaviors:CopyScreenToClipboardBehavior />
+                        </i:Interaction.Behaviors>
                         <MenuItem.Icon>
                             <ic:SymbolIcon Symbol="Copy" />
                         </MenuItem.Icon>
