@@ -5,7 +5,6 @@ Aeon is an x86 + DOS emulator written in C#.
 This repository is a **soft fork** of the original [`gregdivis/Aeon`](https://github.com/gregdivis/Aeon), with a focus on:
 
 - Keeping compatibility with upstream design and behavior where practical
-- Improving maintainability and modern .NET support
 - Expanding **cross-platform support**
 
 ## About the project
